@@ -6,11 +6,13 @@ from datetime import datetime
 import json
 import hashlib
 from werkzeug.local import LocalProxy
+from honeypot.database.mongodb import get_db
+
 
 honeypot_pages_bp = Blueprint('honeypot_pages', __name__, 
                               template_folder='templates')
 
-# Access the MongoDB database
+
 db = LocalProxy(get_db)
 
 

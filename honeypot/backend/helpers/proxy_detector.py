@@ -5,9 +5,56 @@ import time
 import logging
 from datetime import datetime, timedelta
 import ipaddress
-from honeypot.backend.helpers.proxy_cache import ProxyCache
 
 logger = logging.getLogger(__name__)
+
+
+class ProxyCache:
+    """Simple file-based cache for proxy lists."""
+    def __init__(self, cache_dir='proxy_cache', cache_expiry_hours=6):
+        self.cache_dir = cache_dir
+        self.cache_expiry = timedelta(hours=cache_expiry_hours)
+        os.makedirs(self.cache_dir, exist_ok=True)
+        logger.info(f"ProxyCache initialized with directory: {self.cache_dir}")
+
+    def _get_cache_path(self, key):
+        # Basic sanitization of key for filename
+        safe_key = "".join(c for c in key if c.isalnum() or c in ('_', '-')).rstrip()
+        return os.path.join(self.cache_dir, f"{safe_key}.json")
+
+    def load_cache(self, key):
+        """Loads data from cache if not expired."""
+        path = self._get_cache_path(key)
+        if not os.path.exists(path):
+            logger.debug(f"Cache miss (file not found): {key}")
+            return None
+        try:
+            # Check file modification time
+            mtime = os.path.getmtime(path)
+            if (datetime.utcnow() - datetime.utcfromtimestamp(mtime)) > self.cache_expiry:
+                logger.info(f"Cache expired: {key}")
+                # Optionally delete expired file: os.remove(path)
+                return None
+
+            with open(path, 'r') as f:
+                data = json.load(f)
+                logger.debug(f"Cache hit: {key}")
+                return data
+        except Exception as e:
+            logger.error(f"Error loading cache for {key} from {path}: {e}")
+            return None
+
+    def save_cache(self, key, data):
+        """Saves data to cache."""
+        path = self._get_cache_path(key)
+        try:
+            with open(path, 'w') as f:
+                json.dump(data, f)
+            logger.debug(f"Cache saved: {key}")
+        except Exception as e:
+            logger.error(f"Error saving cache for {key} to {path}: {e}")
+
+
 
 class ProxyDetector:
     """Detects Tor exit nodes and proxy servers based on IP address"""

@@ -1,5 +1,6 @@
 # honeypot/backend/helpers/unhackable.py
 import re
+import os
 import unicodedata
 import string
 import time

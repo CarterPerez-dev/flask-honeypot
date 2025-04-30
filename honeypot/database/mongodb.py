@@ -39,6 +39,51 @@ def close_db(e=None):
         mongo_client.close()
         logger.info("Closed MongoDB connection")
 
+def initialize_collections(db):
+    """
+    Initialize MongoDB collections with proper indexes
+    
+    Args:
+        db: MongoDB database instance
+    """
+    # Create honeypot_interactions collection with indexes
+    if "honeypot_interactions" not in db.list_collection_names():
+        db.create_collection("honeypot_interactions")
+    db.honeypot_interactions.create_index("timestamp")
+    db.honeypot_interactions.create_index("ip_address")
+    db.honeypot_interactions.create_index("page_type")
+    db.honeypot_interactions.create_index("interaction_type")
+    
+    # Create scanAttempts collection with indexes
+    if "scanAttempts" not in db.list_collection_names():
+        db.create_collection("scanAttempts")
+    db.scanAttempts.create_index("timestamp")
+    db.scanAttempts.create_index("clientId")
+    db.scanAttempts.create_index("ip")
+    db.scanAttempts.create_index([("ip", 1), ("timestamp", -1)])
+    
+    # Create watchList collection with indexes
+    if "watchList" not in db.list_collection_names():
+        db.create_collection("watchList")
+    db.watchList.create_index("clientId", unique=True)
+    db.watchList.create_index("ip")
+    db.watchList.create_index("severity")
+    
+    # Create securityBlocklist collection with indexes
+    if "securityBlocklist" not in db.list_collection_names():
+        db.create_collection("securityBlocklist")
+    db.securityBlocklist.create_index("clientId")
+    db.securityBlocklist.create_index("ip")
+    db.securityBlocklist.create_index("blockUntil")
+    
+    # Create admin_login_attempts collection with indexes
+    if "admin_login_attempts" not in db.list_collection_names():
+        db.create_collection("admin_login_attempts")
+    db.admin_login_attempts.create_index("ip")
+    db.admin_login_attempts.create_index("lastAttempt")
+
+
+
 def init_app(app):
     """
     Initialize MongoDB with Flask application

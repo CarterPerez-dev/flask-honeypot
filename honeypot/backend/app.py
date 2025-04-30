@@ -8,9 +8,9 @@ import redis
 import logging
 import geoip2.database
 from honeypot.config.settings import get_config
-from honeypot.database.mongodb import init_app as init_db
-from honeypot.backend.helpers.proxy_cache import ProxyCache
+from honeypot.database.mongodb import init_app as init_db, get_db
 from honeypot.backend.helpers.geoip_manager import GeoIPManager
+from honeypot.backend.helpers.proxy_detector import ProxyCache, get_proxy_detector
 
 
 # Global instances for GeoIP readers
@@ -113,16 +113,28 @@ def create_app(config=None):
     # Setup CORS and Session
     CORS(app, supports_credentials=True)
     Session(app)
-    init_db(app)
+
+
+    db = init_db(app) 
+    with app.app_context(): 
+         from honeypot.database.mongodb import initialize_collections
+         mongo_db = get_db() 
+         if mongo_db:
+             initialize_collections(mongo_db)
+         else:
+             logger.error("Failed to get MongoDB database instance for collection initialization.")
     
+
+         app.config['PROXY_DETECTOR'] = get_proxy_detector(cache=proxy_cache)
+
     # Fix for proper forwarded headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     
     # Register blueprints
-    from routes.admin import admin_bp
-    from routes.honeypot import honeypot_bp
-    from routes.honeypot_pages import honeypot_pages_bp
-    from routes.honeypot_routes import register_routes_with_blueprint
+    from honeypot.backend.routes.admin import admin_bp
+    from honeypot.backend.routes.admin import honeypot_bp
+    from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp
+    from honeypot.backend.routes.honeypot_routes import register_routes_with_blueprint
     
     app.register_blueprint(admin_bp, url_prefix='/honeypot/admin')
     app.register_blueprint(honeypot_bp, url_prefix='/honeypot')

@@ -1,40 +1,68 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=6.2"] 
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "honeypot-framework"
+name = "flask-honeypot"
 description = "A comprehensive honeypot framework with admin dashboard"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.8" 
 license = {text = "MIT"}
-dynamic = ["version"]
+dynamic = ["version"] 
+author="Carter"
+author_email="support@certgames.com"
+description="A comprehensive honeypot framework with admin dashboard"
+keywords = ["flask", "honeypot", "security", "react", "admin"]
+long_description_content_type="text/markdown"
+url="https://github.com/yourusername/honeypot-framework"
+classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Information Technology",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Security",
+]
+
 dependencies = [
-    "flask>=2.0.0",
+    "flask>=2.2.0", 
     "flask-cors>=3.0.0",
-    "flask-session>=0.4.0",
-    "redis>=4.0.0",
+    "flask-session[redis]>=0.4.0",
+    "redis>=4.3.0",
     "pymongo>=4.0.0",
-    "geoip2>=4.0.0",
-    "python-dotenv>=0.19.0",
-    "bcrypt>=3.2.0",
-    "user-agents>=2.0.0",
-    "python-socketio>=5.0.0",
-    "gevent>=21.0.0"
-    "gunicorn>=20.0.0",  
-    "werkzeug>=2.0.0",   
-    "ipaddress>=1.0.0",  
-    "requests>=2.0.0",  
+    "geoip2>=4.5.0", 
+    "python-dotenv>=0.20.0",
+    "bcrypt>=4.0.0",
+    "user-agents>=2.2.0",
+
+    "python-socketio[client]>=5.7.0", 
+    "gevent>=21.12.0",
+    "gunicorn>=20.1.0",
+    "werkzeug>=2.2.0", 
+    "ipaddress>=1.0.0", 
+    "requests>=2.27.0",
+    "click>=8.1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
-    "flake8>=4.0.0",
-    "black>=22.0.0"
+    "flake8>=5.0.0",
+    "black>=22.10.0",
+    "pytest-cov",
+    "mypy",
+    # Add other dev tools like linters, type checkers
 ]
 
+[project.scripts]
+honeypot-deploy = "honeypot.cli:main"
+
 [tool.setuptools]
-packages = ["flask-honeypot"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."] 
 
 [tool.setuptools_scm]

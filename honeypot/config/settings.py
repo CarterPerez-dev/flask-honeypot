@@ -1,14 +1,20 @@
 # honeypot/config/settings.py
 import os
 from dotenv import load_dotenv
+import secrets
 
 # Load .env file if exists
 load_dotenv()
 
+
+def generate_secret_key():
+    """Generate a secure random secret key"""
+    return secrets.token_hex(32)  
+
+
 class Config:
     """Base configuration for honeypot package"""
     # Core settings
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev_secure_key_change_me')
     DEBUG = False
     TESTING = False
     
@@ -49,7 +55,20 @@ class Config:
     # Logging settings
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
     LOG_FILE = os.environ.get('LOG_FILE', None)
-    
+  
+    @property
+    def SECRET_KEY(self):
+        """Get secret key from environment or generate a secure one"""
+        key = os.environ.get('SECRET_KEY')
+        if not key:
+            key = generate_secret_key()
+            import logging
+            logging.warning(
+                "No SECRET_KEY environment variable found. Using a generated key. "
+                "This is fine for development but will cause sessions to invalidate "
+                "when the application restarts. Set a persistent SECRET_KEY in production."
+            )
+        return key  
 
 class DevelopmentConfig(Config):
     """Development configuration"""

@@ -10,12 +10,11 @@ import logging
 import ipaddress
 import user_agents
 import socket
-from flask import current_app
 from pymongo import UpdateOne
 import traceback
 
 # Import helpers
-from honeypot.backend.helpers.proxy_detector import get_proxy_detector
+from honeypot.backend.helpers.proxy_detector import get_proxy_detector, ProxyCache
 from honeypot.database.models import HoneypotInteraction, ScanAttempt, WatchlistEntry, BlocklistEntry
 
 # Create logger
