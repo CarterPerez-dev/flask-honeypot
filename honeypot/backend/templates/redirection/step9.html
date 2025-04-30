@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Data Access</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .data-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .data-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .data-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .gdpr-warning {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+        .gdpr-warning i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #f39c12;
+        }
+        .security-level {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .security-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .security-badge i {
+            margin-right: 8px;
+        }
+        .data-access-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .data-option {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .data-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        .option-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        .option-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .option-description {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .data-status {
+            background-color: #ebf5fb;
+            color: #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .data-status h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .data-status h3 i {
+            margin-right: 10px;
+        }
+        .status-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+        }
+        .status-item i {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        .obfuscation-toggle {
+            margin: 25px 0;
+            text-align: center;
+        }
+        .toggle-switch {
+            display: inline-block;
+            position: relative;
+            width: 60px;
+            height: 34px;
+            margin: 0 15px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #2ecc71;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .toggle-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .action-button:hover {
+            background-color: #c0392b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Management</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Cryptographic Keys</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Customer Data</span>
+        </div>
+        
+        <div class="data-panel">
+            <div class="data-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h1>Customer Data Access</h1>
+            <p class="data-description">Access and manage sensitive customer information securely.</p>
+            
+            <div class="gdpr-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Data Protection Warning:</strong> 
+                    Accessing and processing this data is subject to GDPR, CCPA, and other applicable privacy regulations. 
+                    Ensure you have a legitimate business purpose and appropriate authorization.
+                </div>
+            </div>
+            
+            <div class="security-level">
+                <div class="security-badge">
+                    <i class="fas fa-lock"></i>
+                    Security Level: Restricted
+                </div>
+            </div>
+            
+            <div class="data-access-options">
+                <div class="data-option" id="option-personal">
+                    <div class="option-icon">
+                        <i class="fas fa-address-card"></i>
+                    </div>
+                    <div class="option-title">Personal Information</div>
+                    <div class="option-description">Names, addresses, contact information, and demographic data</div>
+                </div>
+                
+                <div class="data-option" id="option-financial">
+                    <div class="option-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="option-title">Financial Records</div>
+                    <div class="option-description">Payment information, transaction history, and billing details</div>
+                </div>
+                
+                <div class="data-option" id="option-activity">
+                    <div class="option-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="option-title">Activity Logs</div>
+                    <div class="option-description">System interactions, login history, and feature usage</div>
+                </div>
+            </div>
+            
+            <div class="data-status">
+                <h3><i class="fas fa-info-circle"></i> Data Status</h3>
+                <div class="status-details">
+                    <div class="status-item">
+                        <i class="fas fa-database"></i>
+                        <span>Total Records: 24,891</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Last Updated: 4 hours ago</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Encryption: AES-256</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Access Level: Administrative</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="obfuscation-toggle">
+                <span class="toggle-label">Data Obfuscation:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="obfuscation-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Enabled</span>
+            </div>
+            
+            <a href="/system/finance/payments" class="action-button" id="view-data-btn">
+                <i class="fas fa-eye"></i> View Customer Data
+            </a>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Toggle switch behavior
+            const toggleSwitch = document.getElementById('obfuscation-toggle');
+            const toggleLabels = document.querySelectorAll('.toggle-label');
+            
+            toggleSwitch.addEventListener('change', function() {
+                toggleLabels[1].textContent = this.checked ? 'Enabled' : 'Disabled';
+                
+                // Log the interaction
+                logInteraction('obfuscation_toggle', {
+                    enabled: this.checked
+                });
+            });
+            
+            // Data option click handlers
+            document.getElementById('option-personal').addEventListener('click', function() {
+                logInteraction('option_click', {
+                    option: 'personal_information'
+                });
+                alert("Preparing personal information data...");
+            });
+            
+            document.getElementById('option-financial').addEventListener('click', function() {
+                logInteraction('option_click', {
+                    option: 'financial_records'
+                });
+                alert("Preparing financial records data...");
+            });
+            
+            document.getElementById('option-activity').addEventListener('click', function() {
+                logInteraction('option_click', {
+                    option: 'activity_logs'
+                });
+                alert("Preparing activity logs data...");
+            });
+        });
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'customer_data_access',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the view data button is clicked
+        document.getElementById('view-data-btn').addEventListener('click', function() {
+            logInteraction('button_click', {
+                button: 'view_data',
+                obfuscation_enabled: document.getElementById('obfuscation-toggle').checked
+            });
+        });
+    </script>
+</body>
+</html>

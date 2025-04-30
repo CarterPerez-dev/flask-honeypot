@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptographic Keys Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .crypto-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .crypto-icon {
+            font-size: 48px;
+            color: #2980b9;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .crypto-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .security-warning {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+        .security-warning i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #f39c12;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab:hover {
+            background-color: #f5f5f5;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: 500;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .key-list {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .key-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .key-item:hover {
+            border-color: #3498db;
+            background-color: #f8f9fa;
+        }
+        .key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .key-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .key-type {
+            background-color: #e8f4fc;
+            color: #3498db;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .key-details {
+            color: #7f8c8d;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .key-created, .key-expires {
+            display: flex;
+            align-items: center;
+        }
+        .key-created i, .key-expires i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        .key-value {
+            margin-top: 10px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            display: none;
+        }
+        .key-value.visible {
+            display: block;
+        }
+        .key-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .key-button {
+            border: none;
+            background: none;
+            color: #7f8c8d;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .key-button i {
+            margin-right: 5px;
+        }
+        .key-button:hover {
+            color: #3498db;
+        }
+        .key-button.download:hover {
+            color: #2ecc71;
+        }
+        .key-button.delete:hover {
+            color: #e74c3c;
+        }
+        .generate-form {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        .form-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-row input, .form-row select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-row input:focus, .form-row select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .form-submit {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .submit-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-button:hover {
+            background-color: #2980b9;
+        }
+        .import-form .form-row textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .import-form .form-row textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .action-buttons {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .primary-button {
+            background-color: #2980b9;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .primary-button:hover {
+            background-color: #2471a3;
+        }
+        .secondary-button {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .secondary-button:hover {
+            background-color: #6c7a7a;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Management</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Two-Factor Authentication</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Cryptographic Keys</span>
+        </div>
+        
+        <div class="crypto-panel">
+            <div class="crypto-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h1>Cryptographic Keys Management</h1>
+            <p class="crypto-description">Manage encryption and signing keys for secure system operations.</p>
+            
+            <div class="security-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Security Warning:</strong> Unauthorized access to cryptographic keys can compromise system security. 
+                    All key operations are logged and monitored. Only proceed if you have proper authorization.
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('keys')">Stored Keys</div>
+                <div class="tab" onclick="showTab('generate')">Generate Key</div>
+                <div class="tab" onclick="showTab('import')">Import Key</div>
+            </div>
+            
+            <div class="tab-content active" id="keys-tab">
+                <div class="key-list">
+                    <div class="key-item" onclick="toggleKeyValue('key-1')">
+                        <div class="key-header">
+                            <span class="key-name">System Encryption Key</span>
+                            <span class="key-type">RSA-2048</span>
+                        </div>
+                        <div class="key-details">
+                            <span class="key-created"><i class="fas fa-calendar-plus"></i> Created: 2024-12-15</span>
+                            <span class="key-expires"><i class="fas fa-calendar-times"></i> Expires: 2025-12-15</span>
+                        </div>
+                        <div class="key-value" id="key-1">
+                            -----BEGIN PUBLIC KEY-----<br>
+                            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo<br>
+                            4lgOEePzNm0tRgeLezV6ffAt0gunVTLw7onLRnrq0/IzW7yWR7QkrmBL7jTKEn5u<br>
+                            +qKhbwKfBstIs+bMY2Zkp18gnTxKLxoS2tFczGkPLPgizskuemMghRniWaoLcyeh<br>
+                            kd3qqGElvW/VDL5AaWTg0nLVkjRo9z+40RQzuVaE8AkAFmxZzow3x+VJYKdjykkJ<br>
+                            0iT9wCS0DRTXu269V264Vf/3jvredZiKRkgwlL9xNAwxXFg0x/XFw005UWVRIkdg<br>
+                            cKWTjpBP2dPwVZ4WWC+9aGVd+Gyn1o0CLelf4rEjGoXbAAEgAQ==<br>
+                            -----END PUBLIC KEY-----
+                        </div>
+                        <div class="key-controls">
+                            <button class="key-button download"><i class="fas fa-download"></i> Download</button>
+                            <button class="key-button"><i class="fas fa-eye"></i> Toggle View</button>
+                            <button class="key-button delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="key-item" onclick="toggleKeyValue('key-2')">
+                        <div class="key-header">
+                            <span class="key-name">API Signing Key</span>
+                            <span class="key-type">ECDSA P-256</span>
+                        </div>
+                        <div class="key-details">
+                            <span class="key-created"><i class="fas fa-calendar-plus"></i> Created: 2025-01-20</span>
+                            <span class="key-expires"><i class="fas fa-calendar-times"></i> Expires: 2026-01-20</span>
+                        </div>
+                        <div class="key-value" id="key-2">
+                            -----BEGIN PUBLIC KEY-----<br>
+                            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVs/o5+uQbTjL3chynL4wXgUg2R9<br>
+                            q9UU8I5mEovUf86QZ7kOBIjJwqnzD1omageEHWwHdBO6B+dFabmdT9POxg==<br>
+                            -----END PUBLIC KEY-----
+                        </div>
+                        <div class="key-controls">
+                            <button class="key-button download"><i class="fas fa-download"></i> Download</button>
+                            <button class="key-button"><i class="fas fa-eye"></i> Toggle View</button>
+                            <button class="key-button delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="key-item" onclick="toggleKeyValue('key-3')">
+                        <div class="key-header">
+                            <span class="key-name">Data Vault Key</span>
+                            <span class="key-type">AES-256</span>
+                        </div>
+                        <div class="key-details">
+                            <span class="key-created"><i class="fas fa-calendar-plus"></i> Created: 2025-03-05</span>
+                            <span class="key-expires"><i class="fas fa-calendar-times"></i> Never</span>
+                        </div>
+                        <div class="key-value" id="key-3">
+                            Key ID: vault-aes-256-001<br>
+                            [Key material hidden for security]
+                        </div>
+                        <div class="key-controls">
+                            <button class="key-button download"><i class="fas fa-download"></i> Download</button>
+                            <button class="key-button"><i class="fas fa-eye"></i> Toggle View</button>
+                            <button class="key-button delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="generate-tab">
+                <div class="generate-form">
+                    <div class="form-row">
+                        <label for="key-name">Key Name:</label>
+                        <input type="text" id="key-name" placeholder="Enter a descriptive name for the key">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="key-type">Key Type:</label>
+                        <select id="key-type">
+                            <option value="rsa-2048">RSA 2048-bit</option>
+                            <option value="rsa-4096">RSA 4096-bit</option>
+                            <option value="ecdsa-p256">ECDSA P-256</option>
+                            <option value="ecdsa-p384">ECDSA P-384</option>
+                            <option value="ed25519">ED25519</option>
+                            <option value="aes-256">AES 256-bit</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="key-usage">Key Usage:</label>
+                        <select id="key-usage">
+                            <option value="encryption">Encryption</option>
+                            <option value="signing">Digital Signing</option>
+                            <option value="authentication">Authentication</option>
+                            <option value="key-wrapping">Key Wrapping</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="key-expiry">Expiration:</label>
+                        <select id="key-expiry">
+                            <option value="90">90 Days</option>
+                            <option value="180">180 Days</option>
+                            <option value="365" selected>1 Year</option>
+                            <option value="730">2 Years</option>
+                            <option value="0">Never (Not Recommended)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-submit">
+                        <button class="submit-button" id="generate-key-btn">
+                            <i class="fas fa-plus-circle"></i> Generate Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="import-tab">
+                <div class="import-form">
+                    <div class="form-row">
+                        <label for="import-name">Key Name:</label>
+                        <input type="text" id="import-name" placeholder="Enter a descriptive name for the key">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="import-type">Key Type:</label>
+                        <select id="import-type">
+                            <option value="rsa">RSA</option>
+                            <option value="ecdsa">ECDSA</option>
+                            <option value="ed25519">ED25519</option>
+                            <option value="aes">AES</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="import-data">Key Data:</label>
+                        <textarea id="import-data" placeholder="Paste PEM-encoded key or key material here"></textarea>
+                    </div>
+                    
+                    <div class="form-submit">
+                        <button class="submit-button" id="import-key-btn">
+                            <i class="fas fa-file-import"></i> Import Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="secondary-button">
+                    <i class="fas fa-cog"></i> Key Settings
+                </button>
+                <a href="/system/data/customers" class="primary-button" id="access-data-btn">
+                    <i class="fas fa-database"></i> Access Customer Data
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Generate Key button
+            document.getElementById('generate-key-btn').addEventListener('click', function() {
+                // Log the interaction
+                logInteraction('generate_key_click', {
+                    key_name: document.getElementById('key-name').value,
+                    key_type: document.getElementById('key-type').value,
+                    key_usage: document.getElementById('key-usage').value,
+                    key_expiry: document.getElementById('key-expiry').value
+                });
+                
+                alert("Key generation initiated. This process may take a few moments.");
+                
+                // In a real system, this would generate a key
+                setTimeout(() => {
+                    alert("Key generated successfully!");
+                }, 2000);
+            });
+            
+            // Import Key button
+            document.getElementById('import-key-btn').addEventListener('click', function() {
+                // Log the interaction
+                logInteraction('import_key_click', {
+                    key_name: document.getElementById('import-name').value,
+                    key_type: document.getElementById('import-type').value,
+                    data_length: document.getElementById('import-data').value.length
+                });
+                
+                alert("Key import successful!");
+            });
+            
+            // Key list buttons
+            document.querySelectorAll('.key-button').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent toggling the key value
+                    
+                    const action = this.textContent.trim().toLowerCase();
+                    const keyItem = this.closest('.key-item');
+                    const keyName = keyItem.querySelector('.key-name').textContent;
+                    
+                    // Log the interaction
+                    logInteraction('key_action', {
+                        action: action,
+                        key_name: keyName
+                    });
+                    
+                    if (action.includes('download')) {
+                        alert(`Downloading key: ${keyName}`);
+                    } else if (action.includes('delete')) {
+                        if (confirm(`Are you sure you want to delete the key: ${keyName}?`)) {
+                            alert(`Key deleted: ${keyName}`);
+                            keyItem.remove();
+                        }
+                    } else if (action.includes('toggle')) {
+                        // Find the key-value element within this key item
+                        const keyValueId = keyItem.querySelector('.key-value').id;
+                        toggleKeyValue(keyValueId);
+                    }
+                });
+            });
+        });
+        
+        // Show tab content
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            
+            // Activate the selected tab and content
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Find and activate the tab button
+            const tabIndex = ['keys', 'generate', 'import'].indexOf(tabName);
+            document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+            
+            // Log the tab change
+            logInteraction('tab_change', {
+                tab: tabName
+            });
+        }
+        
+        // Toggle key value visibility
+        function toggleKeyValue(keyId) {
+            const keyValue = document.getElementById(keyId);
+            keyValue.classList.toggle('visible');
+            
+            // Log the interaction
+            logInteraction('toggle_key_value', {
+                key_id: keyId,
+                visible: keyValue.classList.contains('visible')
+            });
+        }
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'crypto_keys',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the access customer data button is clicked
+        document.getElementById('access-data-btn').addEventListener('click', function() {
+            logInteraction('access_data_click');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+include honeypot/backend/templates/*/*.html
+include honeypot/backend/templates/*/*/*.html
+include honeypot/frontend/static/css/*.css
+include honeypot/frontend/static/js/*.js
+include honeypot/frontend/components/*.js
+include README.md
+include LICENSE

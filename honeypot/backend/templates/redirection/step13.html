@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Root Access</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .root-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .root-icon {
+            font-size: 48px;
+            color: #c0392b;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .root-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .system-info {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            text-align: left;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .system-info::before {
+            content: "root@securesystem:~# ";
+            color: #e74c3c;
+        }
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .data-section {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: left;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .data-header {
+            background-color: #f1f1f1;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .data-title {
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        .data-title i {
+            margin-right: 8px;
+            color: #e74c3c;
+        }
+        .data-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .data-control {
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .data-control:hover {
+            color: #e74c3c;
+        }
+        .data-content {
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .user-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .user-entry:last-child {
+            border-bottom: none;
+        }
+        .user-info-detail {
+            font-family: monospace;
+        }
+        .user-id {
+            color: #3498db;
+            font-weight: 500;
+        }
+        .user-type {
+            background-color: #edf2f7;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #c0392b;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .action-button:hover {
+            background-color: #a93226;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Database Controls</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Admin Override</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>System Root</span>
+        </div>
+        
+        <div class="root-panel">
+            <div class="root-icon">
+                <i class="fas fa-terminal"></i>
+            </div>
+            <h1>System Root Access</h1>
+            <p class="root-description">You now have root access to the entire system. Handle with extreme caution.</p>
+            
+            <div class="system-info">
+                ls -la /var/data/users<span class="blink">_</span>
+            </div>
+            
+            <div class="data-section">
+                <div class="data-header">
+                    <div class="data-title">
+                        <i class="fas fa-users"></i> User Database
+                    </div>
+                    <div class="data-controls">
+                        <button class="data-control" id="refresh-data">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="data-control" id="export-data">
+                            <i class="fas fa-file-export"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="data-content">
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01827</span> - j*****.s****@*****.com
+                        </div>
+                        <div class="user-type">Admin</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01835</span> - a****.m*****@*****.com
+                        </div>
+                        <div class="user-type">User</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01842</span> - t**.w*****@*****.com
+                        </div>
+                        <div class="user-type">User</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01844</span> - s****.r*****@*****.com
+                        </div>
+                        <div class="user-type">User</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01851</span> - m***.g*****@*****.com
+                        </div>
+                        <div class="user-type">SuperAdmin</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01857</span> - d****.b*****@*****.com
+                        </div>
+                        <div class="user-type">User</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01863</span> - r*****.l****@*****.com
+                        </div>
+                        <div class="user-type">User</div>
+                    </div>
+                    <div class="user-entry">
+                        <div class="user-info-detail">
+                            <span class="user-id">usr_01866</span> - k******.t***@*****.com
+                        </div>
+                        <div class="user-type">Analyst</div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="/system/admin/override class="action-button" id="reveal-btn">
+                <i class="fas fa-eye"></i> Reveal Full User Data
+            </a>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Log when the refresh button is clicked
+            document.getElementById('refresh-data').addEventListener('click', function() {
+                logInteraction('button_click', {
+                    button: 'refresh_data'
+                });
+                alert("Refreshing user database...");
+            });
+            
+            // Log when the export button is clicked
+            document.getElementById('export-data').addEventListener('click', function() {
+                logInteraction('button_click', {
+                    button: 'export_data'
+                });
+                alert("Preparing data export...");
+            });
+            
+            // Log when the reveal button is clicked
+            document.getElementById('reveal-btn').addEventListener('click', function() {
+                logInteraction('button_click', {
+                    button: 'reveal_full_user_data'
+                });
+            });
+            
+            // Simulate terminal typing
+            const systemInfo = document.querySelector('.system-info');
+            const originalText = systemInfo.innerHTML;
+            systemInfo.innerHTML = "";
+            
+            let i = 0;
+            function typeWriter() {
+                if (i < originalText.length) {
+                    systemInfo.innerHTML += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                }
+            }
+            
+            setTimeout(typeWriter, 500);
+        });
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'system_root_access',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+    </script>
+</body>
+</html>

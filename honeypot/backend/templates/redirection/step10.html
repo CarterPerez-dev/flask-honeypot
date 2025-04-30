@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Payment Data</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .finance-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .finance-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .finance-icon {
+            font-size: 48px;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .finance-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .compliance-warning {
+            background-color: #d4f5e3;
+            color: #1e8449;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+        .compliance-warning i {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .data-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 15px;
+            min-width: 300px;
+        }
+        .search-box i {
+            color: #7f8c8d;
+            margin-right: 10px;
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 5px 0;
+            flex: 1;
+            font-size: 14px;
+        }
+        .search-box input:focus {
+            outline: none;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .filter-select {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            display: flex;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .action-btn i {
+            margin-right: 8px;
+        }
+        .action-btn:hover {
+            background-color: #2980b9;
+        }
+        .action-btn.export {
+            background-color: #27ae60;
+        }
+        .action-btn.export:hover {
+            background-color: #219955;
+        }
+        .data-table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .transaction-id {
+            font-family: monospace;
+            color: #3498db;
+        }
+        .amount {
+            font-weight: 600;
+            text-align: right;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .status.completed {
+            background-color: #d4f5e3;
+            color: #1e8449;
+        }
+        .status.pending {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
+        .status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .customer-col {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .date-col {
+            white-space: nowrap;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .page-info {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .page-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .page-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .page-btn:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .page-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .unobfuscate-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .unobfuscate-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .unobfuscate-description {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .unobfuscate-btn {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .unobfuscate-btn:hover {
+            background-color: #c0392b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Management</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Customer Data</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Financial Records</span>
+        </div>
+        
+        <div class="finance-panel">
+            <div class="finance-header">
+                <div class="finance-icon">
+                    <i class="fas fa-money-check-alt"></i>
+                </div>
+                <h1>Customer Financial Records</h1>
+                <p class="finance-description">Review and manage customer payment information and transaction history.</p>
+            </div>
+            
+            <div class="compliance-warning">
+                <i class="fas fa-file-contract"></i>
+                <div>
+                    <strong>PCI DSS Compliance Notice:</strong> 
+                    This financial data is subject to Payment Card Industry Data Security Standard regulations. 
+                    All data access is logged and monitored. Card numbers are obfuscated by default.
+                </div>
+            </div>
+            
+            <div class="data-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search transactions...">
+                </div>
+                
+                <div class="filter-controls">
+                    <select class="filter-select">
+                        <option value="all">All Statuses</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                    
+                    <select class="filter-select">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                    </select>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn refresh">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="action-btn export">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+            </div>
+            
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Payment Method</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="transaction-id">TXN-8721490</td>
+                            <td class="date-col">2025-04-28 09:23:15</td>
+                            <td class="customer-col">J*** S****</td>
+                            <td>VISA •••• 4582</td>
+                            <td class="amount">$149.99</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721489</td>
+                            <td class="date-col">2025-04-28 08:17:42</td>
+                            <td class="customer-col">M***** R*****</td>
+                            <td>PayPal •••• 3651</td>
+                            <td class="amount">$89.99</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721488</td>
+                            <td class="date-col">2025-04-27 22:05:37</td>
+                            <td class="customer-col">S***** J*******</td>
+                            <td>AMEX •••• 7651</td>
+                            <td class="amount">$299.99</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721487</td>
+                            <td class="date-col">2025-04-27 19:42:11</td>
+                            <td class="customer-col">R***** A********</td>
+                            <td>MAST •••• 8820</td>
+                            <td class="amount">$49.99</td>
+                            <td><span class="status pending">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721486</td>
+                            <td class="date-col">2025-04-27 17:39:05</td>
+                            <td class="customer-col">L*** W*****</td>
+                            <td>VISA •••• 1234</td>
+                            <td class="amount">$199.99</td>
+                            <td><span class="status failed">Failed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721485</td>
+                            <td class="date-col">2025-04-27 15:22:48</td>
+                            <td class="customer-col">E***** D*****</td>
+                            <td>Apple Pay</td>
+                            <td class="amount">$79.99</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td class="transaction-id">TXN-8721484</td>
+                            <td class="date-col">2025-04-27 12:11:33</td>
+                            <td class="customer-col">G***** M******</td>
+                            <td>VISA •••• 9217</td>
+                            <td class="amount">$129.99</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <div class="page-info">
+                    Showing 1-7 of 2,453 transactions
+                </div>
+                <div class="page-controls">
+                    <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">351</button>
+                    <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            
+            <div class="unobfuscate-section">
+                <div class="unobfuscate-title">Customer Data is Currently Obfuscated</div>
+                <div class="unobfuscate-description">
+                    For compliance and security reasons, sensitive customer data is obfuscated by default. 
+                    Unobfuscating this data requires additional verification and will be logged.
+                </div>
+                <a href="/system/servers/access" class="unobfuscate-btn" id="unobfuscate-btn">
+                    <i class="fas fa-eye"></i> Unobfuscate Customer Data
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Add event listeners to interactive elements
+            document.querySelector('.search-box input').addEventListener('input', function() {
+                logInteraction('search_input', {
+                    query: this.value
+                });
+            });
+            
+            document.querySelectorAll('.filter-select').forEach(function(select, index) {
+                select.addEventListener('change', function() {
+                    logInteraction('filter_change', {
+                        filter_index: index,
+                        value: this.value
+                    });
+                });
+            });
+            
+            document.querySelector('.action-btn.refresh').addEventListener('click', function() {
+                logInteraction('refresh_click');
+                alert("Refreshing transaction data...");
+            });
+            
+            document.querySelector('.action-btn.export').addEventListener('click', function() {
+                logInteraction('export_click');
+                alert("Preparing to export transaction data...");
+            });
+            
+            document.querySelectorAll('.page-btn').forEach(function(btn, index) {
+                btn.addEventListener('click', function() {
+                    logInteraction('pagination_click', {
+                        page_index: index
+                    });
+                });
+            });
+            
+            // Add row click events for transaction details
+            document.querySelectorAll('.data-table tbody tr').forEach(function(row) {
+                row.addEventListener('click', function() {
+                    const transactionId = this.querySelector('.transaction-id').textContent;
+                    logInteraction('transaction_row_click', {
+                        transaction_id: transactionId
+                    });
+                    alert(`Viewing details for transaction: ${transactionId}`);
+                });
+            });
+        });
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'financial_records',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the unobfuscate button is clicked
+        document.getElementById('unobfuscate-btn').addEventListener('click', function() {
+            logInteraction('button_click', {
+                button: 'unobfuscate_data'
+            });
+        });
+    </script>
+</body>
+</html>

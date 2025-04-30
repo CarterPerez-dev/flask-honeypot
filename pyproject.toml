@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "honeypot-framework"
+description = "A comprehensive honeypot framework with admin dashboard"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dynamic = ["version"]
+dependencies = [
+    "flask>=2.0.0",
+    "flask-cors>=3.0.0",
+    "flask-session>=0.4.0",
+    "redis>=4.0.0",
+    "pymongo>=4.0.0",
+    "geoip2>=4.0.0",
+    "python-dotenv>=0.19.0",
+    "bcrypt>=3.2.0",
+    "user-agents>=2.0.0",
+    "python-socketio>=5.0.0",
+    "gevent>=21.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "flake8>=4.0.0",
+    "black>=22.0.0"
+]
+
+[tool.setuptools]
+packages = ["honeypot"]
+
+[tool.setuptools_scm]

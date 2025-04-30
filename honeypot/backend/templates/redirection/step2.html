@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Users Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .management-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 50px;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .management-icon {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .management-status {
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #edf7ff;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .system-info {
+            display: flex;
+            flex-direction: column;
+            margin: 25px 0;
+        }
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+        .access-button {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .access-button:hover {
+            background-color: #27ae60;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .secure-badge {
+            display: inline-block;
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+        .secure-badge i {
+            margin-right: 5px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="management-panel">
+            <div class="management-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <h1>User Management Console</h1>
+            <p>Access control panel for managing system users and permissions.</p>
+            
+            <div class="management-status">
+                <i class="fas fa-info-circle"></i> 
+                Identity verification successful. Accessing user management module.
+            </div>
+            
+            <div class="system-info">
+                <div class="system-info-item">
+                    <span class="info-label">System Status:</span>
+                    <span class="info-value">Running (v3.8.2)</span>
+                </div>
+                <div class="system-info-item">
+                    <span class="info-label">Registered Users:</span>
+                    <span class="info-value">2,453</span>
+                </div>
+                <div class="system-info-item">
+                    <span class="info-label">Active Users:</span>
+                    <span class="info-value">128</span>
+                </div>
+                <div class="system-info-item">
+                    <span class="info-label">Last Update:</span>
+                    <span class="info-value" id="last-update">Loading...</span>
+                </div>
+            </div>
+            
+            <a href="/system/access/privileges" class="access-button" id="access-btn">
+                Access User Controls
+            </a>
+            
+            <div class="secure-badge">
+                <i class="fas fa-lock"></i> Encrypted connection
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // Set random values for last update
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate random date within past week
+            const now = new Date();
+            const daysAgo = Math.floor(Math.random() * 7) + 1;
+            const hoursAgo = Math.floor(Math.random() * 24);
+            const minutesAgo = Math.floor(Math.random() * 60);
+            const lastUpdate = new Date(now - (daysAgo * 24 * 60 * 60 * 1000) - (hoursAgo * 60 * 60 * 1000) - (minutesAgo * 60 * 1000));
+            
+            document.getElementById('last-update').textContent = lastUpdate.toLocaleString();
+            
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+        });
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'user_management',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the button is clicked
+        document.getElementById('access-btn').addEventListener('click', function() {
+            logInteraction('button_click');
+        });
+    </script>
+</body>
+</html>

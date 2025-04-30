@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Credentials</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .credentials-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .credentials-icon {
+            font-size: 48px;
+            color: #c0392b;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .credentials-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .security-alert {
+            background-color: #fcf8e3;
+            border-left: 4px solid #f39c12;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            color: #8a6d3b;
+        }
+        .security-alert i {
+            margin-right: 10px;
+        }
+        .credentials-form {
+            text-align: left;
+            margin: 25px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+        .back-button {
+            background-color: #95a5a6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .back-button:hover {
+            background-color: #7f8c8d;
+        }
+        .continue-button {
+            background-color: #c0392b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .continue-button:hover {
+            background-color: #a93226;
+        }
+        .security-badge {
+            display: inline-block;
+            background-color: #f2dede;
+            color: #a94442;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+        .security-badge i {
+            margin-right: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Management</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Access Privileges</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Security Credentials</span>
+        </div>
+        
+        <div class="credentials-panel">
+            <div class="credentials-icon">
+                <i class="fas fa-fingerprint"></i>
+            </div>
+            <h1>Security Credentials</h1>
+            <p class="credentials-description">Provide additional credentials to access the password vault.</p>
+            
+            <div class="security-alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> This action will be logged and requires advanced clearance.
+            </div>
+            
+            <form class="credentials-form">
+                <div class="form-group">
+                    <label for="security-level">Security Clearance Level:</label>
+                    <select id="security-level">
+                        <option value="1">Level 1 - Basic</option>
+                        <option value="2">Level 2 - Standard</option>
+                        <option value="3" selected>Level 3 - Advanced</option>
+                        <option value="4">Level 4 - Administrative</option>
+                        <option value="5">Level 5 - Root</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="security-key">Security Key:</label>
+                    <input type="password" id="security-key" placeholder="Enter your security key" value="••••••••">
+                </div>
+                
+                <div class="form-group">
+                    <label for="verification-code">Verification Code:</label>
+                    <input type="text" id="verification-code" placeholder="Enter verification code">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="back-button" id="back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <a href="/system/vault/passwords" class="continue-button" id="access-vault-btn">
+                        Access Vault <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </form>
+            
+            <div class="security-badge">
+                <i class="fas fa-shield-alt"></i> Enhanced security zone
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Generate a random verification code
+            const verificationInput = document.getElementById('verification-code');
+            verificationInput.value = generateRandomCode(6);
+            
+            // Add event listeners to form fields
+            document.getElementById('security-level').addEventListener('change', function() {
+                logInteraction('dropdown_change', {
+                    field: 'security_level',
+                    value: this.value
+                });
+            });
+            
+            document.getElementById('security-key').addEventListener('input', function() {
+                logInteraction('text_input', {
+                    field: 'security_key',
+                    length: this.value.length
+                });
+            });
+            
+            document.getElementById('verification-code').addEventListener('input', function() {
+                logInteraction('text_input', {
+                    field: 'verification_code',
+                    length: this.value.length
+                });
+            });
+            
+            // Back button event
+            document.getElementById('back-btn').addEventListener('click', function() {
+                logInteraction('back_button_click');
+                // We don't actually go back to prevent users from leaving the trap
+                alert('Cannot return to previous page. Please continue with the current process.');
+            });
+        });
+        
+        // Generate random alphanumeric code
+        function generateRandomCode(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'security_credentials',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the access vault button is clicked
+        document.getElementById('access-vault-btn').addEventListener('click', function() {
+            logInteraction('button_click', {
+                button: 'access_vault',
+                security_level: document.getElementById('security-level').value,
+                verification_code: document.getElementById('verification-code').value
+            });
+        });
+    </script>
+</body>
+</html>
