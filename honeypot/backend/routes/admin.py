@@ -8,6 +8,10 @@ from flask import Blueprint, request, session, jsonify, current_app
 from honeypot.backend.helpers.unhackable import sanitize_admin_key, sanitize_role
 from honeypot.backend.middleware.csrf_protection import generate_csrf_token
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Create blueprint
 admin_bp = Blueprint('admin', __name__, url_prefix='/honeypot/admin')
 

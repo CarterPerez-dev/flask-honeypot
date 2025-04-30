@@ -12,6 +12,10 @@ from honeypot.database.mongodb import init_app as init_db
 from honeypot.backend.helpers.proxy_cache import ProxyCache
 from honeypot.backend.helpers.geoip_manager import GeoIPManager
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Global instances for GeoIP readers
 asn_reader = None
 country_reader = None
@@ -118,10 +122,12 @@ def create_app(config=None):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     
     # Register blueprints
-    from honeypot.backend.routes.honeypot import honeypot_bp
-    from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp
-    from honeypot.backend.routes.honeypot_routes import register_routes_with_blueprint
+    from routes.admin import admin_bp
+    from routes.honeypot import honeypot_bp
+    from routes.honeypot_pages import honeypot_pages_bp
+    from routes.honeypot_routes import register_routes_with_blueprint
     
+    app.register_blueprint(admin_bp, url_prefix='/honeypot/admin')
     app.register_blueprint(honeypot_bp, url_prefix='/honeypot')
     app.register_blueprint(honeypot_pages_bp)
     

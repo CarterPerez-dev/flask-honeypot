@@ -1,990 +1,969 @@
-// src/components/cracked/tabs/HtmlInteractionsTab.js
-import React, { useState, useEffect, useCallback } from "react";
-import { 
-  FaCode, FaSync, FaSpinner, FaExclamationTriangle, 
-  FaFilter, FaSearch, FaTable, FaChartBar, FaDownload, 
-  FaAngleRight, FaClock, FaLocationArrow, FaFingerprint, 
-  FaUser, FaKey, FaShieldAlt, FaSortUp, FaSortDown, FaSort
-} from "react-icons/fa";
-import { adminFetch } from '../csrfHelper';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 
-} from 'recharts';
+/* HtmlInteractionsTab.css - Styles for HTML Interactions Tab */
 
-const HtmlInteractionsTab = () => {
-  // State management
-  const [interactions, setInteractions] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [selectedInteraction, setSelectedInteraction] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState("overview"); // overview, interactions, details
+.html-interactions-tab {
+  display: flex;
+  flex-direction: column;
+}
+
+.html-interactions-tab .admin-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.html-interactions-tab .html-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.html-interactions-tab .html-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.html-interactions-tab .html-action-btn.active {
+  background: var(--admin-accent);
+  color: white;
+  border-color: var(--admin-accent);
+  cursor: default;
+}
+
+.html-interactions-tab .html-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-refresh-btn:hover:not(:disabled) {
+  background: var(--admin-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-glow);
+}
+
+.html-interactions-tab .html-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.html-interactions-tab .html-spinner {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.html-interactions-tab .html-error-message {
+  padding: 15px;
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 4px solid var(--admin-error);
+  border-radius: 4px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--admin-error);
+}
+
+.html-interactions-tab .html-retry-btn {
+  margin-left: auto;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.html-interactions-tab .html-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-loading-container .html-spinner {
+  font-size: 30px;
+  margin-bottom: 15px;
+  color: var(--admin-accent);
+}
+
+/* Overview Styles */
+.html-interactions-tab .html-overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.html-interactions-tab .html-stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.html-interactions-tab .html-stat-card {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.html-interactions-tab .html-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--admin-shadow);
+}
+
+.html-interactions-tab .html-stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(101, 67, 204, 0.1);
+  color: var(--admin-accent);
+}
+
+.html-interactions-tab .html-stat-content {
+  flex: 1;
+}
+
+.html-interactions-tab .html-stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  background: var(--admin-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.html-interactions-tab .html-stat-label {
+  font-size: 14px;
+  color: var(--admin-text-secondary);
+}
+
+/* Charts Section */
+.html-interactions-tab .html-charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 20px;
+}
+
+.html-interactions-tab .html-chart-card {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+  overflow: hidden;
+}
+
+.html-interactions-tab .html-chart-card.html-full-width {
+  grid-column: 1 / -1;
+}
+
+.html-interactions-tab .html-chart-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-chart-content {
+  height: 300px;
+}
+
+.html-interactions-tab .html-no-chart-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--admin-text-secondary);
+}
+
+/* Credentials Section */
+.html-interactions-tab .html-credentials-section {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-section-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-credential {
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.html-interactions-tab .html-view-all-container {
+  text-align: right;
+  margin-top: 15px;
+}
+
+.html-interactions-tab .html-view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-view-all-btn:hover {
+  background: var(--admin-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-glow);
+}
+
+/* Interactions List View */
+.html-interactions-tab .html-interactions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.html-interactions-tab .html-interactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.html-interactions-tab .html-interactions-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.html-interactions-tab .html-interactions-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.html-interactions-tab .html-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-back-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.html-interactions-tab .html-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--admin-secondary);
+  color: white;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-export-btn:hover:not(:disabled) {
+  background: var(--admin-secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-glow);
+}
+
+.html-interactions-tab .html-export-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Filter Section */
+.html-interactions-tab .html-filter-section {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.html-interactions-tab .html-filter-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.html-interactions-tab .html-filter-fields {
+  display: flex;
+  gap: 15px;
+  flex: 3;
+  flex-wrap: wrap;
+}
+
+.html-interactions-tab .html-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.html-interactions-tab .html-filter-field label {
+  font-size: 14px;
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-filter-select {
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--admin-text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.html-interactions-tab .html-filter-select:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+}
+
+.html-interactions-tab .html-search-box {
+  flex: 2;
+}
+
+.html-interactions-tab .html-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  position: relative;
+}
+
+.html-interactions-tab .html-search-icon {
+  color: var(--admin-text-secondary);
+  margin-right: 8px;
+}
+
+.html-interactions-tab .html-search-input {
+  background: transparent;
+  border: none;
+  color: var(--admin-text);
+  padding: 8px 0;
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.html-interactions-tab .html-search-input:focus {
+  outline: none;
+}
+
+.html-interactions-tab .html-filter-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.html-interactions-tab .html-apply-filter-btn {
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.html-interactions-tab .html-apply-filter-btn:hover {
+  background: var(--admin-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-glow);
+}
+
+.html-interactions-tab .html-reset-filter-btn {
+  padding: 8px 15px;
+  border-radius: 8px;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.html-interactions-tab .html-reset-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.html-interactions-tab .html-results-info {
+  font-size: 14px;
+  color: var(--admin-text-secondary);
+  text-align: right;
+}
+
+/* Table Styles */
+.html-interactions-tab .html-table-container {
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.html-interactions-tab .html-data-table th,
+.html-interactions-tab .html-data-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-data-table th {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.html-interactions-tab .html-sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.html-interactions-tab .html-sortable-header:hover {
+  color: var(--admin-text);
+}
+
+.html-interactions-tab .html-sort-icon {
+  font-size: 12px;
+}
+
+.html-interactions-tab .html-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.html-interactions-tab .html-timestamp {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.html-interactions-tab .html-timestamp-icon {
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+}
+
+.html-interactions-tab .html-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Page Type Badges */
+.html-interactions-tab .html-page-type-admin_dashboard {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.html-interactions-tab .html-page-type-login_portal {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.html-interactions-tab .html-page-type-system_verify {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.html-interactions-tab .html-page-type-synergy_portal_login {
+  background: rgba(230, 126, 34, 0.1);
+  color: #e67e22;
+}
+
+.html-interactions-tab .html-page-type-wp-admin {
+  background: rgba(52, 73, 94, 0.1);
+  color: #34495e;
+}
+
+.html-interactions-tab .html-page-type-phpmyadmin {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.html-interactions-tab .html-page-type-cpanel {
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+}
+
+/* Interaction Type Badges */
+.html-interactions-tab .html-interaction-type-page_view {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.html-interactions-tab .html-interaction-type-login_attempt {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.html-interactions-tab .html-interaction-type-form_submit {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.html-interactions-tab .html-interaction-type-button_click {
+  background: rgba(230, 126, 34, 0.1);
+  color: #e67e22;
+}
+
+.html-interactions-tab .html-interaction-type-terminal_command {
+  background: rgba(52, 73, 94, 0.1);
+  color: #34495e;
+}
+
+.html-interactions-tab .html-interaction-type-chat_message {
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+}
+
+.html-interactions-tab .html-interaction-type-download_attempt {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.html-interactions-tab .html-interaction-type-sql_injection_attempt {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.html-interactions-tab .html-interaction-type-captcha_attempt {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.html-interactions-tab .html-details-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.html-interactions-tab .html-view-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-view-details-btn:hover {
+  background: var(--admin-accent-hover);
+  transform: translateY(-2px);
+}
+
+.html-interactions-tab .html-no-data {
+  padding: 30px;
+  text-align: center;
+  color: var(--admin-text-secondary);
+  font-style: italic;
+}
+
+/* Pagination */
+.html-interactions-tab .html-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-page-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.html-interactions-tab .html-page-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.html-interactions-tab .html-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.html-interactions-tab .html-page-info {
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+}
+
+.html-interactions-tab .html-limit-select {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  font-size: 12px;
+}
+
+/* Details View */
+.html-interactions-tab .html-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.html-interactions-tab .html-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.html-interactions-tab .html-details-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.html-interactions-tab .html-details-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.html-interactions-tab .html-details-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.html-interactions-tab .html-meta-label {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-meta-value {
+  font-weight: 500;
+}
+
+.html-interactions-tab .html-risk-high {
+  color: #e74c3c;
+}
+
+.html-interactions-tab .html-risk-medium {
+  color: #f39c12;
+}
+
+.html-interactions-tab .html-risk-low {
+  color: #2ecc71;
+}
+
+.html-interactions-tab .html-details-section {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-section-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+}
+
+.html-interactions-tab .html-explanation-box {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  color: var(--admin-text);
+  line-height: 1.5;
+}
+
+.html-interactions-tab .html-explanation-box p {
+  margin-bottom: 12px;
+}
+
+.html-interactions-tab .html-risk-factors {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.html-interactions-tab .html-risk-factors li {
+  margin-bottom: 8px;
+  padding-left: 5px;
+}
+
+.html-interactions-tab .html-risk-factors li.html-risk-high {
+  border-left: 3px solid #e74c3c;
+}
+
+.html-interactions-tab .html-risk-factors li.html-risk-medium {
+  border-left: 3px solid #f39c12;
+}
+
+.html-interactions-tab .html-risk-factors li.html-risk-low {
+  border-left: 3px solid #2ecc71;
+}
+
+.html-interactions-tab .html-details-table-container {
+  overflow-x: auto;
+}
+
+.html-interactions-tab .html-details-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.html-interactions-tab .html-details-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.html-interactions-tab .html-details-table td:first-child {
+  width: 30%;
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.html-interactions-tab .html-details-json {
+  background: var(--admin-input-bg);
+  border-radius: 8px;
+  padding: 15px;
+  overflow: auto;
+  max-height: 400px;
+}
+
+.html-interactions-tab .html-details-json pre {
+  margin: 0;
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.html-interactions-tab .html-no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  gap: 20px;
+  color: var(--admin-text-secondary);
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .html-interactions-tab .html-charts-container {
+    grid-template-columns: 1fr;
+  }
   
-  // Filter states
-  const [pageType, setPageType] = useState("all");
-  const [interactionType, setInteractionType] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [pageTypes, setPageTypes] = useState([]);
-  const [interactionTypes, setInteractionTypes] = useState([]);
+  .html-interactions-tab .html-details-meta {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .html-interactions-tab .html-stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
   
-  // Pagination states
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-  const [total, setTotal] = useState(0);
+  .html-interactions-tab .html-filter-container {
+    flex-direction: column;
+  }
   
-  // Sorting states
-  const [sortField, setSortField] = useState("timestamp");
-  const [sortOrder, setSortOrder] = useState("desc");
+  .html-interactions-tab .html-filter-buttons {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .html-interactions-tab .admin-content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
   
-  // Custom colors for charts
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57'];
+  .html-interactions-tab .html-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .html-interactions-tab .html-stats-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .html-interactions-tab .html-interactions-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .html-interactions-tab .html-interactions-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .html-interactions-tab .html-pagination {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .html-interactions-tab .html-details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
 
-  // Fetch interactions with filters and pagination
-  const fetchInteractions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const queryParams = new URLSearchParams({
-        page,
-        limit,
-        page_type: pageType !== "all" ? pageType : "",
-        interaction_type: interactionType !== "all" ? interactionType : "",
-        search: searchTerm,
-      });
-      
-      const response = await adminFetch(`/api/honeypot/html-interactions?${queryParams.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch interactions");
-      }
-      
-      const data = await response.json();
-      
-      setInteractions(data.interactions || []);
-      setTotal(data.total || 0);
-      setPageTypes(data.page_types || []);
-      setInteractionTypes(data.interaction_types || []);
-      
-    } catch (err) {
-      console.error("Error fetching interactions:", err);
-      setError(err.message || "Failed to fetch interactions");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, pageType, interactionType, searchTerm]);
-
-  // Fetch statistics
-  const fetchStats = useCallback(async () => {
-    setStatsLoading(true);
-    
-    try {
-      const response = await adminFetch("/api/honeypot/html-interactions/stats");
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch statistics");
-      }
-      
-      const data = await response.json();
-      setStats(data);
-      
-    } catch (err) {
-      console.error("Error fetching statistics:", err);
-      // Don't set main error, just log it
-    } finally {
-      setStatsLoading(false);
-    }
-  }, []);
-
-  // Fetch interaction details
-  const fetchInteractionDetails = useCallback(async (id) => {
-    setLoading(true);
-    
-    try {
-      const response = await adminFetch(`/api/honeypot/html-interactions/${id}`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch interaction details");
-      }
-      
-      const data = await response.json();
-      
-      setSelectedInteraction(data);
-      setViewMode("details");
-      
-    } catch (err) {
-      console.error("Error fetching interaction details:", err);
-      alert("Error loading details: " + (err.message || "Unknown error"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Initial data load
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  // Fetch interactions when filter, pagination changes
-  useEffect(() => {
-    if (viewMode === "interactions") {
-      fetchInteractions();
-    }
-  }, [fetchInteractions, viewMode, page, limit]);
-
-  // Apply filters
-  const applyFilters = () => {
-    setPage(1); // Reset to first page
-    fetchInteractions();
-  };
-
-  // Handle search
-  const handleSearch = (e) => {
-    if (e.key === 'Enter') {
-      applyFilters();
-    }
-  };
-
-  // Reset filters
-  const resetFilters = () => {
-    setPageType("all");
-    setInteractionType("all");
-    setSearchTerm("");
-    setPage(1);
-    fetchInteractions();
-  };
-
-  // Handle sort changes
-  const handleSort = (field) => {
-    if (sortField === field) {
-      // Toggle order if same field
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      // New field, default to desc
-      setSortField(field);
-      setSortOrder("desc");
-    }
-    
-    // Refetch with new sort
-    fetchInteractions();
-  };
-
-  // Render sort indicator
-  const renderSortIndicator = (field) => {
-    if (sortField !== field) return <FaSort className="html-sort-icon" />;
-    return sortOrder === "asc" ? <FaSortUp className="html-sort-icon" /> : <FaSortDown className="html-sort-icon" />;
-  };
-
-  // Format timestamp
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "Unknown";
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleString();
-    } catch (e) {
-      return timestamp;
-    }
-  };
-
-  // Export data as JSON
-  const exportData = () => {
-    try {
-      // Create a blob with the JSON data
-      const jsonData = JSON.stringify(interactions, null, 2);
-      const blob = new Blob([jsonData], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      
-      // Create a temporary link and trigger download
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `html-interactions-${new Date().toISOString()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      
-      // Clean up
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error exporting data:", err);
-    }
-  };
-
-  // Render function for different views
-  const renderContent = () => {
-    if (loading && !interactions.length && !stats) {
-      return (
-        <div className="html-loading-container">
-          <FaSpinner className="html-spinner" />
-          <p>Loading data...</p>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="html-error-message">
-          <FaExclamationTriangle /> Error: {error}
-          <button 
-            className="html-retry-btn" 
-            onClick={() => {
-              fetchStats();
-              if (viewMode === "interactions") fetchInteractions();
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-
-    switch (viewMode) {
-      case "overview":
-        return renderOverview();
-      case "interactions":
-        return renderInteractionsList();
-      case "details":
-        return renderInteractionDetails();
-      default:
-        return renderOverview();
-    }
-  };
-
-  // Render overview stats
-  const renderOverview = () => {
-    if (statsLoading && !stats) {
-      return (
-        <div className="html-loading-container">
-          <FaSpinner className="html-spinner" />
-          <p>Loading statistics...</p>
-        </div>
-      );
-    }
-
-    // Use placeholder if no stats
-    const statsData = stats || {
-      total_interactions: 0,
-      today_interactions: 0,
-      week_interactions: 0,
-      month_interactions: 0,
-      page_types: [],
-      interaction_types: [],
-      top_ips: [],
-      credential_attempts: [],
-      time_series: []
-    };
-
-    return (
-      <div className="html-overview-container">
-        {/* Stats Cards */}
-        <div className="html-stats-cards">
-          <div className="html-stat-card">
-            <div className="html-stat-icon">
-              <FaCode />
-            </div>
-            <div className="html-stat-content">
-              <div className="html-stat-value">{statsData.total_interactions}</div>
-              <div className="html-stat-label">Total Interactions</div>
-            </div>
-          </div>
-          
-          <div className="html-stat-card">
-            <div className="html-stat-icon">
-              <FaClock />
-            </div>
-            <div className="html-stat-content">
-              <div className="html-stat-value">{statsData.today_interactions}</div>
-              <div className="html-stat-label">Today's Interactions</div>
-            </div>
-          </div>
-          
-          <div className="html-stat-card">
-            <div className="html-stat-icon">
-              <FaUser />
-            </div>
-            <div className="html-stat-content">
-              <div className="html-stat-value">{statsData.week_interactions}</div>
-              <div className="html-stat-label">This Week</div>
-            </div>
-          </div>
-          
-          <div className="html-stat-card">
-            <div className="html-stat-icon">
-              <FaKey />
-            </div>
-            <div className="html-stat-content">
-              <div className="html-stat-value">
-                {statsData.credential_attempts ? statsData.credential_attempts.length : 0}
-              </div>
-              <div className="html-stat-label">Credential Harvesting</div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Charts */}
-        <div className="html-charts-container">
-          {/* Page Types Chart */}
-          <div className="html-chart-card">
-            <h3 className="html-chart-title">Most Active Pages</h3>
-            <div className="html-chart-content">
-              {statsData.page_types && statsData.page_types.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart 
-                    data={statsData.page_types.map(item => ({
-                      name: item._id || "Unknown",
-                      value: item.count || 0
-                    }))} 
-                    margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis 
-                      dataKey="name" 
-                      angle={-45} 
-                      textAnchor="end"
-                      tick={{fill: 'var(--admin-text-secondary)'}}
-                      height={70}
-                    />
-                    <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
-                    <Tooltip 
-                      formatter={(value) => [`${value} interactions`, 'Count']}
-                      contentStyle={{
-                        backgroundColor: 'var(--admin-bg-card)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar dataKey="value" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="html-no-chart-data">
-                  <p>No page type data available</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Interaction Types Chart */}
-          <div className="html-chart-card">
-            <h3 className="html-chart-title">Interaction Types</h3>
-            <div className="html-chart-content">
-              {statsData.interaction_types && statsData.interaction_types.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={statsData.interaction_types.map(item => ({
-                        name: item._id || "Unknown",
-                        value: item.count || 0
-                      }))}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                      nameKey="name"
-                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {statsData.interaction_types.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => [`${value} interactions`, 'Count']}
-                      contentStyle={{
-                        backgroundColor: 'var(--admin-bg-card)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '8px'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="html-no-chart-data">
-                  <p>No interaction type data available</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Time Series Chart */}
-          <div className="html-chart-card html-full-width">
-            <h3 className="html-chart-title">Interactions Over Time</h3>
-            <div className="html-chart-content">
-              {statsData.time_series && statsData.time_series.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={statsData.time_series}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis dataKey="date" tick={{fill: 'var(--admin-text-secondary)'}} />
-                    <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
-                    <Tooltip 
-                      formatter={(value) => [`${value} interactions`, 'Count']}
-                      contentStyle={{
-                        backgroundColor: 'var(--admin-bg-card)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="html-no-chart-data">
-                  <p>No time series data available</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Credential Harvesting Table */}
-        <div className="html-credentials-section">
-          <h3 className="html-section-title">Recent Credential Harvesting Attempts</h3>
-          
-          <div className="html-table-container">
-            {statsData.credential_attempts && statsData.credential_attempts.length > 0 ? (
-              <table className="html-data-table">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Page Type</th>
-                    <th>Username</th>
-                    <th>Password</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {statsData.credential_attempts.slice(0, 10).map((attempt, index) => {
-                    const username = attempt.additional_data?.username || "N/A";
-                    const password = attempt.additional_data?.password || "N/A";
-                    
-                    return (
-                      <tr key={index}>
-                        <td>{formatTimestamp(attempt.timestamp)}</td>
-                        <td>
-                          <span className={`html-badge ${attempt.page_type}`}>
-                            {attempt.page_type || "unknown"}
-                          </span>
-                        </td>
-                        <td className="html-credential">{username}</td>
-                        <td className="html-credential">{password}</td>
-                        <td>
-                          <button 
-                            className="html-view-details-btn"
-                            onClick={() => fetchInteractionDetails(attempt._id)}
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              <div className="html-no-data">
-                <p>No credential harvesting attempts recorded</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="html-view-all-container">
-            <button 
-              className="html-view-all-btn"
-              onClick={() => {
-                setViewMode("interactions");
-                setInteractionType("login_attempt");
-                setPage(1);
-                fetchInteractions();
-              }}
-            >
-              View All Interactions <FaAngleRight />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Render list of interactions
-  const renderInteractionsList = () => {
-    return (
-      <div className="html-interactions-container">
-        <div className="html-interactions-header">
-          <h3 className="html-interactions-title">HTML Page Interactions</h3>
-          <div className="html-interactions-actions">
-            <button 
-              className="html-back-btn" 
-              onClick={() => setViewMode("overview")}
-            >
-              Back to Overview
-            </button>
-            <button 
-              className="html-export-btn" 
-              onClick={exportData}
-              disabled={interactions.length === 0}
-            >
-              <FaDownload /> Export Data
-            </button>
-          </div>
-        </div>
-        
-        {/* Filters */}
-        <div className="html-filter-section">
-          <div className="html-filter-container">
-            <div className="html-filter-fields">
-              <div className="html-filter-field">
-                <label>Page Type:</label>
-                <select 
-                  className="html-filter-select"
-                  value={pageType}
-                  onChange={(e) => setPageType(e.target.value)}
-                >
-                  <option value="all">All Pages</option>
-                  {pageTypes.map((type, index) => (
-                    <option key={index} value={type}>{type || "Unknown"}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="html-filter-field">
-                <label>Interaction Type:</label>
-                <select 
-                  className="html-filter-select"
-                  value={interactionType}
-                  onChange={(e) => setInteractionType(e.target.value)}
-                >
-                  <option value="all">All Interactions</option>
-                  {interactionTypes.map((type, index) => (
-                    <option key={index} value={type}>{type || "Unknown"}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="html-filter-field html-search-box">
-                <label>Search:</label>
-                <div className="html-search-input-wrapper">
-                  <FaSearch className="html-search-icon" />
-                  <input 
-                    type="text" 
-                    className="html-search-input" 
-                    placeholder="Search by keyword..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={handleSearch}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="html-filter-buttons">
-              <button 
-                className="html-apply-filter-btn" 
-                onClick={applyFilters}
-              >
-                <FaFilter /> Apply Filters
-              </button>
-              <button 
-                className="html-reset-filter-btn" 
-                onClick={resetFilters}
-              >
-                <FaSync /> Reset
-              </button>
-            </div>
-          </div>
-          
-          <div className="html-results-info">
-            Showing {interactions.length} of {total} interactions
-          </div>
-        </div>
-        
-        {/* Interactions Table */}
-        <div className="html-table-container">
-          {loading ? (
-            <div className="html-loading-container">
-              <FaSpinner className="html-spinner" />
-              <p>Loading interactions...</p>
-            </div>
-          ) : interactions.length > 0 ? (
-            <>
-              <table className="html-data-table">
-                <thead>
-                  <tr>
-                    <th 
-                      className="html-sortable-header" 
-                      onClick={() => handleSort("timestamp")}
-                    >
-                      Time {renderSortIndicator("timestamp")}
-                    </th>
-                    <th 
-                      className="html-sortable-header" 
-                      onClick={() => handleSort("page_type")}
-                    >
-                      Page Type {renderSortIndicator("page_type")}
-                    </th>
-                    <th 
-                      className="html-sortable-header" 
-                      onClick={() => handleSort("interaction_type")}
-                    >
-                      Interaction {renderSortIndicator("interaction_type")}
-                    </th>
-                    <th 
-                      className="html-sortable-header" 
-                      onClick={() => handleSort("ip_address")}
-                    >
-                      IP Address {renderSortIndicator("ip_address")}
-                    </th>
-                    <th>Details</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {interactions.map((interaction, index) => {
-                    // Get key details from additional_data
-                    const additionalData = interaction.additional_data || {};
-                    const detailsText = getInteractionDetails(interaction);
-                    
-                    return (
-                      <tr key={index} className="html-interaction-row">
-                        <td>
-                          <div className="html-timestamp">
-                            <FaClock className="html-timestamp-icon" />
-                            {formatTimestamp(interaction.timestamp)}
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`html-badge html-page-type-${interaction.page_type}`}>
-                            {interaction.page_type || "unknown"}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`html-badge html-interaction-type-${interaction.interaction_type}`}>
-                            {interaction.interaction_type || "unknown"}
-                          </span>
-                        </td>
-                        <td>{interaction.ip_address}</td>
-                        <td className="html-details-cell">{detailsText}</td>
-                        <td>
-                          <button 
-                            className="html-view-details-btn"
-                            onClick={() => fetchInteractionDetails(interaction._id)}
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              
-              {/* Pagination */}
-              <div className="html-pagination">
-                <button 
-                  className="html-page-btn" 
-                  disabled={page === 1}
-                  onClick={() => setPage(1)}
-                >
-                  First
-                </button>
-                <button 
-                  className="html-page-btn" 
-                  disabled={page === 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Previous
-                </button>
-                
-                <span className="html-page-info">
-                  Page {page} of {Math.ceil(total / limit) || 1}
-                </span>
-                
-                <button 
-                  className="html-page-btn" 
-                  disabled={page >= Math.ceil(total / limit)}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Next
-                </button>
-                <button 
-                  className="html-page-btn" 
-                  disabled={page >= Math.ceil(total / limit)}
-                  onClick={() => setPage(Math.ceil(total / limit) || 1)}
-                >
-                  Last
-                </button>
-                
-                <select 
-                  className="html-limit-select"
-                  value={limit}
-                  onChange={(e) => setLimit(Number(e.target.value))}
-                >
-                  <option value="10">10 per page</option>
-                  <option value="20">20 per page</option>
-                  <option value="50">50 per page</option>
-                  <option value="100">100 per page</option>
-                </select>
-              </div>
-            </>
-          ) : (
-            <div className="html-no-data">
-              <p>No interactions found matching your criteria</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // Helper function to get a summary of interaction details
-  const getInteractionDetails = (interaction) => {
-    const additionalData = interaction.additional_data || {};
-    
-    switch (interaction.interaction_type) {
-      case "login_attempt":
-        return `Username: ${additionalData.username || "N/A"}, Password: ${additionalData.password || "N/A"}`;
-      case "form_submit":
-        return `Form data submitted: ${Object.keys(additionalData).length} fields`;
-      case "button_click":
-        return `Button: ${additionalData.button || additionalData.label || "Unknown"}`;
-      case "terminal_command":
-        return `Command: ${additionalData.command || "Unknown"}`;
-      case "chat_message":
-        return `Message: ${additionalData.message || "Unknown"}`;
-      case "captcha_attempt":
-        return `Captcha: ${additionalData.captcha_entered || "Unknown"}`;
-      case "download_attempt":
-        return `File: ${additionalData.filename || "Unknown"}`;
-      case "sql_injection_attempt":
-        return `SQL pattern detected in ${additionalData.input_field || "input"}`;
-      default:
-        if (additionalData.username && additionalData.password) {
-          return `Username: ${additionalData.username}, Password: ${additionalData.password}`;
-        }
-        return `Additional data: ${Object.keys(additionalData).length} fields`;
-    }
-  };
-
-  // Render detailed view of a single interaction
-  const renderInteractionDetails = () => {
-    if (!selectedInteraction) {
-      return (
-        <div className="html-no-selection">
-          <p>No interaction selected.</p>
-          <button 
-            className="html-back-btn"
-            onClick={() => setViewMode("interactions")}
-          >
-            Back to Interactions
-          </button>
-        </div>
-      );
-    }
-    
-    const additionalData = selectedInteraction.additional_data || {};
-    const explanations = selectedInteraction.explanations || {};
-    
-    return (
-      <div className="html-details-container">
-        <div className="html-details-header">
-          <h3 className="html-details-title">
-            Interaction Details
-          </h3>
-          <div className="html-details-actions">
-            <button 
-              className="html-back-btn"
-              onClick={() => setViewMode("interactions")}
-            >
-              Back to Interactions
-            </button>
-          </div>
-        </div>
-        
-        {/* Interaction metadata */}
-        <div className="html-details-meta">
-          <div className="html-meta-item">
-            <span className="html-meta-label">Timestamp:</span>
-            <span className="html-meta-value">
-              {formatTimestamp(selectedInteraction.timestamp)}
-            </span>
-          </div>
-          <div className="html-meta-item">
-            <span className="html-meta-label">IP Address:</span>
-            <span className="html-meta-value">
-              {selectedInteraction.ip_address}
-            </span>
-          </div>
-          <div className="html-meta-item">
-            <span className="html-meta-label">Page Type:</span>
-            <span className="html-meta-value">
-              <span className={`html-badge html-page-type-${selectedInteraction.page_type}`}>
-                {selectedInteraction.page_type || "unknown"}
-              </span>
-            </span>
-          </div>
-          <div className="html-meta-item">
-            <span className="html-meta-label">Interaction Type:</span>
-            <span className="html-meta-value">
-              <span className={`html-badge html-interaction-type-${selectedInteraction.interaction_type}`}>
-                {selectedInteraction.interaction_type || "unknown"}
-              </span>
-            </span>
-          </div>
-          {selectedInteraction.geoInfo && (
-            <div className="html-meta-item">
-              <span className="html-meta-label">Location:</span>
-              <span className="html-meta-value">
-                {selectedInteraction.geoInfo.country || "Unknown"} 
-                {selectedInteraction.geoInfo.asn && ` (${selectedInteraction.geoInfo.asn})`}
-              </span>
-            </div>
-          )}
-          {explanations.risk_level && (
-            <div className="html-meta-item">
-              <span className="html-meta-label">Risk Level:</span>
-              <span className={`html-meta-value html-risk-${explanations.risk_level.level.toLowerCase()}`}>
-                {explanations.risk_level.level}
-              </span>
-            </div>
-          )}
-        </div>
-        
-        {/* Human-readable explanation */}
-        {explanations && Object.keys(explanations).length > 0 && (
-          <div className="html-details-section">
-            <h4 className="html-section-title">
-              <FaShieldAlt /> Analysis
-            </h4>
-            <div className="html-explanation-box">
-              <p><strong>What happened:</strong> {explanations.summary}</p>
-              
-              <p><strong>Page Type:</strong> {explanations.page_type}</p>
-              
-              <p><strong>Interaction Type:</strong> {explanations.interaction_type}</p>
-              
-              {explanations.risk_level && explanations.risk_level.reasons && (
-                <>
-                  <h5>Risk Assessment:</h5>
-                  <ul className="html-risk-factors">
-                    {explanations.risk_level.reasons.map((reason, index) => (
-                      <li key={index} className={`html-risk-${explanations.risk_level.level.toLowerCase()}`}>
-                        {reason}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              
-              <p><em>{explanations.technical_details}</em></p>
-            </div>
-          </div>
-        )}
-        
-        {/* Browser Information Section */}
-        {additionalData.browser_info && (
-          <div className="html-details-section">
-            <h4 className="html-section-title">
-              <FaUser /> Browser Information
-            </h4>
-            <div className="html-details-table-container">
-              <table className="html-details-table">
-                <tbody>
-                  <tr>
-                    <td>User Agent</td>
-                    <td>{additionalData.browser_info.userAgent || "Unknown"}</td>
-                  </tr>
-                  <tr>
-                    <td>Language</td>
-                    <td>{additionalData.browser_info.language || "Unknown"}</td>
-                  </tr>
-                  <tr>
-                    <td>Platform</td>
-                    <td>{additionalData.browser_info.platform || "Unknown"}</td>
-                  </tr>
-                  <tr>
-                    <td>Screen Size</td>
-                    <td>{additionalData.browser_info.screenSize || "Unknown"}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        
-        {/* Interaction Data Section */}
-        <div className="html-details-section">
-          <h4 className="html-section-title">Interaction Data</h4>
-          <div className="html-details-table-container">
-            <table className="html-details-table">
-              <tbody>
-                {Object.entries(additionalData)
-                  .filter(([key]) => key !== 'browser_info')
-                  .map(([key, value]) => (
-                    <tr key={key}>
-                      <td>{key}</td>
-                      <td>
-                        {typeof value === 'object' 
-                          ? JSON.stringify(value) 
-                          : String(value)}
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        {/* Raw JSON Viewer */}
-        <div className="html-details-section">
-          <h4 className="html-section-title">Raw JSON Data</h4>
-          <div className="html-details-json">
-            <pre>{JSON.stringify(selectedInteraction, null, 2)}</pre>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="admin-tab-content html-interactions-tab">
-      <div className="admin-content-header">
-        <h2><FaCode /> HTML Interactions</h2>
-        <div className="html-header-actions">
-          <button 
-            className={`html-action-btn ${viewMode === "overview" ? "active" : ""}`}
-            onClick={() => setViewMode("overview")}
-          >
-            <FaChartBar /> Overview
-          </button>
-          <button 
-            className={`html-action-btn ${viewMode === "interactions" ? "active" : ""}`}
-            onClick={() => {
-              setViewMode("interactions");
-              fetchInteractions();
-            }}
-          >
-            <FaTable /> All Interactions
-          </button>
-          <button 
-            className="html-refresh-btn" 
-            onClick={() => {
-              fetchStats();
-              if (viewMode === "interactions") fetchInteractions();
-            }}
-            disabled={loading || statsLoading}
-          >
-            {loading || statsLoading ? <FaSpinner className="html-spinner" /> : <FaSync />} Refresh
-          </button>
-        </div>
-      </div>
-      
-      {renderContent()}
-    </div>
-  );
-};
-
-export default HtmlInteractionsTab;
+@media (max-width: 576px) {
+  .html-interactions-tab .html-data-table {
+    display: block;
+  }
+  
+  .html-interactions-tab .html-data-table thead {
+    display: none;
+  }
+  
+  .html-interactions-tab .html-data-table tbody {
+    display: block;
+  }
+  
+  .html-interactions-tab .html-data-table tr {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .html-interactions-tab .html-data-table td {
+    display: block;
+    border: none;
+    padding: 8px 0;
+    position: relative;
+    padding-left: 120px;
+    min-height: 30px;
+  }
+  
+  .html-interactions-tab .html-data-table td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 110px;
+    font-weight: 500;
+    color: var(--admin-text-secondary);
+  }
+  
+  .html-interactions-tab .html-data-table td:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
