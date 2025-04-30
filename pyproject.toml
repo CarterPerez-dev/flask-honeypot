@@ -11,7 +11,6 @@ license = {text = "MIT"}
 dynamic = ["version"] 
 author="Carter"
 author_email="support@certgames.com"
-description="A comprehensive honeypot framework with admin dashboard"
 keywords = ["flask", "honeypot", "security", "react", "admin"]
 long_description_content_type="text/markdown"
 url="https://github.com/yourusername/honeypot-framework"
