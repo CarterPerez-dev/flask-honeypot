@@ -22,9 +22,9 @@ setup(
         "user-agents>=2.0.0",
         "python-socketio>=5.0.0",
         "gevent>=21.0.0",
+        "gunicorn>=20.0.0",
         "requests>=2.25.0",
         "werkzeug>=2.0.0",
-        "gunicorn>=20.0.0",
     ],
     extras_require={
         "dev": [
@@ -34,8 +34,8 @@ setup(
         ]
     },
     python_requires=">=3.8",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Carter",
+    author_email="support@certgames.com",
     description="A comprehensive honeypot framework with admin dashboard",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -50,7 +50,6 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Topic :: Security",
     ],
-    # Include data files for package
     package_data={
         "honeypot": [
             "data/geoip_db/.gitkeep",

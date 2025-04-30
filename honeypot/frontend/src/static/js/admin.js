@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/admin.css';
+import '../css/HoneypotTab.css';
+import '../css/HtmlInteractionsTab.css';
 
 // Import tab components
 import HoneypotTab from '../../components/HoneypotTab';
@@ -34,7 +36,7 @@ function AdminDashboard() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      const response = await fetch("/honeypot/admin/logout", {
+      const response = await fetch("/api/honeypot/admin/logout", {
         method: "POST",
         credentials: "include"
       });

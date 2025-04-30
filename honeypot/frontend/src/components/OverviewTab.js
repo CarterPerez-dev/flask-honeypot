@@ -13,7 +13,7 @@ const OverviewTab = () => {
     setError(null);
     
     try {
-      const response = await adminFetch("/honeypot/combined-analytics");
+      const response = await adminFetch("/api/honeypot/combined-analytics");
       if (!response.ok) {
         throw new Error("Failed to fetch honeypot analytics");
       }

@@ -12,9 +12,6 @@ from honeypot.database.mongodb import init_app as init_db
 from honeypot.backend.helpers.proxy_cache import ProxyCache
 from honeypot.backend.helpers.geoip_manager import GeoIPManager
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Global instances for GeoIP readers
 asn_reader = None

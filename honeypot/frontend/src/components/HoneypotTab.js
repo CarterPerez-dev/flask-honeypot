@@ -6,7 +6,7 @@ import {
   FaSortUp, FaSortDown, FaUserSecret, FaAngleRight, FaClock,
   FaLocationArrow, FaFingerprint, FaUser, FaBug, FaShieldAlt
 } from "react-icons/fa";
-import { adminFetch } from '../csrfHelper';
+import { adminFetch } from './csrfHelper';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 

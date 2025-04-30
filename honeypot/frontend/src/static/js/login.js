@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSpider, FaLock, FaUser, FaExclamationTriangle } from 'react-icons/fa';
-import { getCsrfToken, setCsrfToken } from './csrfHelper';
-import './static/css/login.css';
+import { getCsrfToken, setCsrfToken } from '../../components/csrfHelper';
+import '../css/login.css';
 
 const Login = () => {
   const [adminKey, setAdminKey] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const response = await fetch('/honeypot/admin/csrf-token', { 
+        const response = await fetch('/api/honeypot/admin/csrf-token', { 
           credentials: 'include'
         });
         
@@ -40,7 +40,7 @@ const Login = () => {
     setError(null);
 
     try {
-      const response = await fetch('/honeypot/admin/login', {
+      const response = await fetch('/api/honeypot/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

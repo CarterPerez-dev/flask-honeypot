@@ -45,10 +45,6 @@ class Config:
             data_dir = os.path.join(base_dir, 'data')
         return data_dir
     
-    # Admin dashboard settings
-    ADMIN_URL_PREFIX = os.environ.get('ADMIN_URL_PREFIX', '/honey') # Using a generic url path for admin pages are easily foudn with dirbuster/ hidden path scanning tools
-    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', None)  # Should be bcrypt hash
     
     # Logging settings
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
