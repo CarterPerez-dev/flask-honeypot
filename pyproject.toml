@@ -5,15 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "flask-honeypot"
 description = "A comprehensive honeypot framework with admin dashboard"
-readme = "README.md"
-requires-python = ">=3.8" 
+readme = "README.md" 
+requires-python = ">=3.8"
 license = {text = "MIT"}
 dynamic = ["version"] 
-author="Carter"
-author_email="support@certgames.com"
 keywords = ["flask", "honeypot", "security", "react", "admin"]
-long_description_content_type="text/markdown"
-url="https://github.com/yourusername/honeypot-framework"
 classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Information Technology",
@@ -22,8 +18,17 @@ classifiers=[
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11", 
         "Topic :: Security",
 ]
+
+# --- NEW Standard Fields ---
+authors = [
+    { name = "Carter", email = "support@certgames.com" },
+]
+[project.urls]
+Homepage = "https://github.com/CarterPerez-dev/honeypot-framework" 
+Repository = "https://github.com/CarterPerez-dev/honeypot-framework"
 
 dependencies = [
     "flask>=2.2.0", 
