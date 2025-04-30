@@ -1,12 +1,20 @@
 # honeypot/backend/app.py
-from flask import Flask
+from flask import Flask, g
 from flask_cors import CORS
 from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 import redis
+import logging
+import geoip2.database
 from honeypot.config.settings import get_config
 from honeypot.database.mongodb import init_app as init_db
+from honeypot.backend.helpers.proxy_cache import ProxyCache
+from honeypot.backend.helpers.geoip_manager import GeoIPManager
+
+# Global instances for GeoIP readers
+asn_reader = None
+country_reader = None
 
 def create_app(config=None):
     """
@@ -22,6 +30,14 @@ def create_app(config=None):
     
     # Get configuration
     app_config = get_config()
+    
+    # Configure logging
+    logging.basicConfig(
+        level=getattr(logging, app_config.LOG_LEVEL),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        filename=app_config.LOG_FILE
+    )
+    logger = logging.getLogger(__name__)
     
     # Apply default configuration
     app.config.update(
@@ -49,14 +65,56 @@ def create_app(config=None):
     if config:
         app.config.update(config)
     
-
-    CORS(app, supports_credentials=True)
+    # Ensure data directory exists
+    os.makedirs(app_config.DATA_DIRECTORY, exist_ok=True)
     
-
+    # Initialize GeoIP manager
+    geoip_dir = app_config.GEOIP_DB_DIRECTORY
+    if not geoip_dir:
+        geoip_dir = os.path.join(app_config.DATA_DIRECTORY, 'geoip_db')
+    
+    geoip_manager = GeoIPManager(
+        db_directory=geoip_dir,
+        license_key=app_config.MAXMIND_LICENSE_KEY
+    )
+    
+    # Auto-update GeoIP databases if configured
+    if app_config.GEOIP_AUTO_UPDATE and app_config.MAXMIND_LICENSE_KEY:
+        logger.info("Auto-updating GeoIP databases...")
+        geoip_manager.update_databases()
+    
+    # Load GeoIP databases if they exist
+    db_info = geoip_manager.get_database_info()
+    
+    if db_info['asn']['exists']:
+        global asn_reader
+        asn_reader = geoip2.database.Reader(db_info['asn']['path'])
+        logger.info(f"Loaded ASN database: {db_info['asn']['path']}")
+    
+    if db_info['country']['exists']:
+        global country_reader
+        country_reader = geoip2.database.Reader(db_info['country']['path'])
+        logger.info(f"Loaded Country database: {db_info['country']['path']}")
+    
+    # Initialize proxy cache
+    proxy_cache_dir = app_config.PROXY_CACHE_DIRECTORY
+    if not proxy_cache_dir:
+        proxy_cache_dir = os.path.join(app_config.DATA_DIRECTORY, 'proxy_cache')
+    
+    proxy_cache = ProxyCache(cache_dir=proxy_cache_dir)
+    
+    # Store instances in app config for easy access
+    app.config['GEOIP_MANAGER'] = geoip_manager
+    app.config['PROXY_CACHE'] = proxy_cache
+    app.config['ASN_READER'] = asn_reader
+    app.config['COUNTRY_READER'] = country_reader
+    
+    # Setup CORS and Session
+    CORS(app, supports_credentials=True)
     Session(app)
     init_db(app)
     
-
+    # Fix for proper forwarded headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     
     # Register blueprints
@@ -67,7 +125,7 @@ def create_app(config=None):
     app.register_blueprint(honeypot_bp, url_prefix='/honeypot')
     app.register_blueprint(honeypot_pages_bp)
     
-
+    # Register routes with honeypot handler
     register_routes_with_blueprint(
         blueprint=honeypot_pages_bp,
         handler_function=honeypot_bp.view_functions['honeypot_handler']
@@ -79,6 +137,13 @@ def create_app(config=None):
     @app.context_processor
     def inject_csrf_token():
         return {'csrf_token': generate_csrf_token()}
+    
+    # Helper function to access GeoIP data
+    @app.before_request
+    def setup_geoip_readers():
+        """Make GeoIP readers available in the request context"""
+        g.asn_reader = asn_reader
+        g.country_reader = country_reader
     
     # Basic health check endpoint
     @app.route('/health')

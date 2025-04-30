@@ -1,7 +1,8 @@
-include honeypot/backend/templates/*/*.html
-include honeypot/backend/templates/*/*/*.html
-include honeypot/frontend/static/css/*.css
-include honeypot/frontend/static/js/*.js
-include honeypot/frontend/components/*.js
+# MANIFEST.in
+include requirements.txt
 include README.md
 include LICENSE
+recursive-include honeypot/backend/templates *
+recursive-include honeypot/data *
+recursive-include honeypot/frontend/public *
+recursive-include honeypot/frontend/src *
