@@ -1,0 +1,95 @@
+/* src/index.css */
+:root {
+  --honeypot-bg-dark: #121212;
+  --honeypot-bg-card: #1e1e1e;
+  --honeypot-accent: #6543cc;
+  --honeypot-accent-hover: #7b54e8;
+  --honeypot-accent-glow: #8a58fc;
+  --honeypot-secondary: #ff4c8b;
+  --honeypot-secondary-hover: #ff6ba1;
+  --honeypot-text: #e2e2e2;
+  --honeypot-text-secondary: #9da8b9;
+  --honeypot-border: #252a3c;
+  --honeypot-input-bg: rgba(0, 0, 0, 0.2);
+  --honeypot-gradient-primary: linear-gradient(135deg, #6543cc, #8a58fc);
+  --honeypot-gradient-secondary: linear-gradient(135deg, #ff4c8b, #ff7950);
+  --honeypot-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --honeypot-glow: 0 0 15px rgba(134, 88, 252, 0.5);
+  
+  /* Status Colors */
+  --honeypot-success: #2ecc71;
+  --honeypot-error: #e74c3c;
+  --honeypot-warning: #f39c12;
+  --honeypot-info: #3498db;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--honeypot-bg-dark);
+  color: var(--honeypot-text);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global Utility Classes */
+.honeypot-flex {
+  display: flex;
+}
+
+.honeypot-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.honeypot-items-center {
+  align-items: center;
+}
+
+.honeypot-justify-between {
+  justify-content: space-between;
+}
+
+.honeypot-gap-2 {
+  gap: 0.5rem;
+}
+
+.honeypot-gap-4 {
+  gap: 1rem;
+}
+
+.honeypot-w-full {
+  width: 100%;
+}
+
+.honeypot-h-full {
+  height: 100%;
+}
+
+.honeypot-mt-4 {
+  margin-top: 1rem;
+}
+
+.honeypot-mb-4 {
+  margin-bottom: 1rem;
+}
+
+.honeypot-p-4 {
+  padding: 1rem;
+}
+
+.honeypot-rounded {
+  border-radius: 0.25rem;
+}
+
+.honeypot-text-center {
+  text-align: center;
+}

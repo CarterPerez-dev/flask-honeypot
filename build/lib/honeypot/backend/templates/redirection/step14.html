@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Database Access</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .verify-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .verify-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .verify-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .security-warning {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .security-warning h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+        .security-warning h3 i {
+            margin-right: 10px;
+        }
+        .captcha-container {
+            margin: 25px 0;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .captcha-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .captcha-challenge {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .captcha-checkbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .captcha-checkbox input {
+            width: 20px;
+            height: 20px;
+        }
+        .captcha-checkbox label {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .action-button.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .action-button.enabled:hover {
+            background-color: #c0392b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .captcha-image {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+        }
+        .captcha-image::before {
+            content: "3 + 4 = ?";
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, transparent 25%, rgba(0, 0, 0, 0.05) 25%, rgba(0, 0, 0, 0.05) 50%, transparent 50%, transparent 75%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.05));
+            background-size: 4px 4px;
+            padding: 10px 30px;
+        }
+        .captcha-input {
+            margin-top: 15px;
+        }
+        .captcha-input input {
+            width: 100px;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .captcha-input input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">System Root</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Database</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Database Verification</span>
+        </div>
+        
+        <div class="verify-panel">
+            <div class="verify-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <h1>Verify Database Access</h1>
+            <p class="verify-description">Complete verification to access sensitive user information.</p>
+            
+            <div class="security-warning">
+                <h3><i class="fas fa-exclamation-triangle"></i> Access Request Detected</h3>
+                <p>This action will reveal sensitive personal information protected under privacy regulations. 
+                Your access attempt has been logged with your session details.</p>
+                <p><strong>IP:</strong> <span id="user-ip">Loading...</span></p>
+                <p><strong>Session:</strong> <span id="session-id">Loading...</span></p>
+            </div>
+            
+            <div class="captcha-container">
+                <div class="captcha-title">Human Verification Required</div>
+                <div class="captcha-challenge">
+                    <div class="captcha-image"></div>
+                </div>
+                <div class="captcha-input">
+                    <input type="text" id="captcha-value" placeholder="Enter result" maxlength="2" onkeyup="checkCaptcha()">
+                </div>
+            </div>
+            
+            <a href="/system/system/root" class="action-button" id="verify-btn">
+                <i class="fas fa-check-circle"></i> Verify & Continue
+            </a>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Generate random IP and session ID
+            document.getElementById('user-ip').textContent = generateRandomIP();
+            document.getElementById('session-id').textContent = generateRandomSessionId();
+            
+            // Log when captcha value changes
+            document.getElementById('captcha-value').addEventListener('input', function() {
+                logInteraction('captcha_input', {
+                    value: this.value
+                });
+            });
+            
+            // Log when the verify button is clicked
+            document.getElementById('verify-btn').addEventListener('click', function() {
+                logInteraction('button_click', {
+                    button: 'verify_continue'
+                });
+            });
+        });
+        
+        // Generate random IP address
+        function generateRandomIP() {
+            return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+        }
+        
+        // Generate random session ID
+        function generateRandomSessionId() {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            const sessionLength = 24;
+            let result = '';
+            for (let i = 0; i < sessionLength; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Check captcha value
+        function checkCaptcha() {
+            const input = document.getElementById('captcha-value');
+            const button = document.getElementById('verify-btn');
+            
+            // Simple captcha: 3 + 4 = 7
+            if (input.value === '7') {
+                button.classList.add('enabled');
+                logInteraction('captcha_correct');
+            } else {
+                button.classList.remove('enabled');
+            }
+        }
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'database_verification',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Tokens</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .breadcrumb {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+        .token-panel {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .token-icon {
+            font-size: 48px;
+            color: #16a085;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .token-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .token-section {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .token-section h2 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #16a085;
+            display: flex;
+            align-items: center;
+        }
+        .token-section h2 i {
+            margin-right: 10px;
+        }
+        .token-form {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2ecc71;
+        }
+        .token-display {
+            font-family: monospace;
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+            white-space: nowrap;
+            position: relative;
+        }
+        .token-value {
+            user-select: all;
+        }
+        .copy-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #2ecc71;
+            color: white;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .copy-icon:hover {
+            background-color: #27ae60;
+        }
+        .token-list {
+            margin-top: 20px;
+        }
+        .token-item {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .token-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .token-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .token-expires {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .token-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .token-button {
+            border: none;
+            background: none;
+            color: #7f8c8d;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        .token-button:hover {
+            color: #34495e;
+        }
+        .token-button.revoke {
+            color: #e74c3c;
+        }
+        .token-button.revoke:hover {
+            color: #c0392b;
+        }
+        .verification-area {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e8f6f3;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .verification-area h3 {
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #16a085;
+        }
+        .verify-button {
+            display: inline-block;
+            background-color: #16a085;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .verify-button:hover {
+            background-color: #138a72;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            SecureSystem
+        </div>
+        <div class="user-info">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSB0ekUmVkNanJ_NcH8YedBwMNDFlU9pMyERQ&s" alt="Admin">
+            <span class="username">System Administrator</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">User Management</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#">Password Vault</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Authentication Tokens</span>
+        </div>
+        
+        <div class="token-panel">
+            <div class="token-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h1>Authentication Tokens</h1>
+            <p class="token-description">Manage service authentication tokens for secure API access.</p>
+            
+            <div class="token-section">
+                <h2><i class="fas fa-plus-circle"></i> Generate New Token</h2>
+                <div class="token-form">
+                    <div class="form-group">
+                        <label for="token-service">Service Name:</label>
+                        <select id="token-service">
+                            <option value="api">API Access</option>
+                            <option value="database">Database Service</option>
+                            <option value="monitoring">Monitoring Service</option>
+                            <option value="backup">Backup Service</option>
+                            <option value="reporting">Reporting System</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="token-expiry">Expiration:</label>
+                        <select id="token-expiry">
+                            <option value="1">1 Hour</option>
+                            <option value="24">24 Hours</option>
+                            <option value="168" selected>7 Days</option>
+                            <option value="720">30 Days</option>
+                            <option value="0">Never (Not Recommended)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="token-scope">Access Scope:</label>
+                        <select id="token-scope">
+                            <option value="read">Read Only</option>
+                            <option value="write">Read & Write</option>
+                            <option value="admin" selected>Administrative</option>
+                            <option value="system">System Level</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" id="generate-btn" class="verify-button">
+                        Generate Token
+                    </button>
+                </div>
+                
+                <div class="token-display" id="token-result" style="display: none;">
+                    <div class="token-value" id="token-value">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTY4NTEyMzQ1Niwic2NvcGUiOiJhZG1pbiIsImV4cCI6MTY4NTcyODI1Nn0.8NZd9vHkL6FzZ1KjDW3JQ-4Z0IrBm0zfz9L_XcK2o6s</div>
+                    <div class="copy-icon" id="copy-btn" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="token-section">
+                <h2><i class="fas fa-list"></i> Active Tokens</h2>
+                <div class="token-list">
+                    <div class="token-item">
+                        <div class="token-info">
+                            <span class="token-name">Backup Service</span>
+                            <span class="token-expires">Expires in 3 days</span>
+                        </div>
+                        <div class="token-actions">
+                            <button class="token-button">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="token-button revoke">
+                                <i class="fas fa-times-circle"></i> Revoke
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="token-item">
+                        <div class="token-info">
+                            <span class="token-name">Monitoring Service</span>
+                            <span class="token-expires">Expires in 12 hours</span>
+                        </div>
+                        <div class="token-actions">
+                            <button class="token-button">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="token-button revoke">
+                                <i class="fas fa-times-circle"></i> Revoke
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="token-item">
+                        <div class="token-info">
+                            <span class="token-name">API Access</span>
+                            <span class="token-expires">Never expires</span>
+                        </div>
+                        <div class="token-actions">
+                            <button class="token-button">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="token-button revoke">
+                                <i class="fas fa-times-circle"></i> Revoke
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="verification-area">
+                <h3>Additional Security Verification Required</h3>
+                <p>To maintain system security, two-factor authentication is required for sensitive operations.</p>
+                <a href="/system/security/2fa" class="verify-button" id="verify-2fa-btn">
+                    <i class="fas fa-shield-alt"></i> Continue to 2FA Verification
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 SecureSystem Enterprise Solutions. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log the page view to honeypot system
+            logInteraction('page_view');
+            
+            // Generate Token button event
+            document.getElementById('generate-btn').addEventListener('click', function() {
+                // Show the token result
+                document.getElementById('token-result').style.display = 'block';
+                
+                // Log the interaction
+                logInteraction('generate_token', {
+                    service: document.getElementById('token-service').value,
+                    expiry: document.getElementById('token-expiry').value,
+                    scope: document.getElementById('token-scope').value
+                });
+            });
+            
+            // Copy to clipboard
+            document.getElementById('copy-btn').addEventListener('click', function() {
+                const tokenValue = document.getElementById('token-value').textContent;
+                navigator.clipboard.writeText(tokenValue).then(function() {
+                    // Success
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                    
+                    // Log the interaction
+                    logInteraction('copy_token');
+                }.bind(this)).catch(function(err) {
+                    // Failure
+                    console.error('Could not copy text: ', err);
+                });
+            });
+            
+            // Token action buttons
+            document.querySelectorAll('.token-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const isRevoke = this.classList.contains('revoke');
+                    const tokenName = this.closest('.token-item').querySelector('.token-name').textContent;
+                    
+                    if (isRevoke) {
+                        if (confirm(`Are you sure you want to revoke the token for "${tokenName}"?`)) {
+                            // In a real app, this would remove the token
+                            this.closest('.token-item').remove();
+                            
+                            // Log the interaction
+                            logInteraction('revoke_token', {
+                                token_name: tokenName
+                            });
+                        }
+                    } else {
+                        alert(`Token for "${tokenName}" is hidden for security reasons. Generate a new token if needed.`);
+                        
+                        // Log the interaction
+                        logInteraction('view_token', {
+                            token_name: tokenName
+                        });
+                    }
+                });
+            });
+        });
+        
+        // Function to log interactions with the honeypot
+        function logInteraction(interactionType, details = {}) {
+            fetch('/honeypot/log-interaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page_type: 'auth_tokens',
+                    interaction_type: interactionType,
+                    additional_data: {
+                        ...details,
+                        referrer: document.referrer,
+                        resolution: `${window.innerWidth}x${window.innerHeight}`,
+                        user_agent: navigator.userAgent
+                    }
+                })
+            }).catch(error => {
+                console.log('Logging completed');
+            });
+        }
+        
+        // Log when the 2FA verification button is clicked
+        document.getElementById('verify-2fa-btn').addEventListener('click', function() {
+            logInteraction('button_click', {
+                button: 'verify_2fa'
+            });
+        });
+    </script>
+</body>
+</html>

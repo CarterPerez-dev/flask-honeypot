@@ -1,0 +1,2 @@
+[console_scripts]
+honeypot-deploy = honeypot.cli:main
