@@ -1,7 +1,12 @@
+.env.example
+Dockerfile.backend
+Dockerfile.nginx
 LICENSE
 MANIFEST.in
 README.md
+docker-compose.yml
 pyproject.toml
+dist/flask_honeypot-0.1.dev15+g64c4c44.d20250501.tar.gz
 examples/custom_config.py
 examples/simple_honeypot.py
 examples/with_existing_app.py

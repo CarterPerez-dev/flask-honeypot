@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: flask-honeypot
-Version: 0.1.dev16+gefd80f4.d20250501
+Version: 0.1.dev17+g0def423.d20250501
 Summary: A comprehensive honeypot framework with admin dashboard
 Author-email: Carter <support@certgames.com>
 License: MIT
