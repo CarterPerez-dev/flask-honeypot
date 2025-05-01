@@ -9,27 +9,22 @@ def generate_csrf_token():
         session['csrf_token'] = secrets.token_hex(32)
     return session['csrf_token']
 
-def csrf_protect(admin_only=True):
+
+def csrf_protect(): 
     """
-    CSRF protection middleware for admin routes.
-    
-    Args:
-        admin_only (bool): Whether to only check for CSRF on admin routes
-        
-    Returns:
-        function: Decorated route function
+    CSRF protection middleware. Checks unsafe methods.
     """
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+
             if request.method in ['POST', 'PUT', 'DELETE', 'PATCH']:
-                if not admin_only or request.path.startswith('/cracked'):
-                    token = request.headers.get('X-CSRF-TOKEN')
-                    session_token = session.get('csrf_token')
-                    
-                    if not token or not session_token or token != session_token:
-                        return jsonify({"error": "CSRF token validation failed"}), 403
-            
+                token = request.headers.get('X-CSRF-TOKEN')
+                session_token = session.get('csrf_token')
+                if not token or not session_token or token != session_token:
+                    print(f"CSRF Failure: Path={request.path} Header={token} Session={session_token}")
+                    return jsonify({"error": "CSRF token validation failed"}), 403
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+

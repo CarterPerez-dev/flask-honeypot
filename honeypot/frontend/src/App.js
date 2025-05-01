@@ -1,23 +1,66 @@
 // src/App.js
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { getCsrfToken } from './components/csrfHelper';
 import Login from './static/js/login';
 import AdminDashboard from './static/js/admin';
 import './index.css';
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
-  // Check if the user is authenticated
-  const isAuthenticated = document.cookie.includes('honeypot_admin_session=');
-  
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    return <Navigate to="/honey/login" replace />;
-  }
-  
-  // Otherwise, render the children
-  return children;
-};
+  const ProtectedRoute = ({ children }) => {
+   const [isAuthenticated, setIsAuthenticated] = useState(null);
+   const [isLoading, setIsLoading] = useState(true);
+ 
+   useEffect(() => {
+     const verifySession = async () => {
+       setIsLoading(true); 
+       try {
+         const headers = {};
+         const token = getCsrfToken(); 
+         if (token) {
+              headers['X-CSRF-TOKEN'] = token;
+          }
+
+         const response = await fetch('/api/honeypot/angela', {
+            credentials: 'include',
+            headers: headers 
+         });
+ 
+         if (response.ok) { 
+           const data = await response.json();
+           setIsAuthenticated(data.isAuthenticated); 
+         } else if (response.status === 401) { 
+           setIsAuthenticated(false);
+         } else {
+           console.error('Auth check failed with status:', response.status);
+           setIsAuthenticated(false);
+         }
+       } catch (error) {
+         console.error("Network error during authentication check:", error);
+         setIsAuthenticated(false);
+       } finally {
+         setIsLoading(false);
+       }
+     };
+ 
+
+     verifySession();
+ 
+   }, []); 
+
+
+   if (isLoading) {
+     return <div>Checking authentication...</div>; 
+   }
+ 
+
+   if (!isAuthenticated) {
+     return <Navigate to="/honey/login" replace />;
+   }
+
+   return children;
+ };
+ 
+
 
 function App() {
   return (
