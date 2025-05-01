@@ -14,7 +14,6 @@ load_dotenv()
 
 # Create blueprint
 admin_bp = Blueprint('admin', __name__, url_prefix='/honeypot/admin')
-honeypot_bp = Blueprint('honeypot', __name__, url_prefix='/honeypot')
 
 # Get admin password from environment variable
 ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')

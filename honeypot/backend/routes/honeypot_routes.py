@@ -1195,7 +1195,7 @@ def register_routes_with_blueprint(blueprint, handler_function):
             # Register both GET and POST methods for each route
             blueprint.add_url_rule(
                 path, 
-                endpoint=f"honeypot_{category}_{path.replace('/', '_')}",
+                endpoint=f"honeypot_{category}_{path.replace('/', '_').replace('.', '_')}",
                 view_func=handler_function,
                 methods=['GET', 'POST']
             )

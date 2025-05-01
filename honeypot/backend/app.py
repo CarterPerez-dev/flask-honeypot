@@ -13,13 +13,13 @@ from honeypot.backend.helpers.geoip_manager import GeoIPManager
 from honeypot.backend.helpers.proxy_detector import ProxyCache, get_proxy_detector
 
 
-# Global instances for GeoIP readers
+# GeoIP readers
 asn_reader = None
 country_reader = None
 
 def create_app(config=None):
     """
-    Create and configure the Flask application for honeypot functionality
+    Flask application for honeypot config
     
     Args:
         config (dict, optional): Configuration dictionary to override defaults
@@ -29,10 +29,10 @@ def create_app(config=None):
     """
     app = Flask(__name__)
     
-    # Get configuration
+    # Get config
     app_config = get_config()
     
-    # Configure logging
+    # Logging
     logging.basicConfig(
         level=getattr(logging, app_config.LOG_LEVEL),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -40,7 +40,8 @@ def create_app(config=None):
     )
     logger = logging.getLogger(__name__)
     
-    # Apply default configuration
+
+    # Default config
     app.config.update(
         SECRET_KEY=app_config.SECRET_KEY,
         SESSION_TYPE='redis',
@@ -62,11 +63,19 @@ def create_app(config=None):
         HONEYPOT_RATE_PERIOD=app_config.HONEYPOT_RATE_PERIOD
     )
     
-    # Apply custom configuration if provided
+
+###########################################################
+# Apply custom configuration HERE! ########################
+###########################################################
+
     if config:
         app.config.update(config)
-    
-    # Ensure data directory exists
+        
+
+##########################################################   
+###########################################################
+
+
     os.makedirs(app_config.DATA_DIRECTORY, exist_ok=True)
     
     # Initialize GeoIP manager
@@ -79,12 +88,12 @@ def create_app(config=None):
         license_key=app_config.MAXMIND_LICENSE_KEY
     )
     
-    # Auto-update GeoIP databases if configured
+    # Auto-update GeoIP databases
     if app_config.GEOIP_AUTO_UPDATE and app_config.MAXMIND_LICENSE_KEY:
         logger.info("Auto-updating GeoIP databases...")
         geoip_manager.update_databases()
     
-    # Load GeoIP databases if they exist
+    # Load GeoIP databases
     db_info = geoip_manager.get_database_info()
     
     if db_info['asn']['exists']:
@@ -120,56 +129,92 @@ def create_app(config=None):
     # Initialize collections within app context
     with app.app_context():
         try:
+            # Get DB connection
             mongo_db = get_db()
-            if mongo_db:
+
+            if mongo_db is not None:
                 initialize_collections(mongo_db)
                 logger.info("MongoDB collections initialized successfully")
+                
+                try:
+                    paths_cursor = mongo_db.scan_paths.find({"common": True}, {"_id": 0, "path": 1})
+                    common_paths = [item['path'] for item in paths_cursor]
+                    app.config['COMMON_SCAN_PATHS'] = common_paths
+                    logger.info(f"Loaded {len(common_paths)} common scan paths.")
+                except Exception as path_e:
+                    logger.error(f"Error loading common scan paths from DB: {path_e}", exc_info=True)
+                    app.config['COMMON_SCAN_PATHS'] = [] 
             else:
-                logger.error("Failed to get MongoDB database instance for collection initialization")
-        except Exception as e:
-            logger.error(f"Error initializing MongoDB collections: {str(e)}")
 
-        # Initialize proxy detector within app context
-        try:
-            app.config['PROXY_DETECTOR'] = get_proxy_detector(cache=proxy_cache)
-            logger.info("Proxy detector initialized successfully")
-        except Exception as e:
-            logger.error(f"Error initializing proxy detector: {str(e)}")
+                logger.error("Failed to get MongoDB database instance for context setup.")
+                app.config['COMMON_SCAN_PATHS'] = [] 
 
-    # Fix for proper forwarded headers
+            try:
+                app.config['PROXY_DETECTOR'] = get_proxy_detector(cache=proxy_cache)
+                logger.info("Proxy detector initialized successfully")
+            except Exception as proxy_e:
+                logger.error(f"Error initializing proxy detector: {str(proxy_e)}", exc_info=True)
+        except Exception as e: 
+            logger.error(f"Error during app context setup (DB connection/collection init): {str(e)}", exc_info=True)
+
+            app.config.setdefault('COMMON_SCAN_PATHS', [])
+            app.config.setdefault('PROXY_DETECTOR', None) 
+
+
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     
-    # Register blueprints
+    # Blueprints
     from honeypot.backend.routes.admin import admin_bp
-    from honeypot.backend.routes.admin import honeypot_bp
-    from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp
+    from honeypot.backend.routes.honeypot import honeypot_bp
+    from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp, catch_all_honeypot
     from honeypot.backend.routes.honeypot_routes import register_routes_with_blueprint
-    
-    app.register_blueprint(admin_bp, url_prefix='/api/honeypot/admin')
-    app.register_blueprint(honeypot_bp, url_prefix='/api/honeypot')
-    app.register_blueprint(honeypot_pages_bp)
-    
-    # Register routes with honeypot handler
+ 
+
+
+###########################################################
+##########################################################
+# ██████╗    ██████╗  ██╗   ██╗ ████████╗ ███████╗ ███████╗
+# ██╔══██╗  ██╔═══██╗ ██║   ██║ ╚══██╔══╝ ██╔════╝ ██╔════╝
+# ██████╔╝  ██║   ██║ ██║   ██║    ██║    ███████╗ ███████╗
+# ██╔══██╗  ██║   ██║ ██║   ██║    ██║    ██╔════╝ ╚════██║
+# ██║  ██║  ╚██████╔╝ ╚██████╔╝    ██║    ███████║ ███████║
+# ╚═╝  ╚═╝   ╚═════╝   ╚═════╝     ╚═╝    ╚══════╝ ╚══════╝
+###########################################################
+###########################################################
+   
+    app.register_blueprint(admin_bp, url_prefix='/honeypot/admin')
+    app.register_blueprint(honeypot_bp, url_prefix='/honeypot')
+       
+
     register_routes_with_blueprint(
         blueprint=honeypot_pages_bp,
-        handler_function=honeypot_pages_bp.view_functions['catch_all_honeypot']
+        handler_function=catch_all_honeypot
     )
     
-    # Context processor for CSRF token
+    
+    app.register_blueprint(honeypot_pages_bp)   
+    
+    
+###############################################################
+###############################################################
+###############################################################
+
+    # CSRF 
     from honeypot.backend.middleware.csrf_protection import generate_csrf_token
     
     @app.context_processor
     def inject_csrf_token():
         return {'csrf_token': generate_csrf_token()}
     
-    # Helper function to access GeoIP data
+    # Access GeoIP data
     @app.before_request
     def setup_geoip_readers():
         """Make GeoIP readers available in the request context"""
         g.asn_reader = asn_reader
         g.country_reader = country_reader
     
-    # Basic health check endpoint
+
     @app.route('/api/health')
     def health_check():
         return 'Honeypot is running'

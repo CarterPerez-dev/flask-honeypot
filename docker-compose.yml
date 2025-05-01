@@ -39,10 +39,8 @@ services:
       - HONEYPOT_ADMIN_PASSWORD=${HONEYPOT_ADMIN_PASSWORD}
       - HONEYPOT_DATA_DIRECTORY=/app/data
     depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      - mongodb
+      - redis
     networks:
       - honeypot_network
     restart: unless-stopped
