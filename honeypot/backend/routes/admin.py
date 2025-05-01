@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Create blueprint
-angela_bp = Blueprint('angela', __name__, url_prefix=ls'/honeypot/angela')
+angela_bp = Blueprint('angela', __name__)
 
 
 # Get admin password from environment variable
@@ -23,13 +23,13 @@ ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')
 def get_db():
     return current_app.extensions.get('mongodb', {}).get('db')
 
-@admin_bp.route('/csrf-token', methods=['GET'])
+@angela_bp.route('/csrf-token', methods=['GET'])
 def get_csrf_token():
     """Generate and return a CSRF token"""
     token = generate_csrf_token()
     return jsonify({"csrf_token": token})
 
-@admin_bp.route('/login', methods=['POST'])
+@angela_bp.route('/login', methods=['POST'])
 @csrf_protect() 
 def admin_login():
     """Handle admin login authentication"""
@@ -163,7 +163,7 @@ def admin_login():
         return jsonify({"error": "Invalid admin credentials"}), 403
 
 
-@admin_bp.route('/honey/angela', methods=['GET'])
+@angela_bp.route('/honey/angela', methods=['GET'])
 @csrf_protect() 
 def check_auth_status():
     """
@@ -184,7 +184,7 @@ def check_auth_status():
             "isAuthenticated": False
         }), 401
 
-@admin_bp.route('/logout', methods=['POST'])
+@angela_bp.route('/logout', methods=['POST'])
 def admin_logout():
     """Handle admin logout"""
     session.pop('honeypot_admin_logged_in', None)
