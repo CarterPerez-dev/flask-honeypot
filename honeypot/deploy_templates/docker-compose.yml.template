@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   nginx: 
     build:
@@ -35,9 +37,12 @@ services:
       - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/honeypot?authSource=admin
       - SECRET_KEY=${SECRET_KEY}
       - HONEYPOT_ADMIN_PASSWORD=${HONEYPOT_ADMIN_PASSWORD}
+      - HONEYPOT_DATA_DIRECTORY=/app/data
     depends_on:
-      - redis
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - honeypot_network
     restart: unless-stopped
@@ -70,16 +75,15 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - mongodb_data:/data/db
-      # Optional: Mount init scripts if needed
     networks:
       - honeypot_network
     restart: unless-stopped
     healthcheck:
-      test: >
-        mongosh --host localhost:27017 --authenticationDatabase admin -u ${MONGO_USER} -p ${MONGO_PASSWORD} --quiet --eval "db.adminCommand('ping')"
-      interval: 30s
-      timeout: 10s
-      retries: 5 
+      test: mongosh --host localhost:27017 --authenticationDatabase admin -u ${MONGO_USER} -p ${MONGO_PASSWORD} --quiet --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   honeypot_network:
@@ -87,8 +91,6 @@ networks:
 
 volumes:
   honeypot_data: 
-    driver: local
   honeypot_logs: 
-    driver: local
   redis_data: 
-  mongodb_data: 
+  mongodb_data:
