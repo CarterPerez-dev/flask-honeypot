@@ -75,15 +75,16 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - honeypot_network
     restart: unless-stopped
     healthcheck:
-      test: mongosh --host localhost:27017 --authenticationDatabase admin -u ${MONGO_USER} -p ${MONGO_PASSWORD} --quiet --eval "db.adminCommand('ping')"
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "||", "exit", "0"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 90s
 
 networks:
   honeypot_network:

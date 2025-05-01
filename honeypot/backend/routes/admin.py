@@ -14,6 +14,7 @@ load_dotenv()
 
 # Create blueprint
 admin_bp = Blueprint('admin', __name__, url_prefix='/honeypot/admin')
+honeypot_bp = Blueprint('honeypot', __name__, url_prefix='/honeypot')
 
 # Get admin password from environment variable
 ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')
@@ -33,6 +34,7 @@ def admin_login():
     """Handle admin login authentication"""
     data = request.json or {}
     raw_admin_key = data.get('adminKey', '')
+    raw_role = data.get('role', 'basic')  # Default to basic role
     
     # Get client identifier for rate limiting
     client_ip = request.remote_addr
@@ -69,20 +71,22 @@ def admin_login():
             "error": f"Too many failed login attempts. Try again in {minutes_remaining} minutes."
         }), 429
     
-    # Get sanitized inputs
+    # Sanitize inputs
     sanitized_key, key_valid, key_errors = sanitize_admin_key(raw_admin_key)
+    sanitized_role, role_valid, role_errors = sanitize_role(raw_role)
     
     # Create validation context
     validation_context = {
         "validation_time": time.time(),
         "key_errors": key_errors,
+        "role_errors": role_errors,
         "ip_address": client_ip,
         "request_id": secrets.token_hex(8),
-        "total_error_count": len(key_errors)
+        "total_error_count": len(key_errors) + len(role_errors)
     }
     
     # Check admin password
-    if sanitized_key and sanitized_key == ADMIN_PASS:
+    if sanitized_key and key_valid and sanitized_key == ADMIN_PASS:
         # Successful login, clear any failed attempts if db is available
         if db:
             db.admin_login_attempts.delete_many({"ip": client_ip})
@@ -92,15 +96,17 @@ def admin_login():
                 "timestamp": now,
                 "ip": client_ip,
                 "success": True,
-                "adminLogin": True
+                "adminLogin": True,
+                "role": sanitized_role
             })
         
         # Set session
         session['honeypot_admin_logged_in'] = True
         session['admin_last_active'] = now.isoformat()
         session['admin_ip'] = client_ip
+        session['admin_role'] = sanitized_role
         
-        return jsonify({"message": "Authorization successful"}), 200
+        return jsonify({"message": "Authorization successful", "role": sanitized_role}), 200
     else:
         # Failed login attempt
         if db:
@@ -123,7 +129,7 @@ def admin_login():
                             "attempts": attempts,
                             "lastAttempt": now,
                             "blockUntil": block_until,
-                            "validation_errors": validation_context.get("key_errors", [])
+                            "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
                         }}
                     )
                     
@@ -147,7 +153,7 @@ def admin_login():
                         {"$set": {
                             "attempts": attempts,
                             "lastAttempt": now,
-                            "validation_errors": validation_context.get("key_errors", [])
+                            "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
                         }}
                     )
             else:
@@ -156,7 +162,7 @@ def admin_login():
                     "ip": client_ip,
                     "attempts": 1,
                     "lastAttempt": now,
-                    "validation_errors": validation_context.get("key_errors", [])
+                    "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
                 })
             
             # Log the failed attempt
@@ -164,13 +170,13 @@ def admin_login():
                 "timestamp": now,
                 "ip": client_ip,
                 "success": False,
-                "reason": "Invalid admin password",
+                "reason": "Invalid admin credentials",
                 "adminLogin": True,
                 "validation_context": validation_context
             })
         
         # Don't leak info about the validation errors to client
-        return jsonify({"error": "Invalid admin password"}), 403
+        return jsonify({"error": "Invalid admin credentials"}), 403
 
 @admin_bp.route('/logout', methods=['POST'])
 def admin_logout():
@@ -178,13 +184,17 @@ def admin_logout():
     session.pop('honeypot_admin_logged_in', None)
     session.pop('admin_last_active', None)
     session.pop('admin_ip', None)
+    session.pop('admin_role', None)
     
     return jsonify({"message": "Logged out successfully"}), 200
 
-def require_admin():
+def require_admin(minimum_role='basic'):
     """
     Middleware to check if user is authenticated as admin
     
+    Args:
+        minimum_role (str): Minimum required role
+        
     Returns:
         bool: True if properly authenticated
     """
@@ -208,6 +218,20 @@ def require_admin():
             # Error parsing time, invalidate session
             session.pop('honeypot_admin_logged_in', None)
             return False
+    
+    # Check if user has sufficient role privileges
+    user_role = session.get('admin_role', 'basic')
+    role_hierarchy = {
+        'basic': 0,
+        'supervisor': 1,
+        'superadmin': 2
+    }
+    
+    required_level = role_hierarchy.get(minimum_role, 0)
+    user_level = role_hierarchy.get(user_role, 0)
+    
+    if user_level < required_level:
+        return False
     
     # Update last active timestamp
     session['admin_last_active'] = datetime.utcnow().isoformat()

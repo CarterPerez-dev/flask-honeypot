@@ -28,13 +28,13 @@ class Config:
     MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/honeypot')
     
     # GeoIP settings
-    GEOIP_DB_DIRECTORY = os.environ.get('GEOIP_DB_DIRECTORY', None)  # Will default to package dir if None
+    GEOIP_DB_DIRECTORY = os.environ.get('GEOIP_DB_DIRECTORY', None)  
     MAXMIND_LICENSE_KEY = os.environ.get('MAXMIND_LICENSE_KEY', '')
     GEOIP_AUTO_UPDATE = os.environ.get('GEOIP_AUTO_UPDATE', 'true').lower() == 'true'
     
     # Proxy cache settings
-    PROXY_CACHE_DIRECTORY = os.environ.get('PROXY_CACHE_DIRECTORY', None)  # Will default to package dir if None
-    PROXY_CACHE_UPDATE_INTERVAL = int(os.environ.get('PROXY_CACHE_UPDATE_INTERVAL', 24))  # hours
+    PROXY_CACHE_DIRECTORY = os.environ.get('PROXY_CACHE_DIRECTORY', None) 
+    PROXY_CACHE_UPDATE_INTERVAL = int(os.environ.get('PROXY_CACHE_UPDATE_INTERVAL', 24))  
     
     # Honeypot settings
     HONEYPOT_RATE_LIMIT = int(os.environ.get('HONEYPOT_RATE_LIMIT', 5))

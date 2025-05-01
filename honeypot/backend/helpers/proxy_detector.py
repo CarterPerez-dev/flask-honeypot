@@ -6,6 +6,7 @@ import logging
 from datetime import datetime, timedelta
 import ipaddress
 import os
+import json  # Add missing import
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,6 @@ class ProxyCache:
             logger.debug(f"Cache saved: {key}")
         except Exception as e:
             logger.error(f"Error saving cache for {key} to {path}: {e}")
-
 
 
 class ProxyDetector:

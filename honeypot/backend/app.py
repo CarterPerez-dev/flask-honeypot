@@ -8,7 +8,7 @@ import redis
 import logging
 import geoip2.database
 from honeypot.config.settings import get_config
-from honeypot.database.mongodb import init_app as init_db, get_db
+from honeypot.database.mongodb import init_app as init_db, get_db, initialize_collections
 from honeypot.backend.helpers.geoip_manager import GeoIPManager
 from honeypot.backend.helpers.proxy_detector import ProxyCache, get_proxy_detector
 
@@ -114,18 +114,27 @@ def create_app(config=None):
     CORS(app, supports_credentials=True)
     Session(app)
 
+    # Initialize MongoDB
+    init_db(app)
 
-    db = init_db(app) 
-    with app.app_context(): 
-         from honeypot.database.mongodb import initialize_collections
-         mongo_db = get_db() 
-         if mongo_db:
-             initialize_collections(mongo_db)
-         else:
-             logger.error("Failed to get MongoDB database instance for collection initialization.")
-    
+    # Initialize collections within app context
+    with app.app_context():
+        try:
+            mongo_db = get_db()
+            if mongo_db:
+                initialize_collections(mongo_db)
+                logger.info("MongoDB collections initialized successfully")
+            else:
+                logger.error("Failed to get MongoDB database instance for collection initialization")
+        except Exception as e:
+            logger.error(f"Error initializing MongoDB collections: {str(e)}")
 
-         app.config['PROXY_DETECTOR'] = get_proxy_detector(cache=proxy_cache)
+        # Initialize proxy detector within app context
+        try:
+            app.config['PROXY_DETECTOR'] = get_proxy_detector(cache=proxy_cache)
+            logger.info("Proxy detector initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing proxy detector: {str(e)}")
 
     # Fix for proper forwarded headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
@@ -136,14 +145,14 @@ def create_app(config=None):
     from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp
     from honeypot.backend.routes.honeypot_routes import register_routes_with_blueprint
     
-    app.register_blueprint(admin_bp, url_prefix='/honeypot/admin')
-    app.register_blueprint(honeypot_bp, url_prefix='/honeypot')
+    app.register_blueprint(admin_bp, url_prefix='/api/honeypot/admin')
+    app.register_blueprint(honeypot_bp, url_prefix='/api/honeypot')
     app.register_blueprint(honeypot_pages_bp)
     
     # Register routes with honeypot handler
     register_routes_with_blueprint(
         blueprint=honeypot_pages_bp,
-        handler_function=honeypot_bp.view_functions['honeypot_handler']
+        handler_function=honeypot_pages_bp.view_functions['catch_all_honeypot']
     )
     
     # Context processor for CSRF token
@@ -161,7 +170,7 @@ def create_app(config=None):
         g.country_reader = country_reader
     
     # Basic health check endpoint
-    @app.route('/health')
+    @app.route('/api/health')
     def health_check():
         return 'Honeypot is running'
     
