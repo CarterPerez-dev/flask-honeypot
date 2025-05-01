@@ -36,7 +36,7 @@ function AdminDashboard() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/honeypot/admin/logout", {
+      const response = await fetch("/api/honeypot/angela/logout", {
         method: "POST",
         credentials: "include"
       });

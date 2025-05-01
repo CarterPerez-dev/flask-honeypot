@@ -13,46 +13,35 @@ const Login = () => {
   const navigate = useNavigate();
 
 
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const response = await fetch('/api/honeypot/admin/csrf-token', {
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCsrfToken(data.csrf_token);
-          setCsrfTokenState(data.csrf_token); 
-        } else {
-           console.error('Error fetching CSRF token:', response.statusText);
-           setError('Failed to load security token. Please refresh the page.');
-        }
-      } catch (err) {
-        console.error('Error fetching CSRF token:', err);
-        setError('Failed to load security token. Please refresh the page.');
-      }
-    };
-
-    fetchCsrfToken();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
-      const response = await adminFetch('/api/honeypot/admin/login', {
+      // First, get a fresh CSRF token
+      const tokenResponse = await fetch('/api/honeypot/angela/csrf-token', {
+        credentials: 'include'
+      });
+      
+      if (tokenResponse.ok) {
+        const tokenData = await tokenResponse.json();
+        setCsrfToken(tokenData.csrf_token);
+      } else {
+        throw new Error('Failed to get CSRF token');
+      }
+      
+      // Now try login with the fresh token
+      const response = await adminFetch('/api/honeypot/angela/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', 
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ adminKey }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         navigate('/honey/dashboard');
       } else {

@@ -20,7 +20,7 @@ import './index.css';
               headers['X-CSRF-TOKEN'] = token;
           }
 
-         const response = await fetch('/api/honeypot/angela', {
+         const response = await fetch('/api/honeypot/angela/honey/angela', {
             credentials: 'include',
             headers: headers 
          });
