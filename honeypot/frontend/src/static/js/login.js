@@ -1,17 +1,50 @@
-// src/components/Login.js
+// honeypot/frontend/src/static/js/login.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSpider, FaLock, FaExclamationTriangle } from 'react-icons/fa'; 
-import { setCsrfToken, adminFetch } from '../../components/csrfHelper'; 
+import { setCsrfToken } from '../../components/csrfHelper'; 
 import '../css/login.css';
 
 const Login = () => {
   const [adminKey, setAdminKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [csrfToken, setCsrfTokenState] = useState(''); 
+  const [csrfToken, setCsrfTokenState] = useState('');
   const navigate = useNavigate();
 
+  // Get CSRF token on component mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        console.log("Fetching CSRF token...");
+        const response = await fetch('/api/honeypot/angela/csrf-token', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        const text = await response.text();
+        console.log("Raw CSRF response:", text.substring(0, 50) + '...');
+        
+        try {
+          const data = JSON.parse(text);
+          console.log("CSRF token received:", data.csrf_token.substring(0, 5) + '...');
+          setCsrfToken(data.csrf_token); // Store in localStorage
+          setCsrfTokenState(data.csrf_token); // Update component state
+        } catch (e) {
+          console.error("Failed to parse CSRF token response", e);
+          setError("Server configuration error. Please contact admin.");
+        }
+      } catch (err) {
+        console.error('CSRF token fetch error:', err);
+        setError('Connection error. Please refresh the page.');
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,33 +52,55 @@ const Login = () => {
     setError(null);
   
     try {
-      // First, get a fresh CSRF token
-      const tokenResponse = await fetch('/api/honeypot/angela/csrf-token', {
-        credentials: 'include'
-      });
+      // Get the current CSRF token
+      const token = localStorage.getItem('csrf_token');
+      console.log("Using CSRF token:", token ? token.substring(0, 5) + "..." : "none");
       
-      if (tokenResponse.ok) {
-        const tokenData = await tokenResponse.json();
-        setCsrfToken(tokenData.csrf_token);
-      } else {
-        throw new Error('Failed to get CSRF token');
-      }
-      
-      // Now try login with the fresh token
-      const response = await adminFetch('/api/honeypot/angela/login', {
+      // Use direct fetch with debug logging
+      const response = await fetch('/api/honeypot/angela/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token
         },
-        body: JSON.stringify({ adminKey }),
+        credentials: 'include',
+        body: JSON.stringify({ adminKey, role: 'basic' })
       });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        navigate('/honey/dashboard');
-      } else {
-        setError(data.error || 'Invalid login credentials');
+      
+      let responseText;
+      try {
+        responseText = await response.text();
+        console.log("Raw login response:", responseText.substring(0, 100));
+        const data = JSON.parse(responseText);
+        
+        if (response.ok) {
+          console.log("Login successful!");
+          
+          // Verify the session was created
+          try {
+            const verifyResponse = await fetch('/api/honeypot/angela/honey/angela', {
+              credentials: 'include',
+              headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+              }
+            });
+            const verifyData = await verifyResponse.json();
+            console.log("Session verification:", verifyData);
+          } catch (e) {
+            console.warn("Session verification failed:", e);
+          }
+          
+          navigate('/honey/dashboard');
+        } else {
+          console.error("Login failed:", data);
+          setError(data.error || 'Invalid login credentials');
+        }
+      } catch (parseError) {
+        console.error("Failed to parse login response", parseError);
+        console.log("Response text:", responseText);
+        setError("Server returned invalid response. Please try again.");
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -54,7 +109,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="honeypot-login-container">
@@ -89,7 +143,7 @@ const Login = () => {
           <button
             type="submit"
             className="honeypot-login-button"
-            disabled={loading || !csrfToken}
+            disabled={loading}
           >
             {loading ? 'Authenticating...' : 'Login'}
           </button>

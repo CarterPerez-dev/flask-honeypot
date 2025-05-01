@@ -1,20 +1,23 @@
-// honeypot/frontend/components/csrfHelper.js
+// frontend/my-react-app/src/components/csrfHelper.js
 
 /**
  * Helper to manage CSRF tokens for admin requests
  */
 export const getCsrfToken = () => {
+  // First try to get from meta tag
   const metaTag = document.querySelector('meta[name="csrf-token"]');
   if (metaTag) {
     return metaTag.getAttribute('content');
   }
   
+  // Then try localStorage
   return localStorage.getItem('csrf_token');
 };
 
 export const setCsrfToken = (token) => {
   if (token) {
     localStorage.setItem('csrf_token', token);
+    console.log("CSRF token set in localStorage:", token.substring(0, 5) + "...");
   }
 };
 
@@ -27,6 +30,7 @@ export const adminFetch = async (url, options = {}) => {
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
     // Get the current token
     const token = getCsrfToken();
+    console.log("Using CSRF token for request:", token ? (token.substring(0, 5) + "...") : "none");
     
     // Add CSRF header
     const headers = {

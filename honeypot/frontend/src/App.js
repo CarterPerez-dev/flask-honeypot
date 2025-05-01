@@ -1,4 +1,4 @@
-// src/App.js
+// honeypot/frontend/src/App.js
 import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { getCsrfToken } from './components/csrfHelper';
@@ -6,61 +6,58 @@ import Login from './static/js/login';
 import AdminDashboard from './static/js/admin';
 import './index.css';
 
-  const ProtectedRoute = ({ children }) => {
-   const [isAuthenticated, setIsAuthenticated] = useState(null);
-   const [isLoading, setIsLoading] = useState(true);
- 
-   useEffect(() => {
-     const verifySession = async () => {
-       setIsLoading(true); 
-       try {
-         const headers = {};
-         const token = getCsrfToken(); 
-         if (token) {
-              headers['X-CSRF-TOKEN'] = token;
-          }
+const ProtectedRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-         const response = await fetch('/api/honeypot/angela/honey/angela', {
-            credentials: 'include',
-            headers: headers 
-         });
- 
-         if (response.ok) { 
-           const data = await response.json();
-           setIsAuthenticated(data.isAuthenticated); 
-         } else if (response.status === 401) { 
-           setIsAuthenticated(false);
-         } else {
-           console.error('Auth check failed with status:', response.status);
-           setIsAuthenticated(false);
-         }
-       } catch (error) {
-         console.error("Network error during authentication check:", error);
-         setIsAuthenticated(false);
-       } finally {
-         setIsLoading(false);
-       }
-     };
- 
+  useEffect(() => {
+    const verifySession = async () => {
+      setIsLoading(true); 
+      try {
+        const headers = {};
+        const token = getCsrfToken(); 
+        if (token) {
+          headers['X-CSRF-TOKEN'] = token;
+        }
 
-     verifySession();
- 
-   }, []); 
+        console.log("Checking auth status with headers:", headers);
+        const response = await fetch('/api/honeypot/angela/honey/angela', {
+          credentials: 'include',
+          headers: headers 
+        });
 
+        if (response.ok) { 
+          const data = await response.json();
+          console.log("Auth status response:", data);
+          setIsAuthenticated(data.isAuthenticated); 
+        } else if (response.status === 401) { 
+          console.log("Not authenticated (401)");
+          setIsAuthenticated(false);
+        } else {
+          console.error('Auth check failed with status:', response.status);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Network error during authentication check:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-   if (isLoading) {
-     return <div>Checking authentication...</div>; 
-   }
- 
+    verifySession();
+  }, []); 
 
-   if (!isAuthenticated) {
-     return <Navigate to="/honey/login" replace />;
-   }
+  if (isLoading) {
+    return <div className="honeypot-loading">Checking authentication...</div>; 
+  }
 
-   return children;
- };
- 
+  if (!isAuthenticated) {
+    return <Navigate to="/honey/login" replace />;
+  }
 
+  return children;
+};
 
 function App() {
   return (

@@ -15,7 +15,6 @@ load_dotenv()
 # Create blueprint
 angela_bp = Blueprint('angela', __name__)
 
-
 # Get admin password from environment variable
 ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')
 
@@ -27,81 +26,67 @@ def get_db():
 def get_csrf_token():
     """Generate and return a CSRF token"""
     token = generate_csrf_token()
-    return jsonify({"csrf_token": token})
+    # Force content type to be JSON and ensure no caching
+    response = jsonify({"csrf_token": token})
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
 
 @angela_bp.route('/login', methods=['POST'])
-@csrf_protect() 
 def admin_login():
-    """Handle admin login authentication"""
+    """Handle admin login authentication with explicit session management"""
     data = request.json or {}
     raw_admin_key = data.get('adminKey', '')
-    raw_role = data.get('role', 'basic')  
     
-
+    # Get client identifier for rate limiting
     client_ip = request.remote_addr
     
-
+    # Get database connection
     db = get_db()
     
-
-    now = datetime.utcnow()
-    ip_block = None
+    # Debug session state - convert to dict for logging
+    session_dict = {key: session.get(key) for key in list(session.keys())}
+    current_app.logger.info(f"Session before login: {session_dict}")
     
-    if db:
-        ip_block = db.admin_login_attempts.find_one({
-            "ip": client_ip,
-            "blockUntil": {"$gt": now}
-        })
+    # Sanitize inputs - simple sanitization
+    sanitized_key = raw_admin_key.strip() if raw_admin_key else ""
     
-    if ip_block:
-        block_time = ip_block["blockUntil"] - now
-        minutes_remaining = math.ceil(block_time.total_seconds() / 60)
+    # Get CSRF token from header
+    csrf_token = request.headers.get('X-CSRF-TOKEN')
+    if csrf_token:
+        session['csrf_token'] = csrf_token
+        session.modified = True
+    
+    # Check if credentials are valid
+    if sanitized_key and sanitized_key == ADMIN_PASS:
+        # Set session values
+        session['honeypot_admin_logged_in'] = True
+        session['admin_last_active'] = datetime.utcnow().isoformat()
+        session['admin_ip'] = client_ip
         
+        # Force session save
+        session.modified = True
+        
+        # Log successful login for debugging
+        current_app.logger.info(f"Login successful for IP: {client_ip}")
+        current_app.logger.info(f"Session after login: {dict(session)}")
+        
+        # Log to database if available
         if db:
+            db.admin_login_attempts.delete_many({"ip": client_ip})
             db.auditLogs.insert_one({
-                "timestamp": now,
+                "timestamp": datetime.utcnow(),
                 "ip": client_ip,
-                "success": False,
-                "reason": "IP blocked",
+                "success": True,
                 "adminLogin": True
             })
         
         return jsonify({
-            "error": f"Too many failed login attempts. Try again in {minutes_remaining} minutes."
-        }), 429
-     
-
-    validation_context = {
-        "validation_time": time.time(),
-        "key_errors": key_errors,
-        "role_errors": role_errors,
-        "ip_address": client_ip,
-        "request_id": secrets.token_hex(8),
-        "total_error_count": len(key_errors) + len(role_errors)
-    }
-    
-
-    if sanitized_key and key_valid and sanitized_key == ADMIN_PASS:
-        if db:
-            db.admin_login_attempts.delete_many({"ip": client_ip})
-            
-            db.auditLogs.insert_one({
-                "timestamp": now,
-                "ip": client_ip,
-                "success": True,
-                "adminLogin": True,
-                "role": sanitized_role
-            })
-        
-
-        session['honeypot_admin_logged_in'] = True
-        session['admin_last_active'] = now.isoformat()
-        session['admin_ip'] = client_ip
-        session['admin_role'] = sanitized_role
-        
-        return jsonify({"message": "Authorization successful", "role": sanitized_role}), 200
+            "message": "Authorization successful",
+            "session_id": request.cookies.get('session', 'unknown')
+        }), 200
     else:
-
+        # Handle failed login
         if db:
             failed_attempts = db.admin_login_attempts.find_one({"ip": client_ip})
             
@@ -109,26 +94,24 @@ def admin_login():
                 attempts = failed_attempts.get("attempts", 0) + 1
                 
                 if attempts >= 5:
-                    block_minutes = min(1440, 5 * (2 ** (attempts - 5))) 
-                    block_until = now + timedelta(minutes=block_minutes)
+                    block_minutes = min(1440, 5 * (2 ** (attempts - 5)))
+                    block_until = datetime.utcnow() + timedelta(minutes=block_minutes)
                     
                     db.admin_login_attempts.update_one(
                         {"_id": failed_attempts["_id"]},
                         {"$set": {
                             "attempts": attempts,
-                            "lastAttempt": now,
-                            "blockUntil": block_until,
-                            "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
+                            "lastAttempt": datetime.utcnow(),
+                            "blockUntil": block_until
                         }}
                     )
                     
                     db.auditLogs.insert_one({
-                        "timestamp": now,
+                        "timestamp": datetime.utcnow(),
                         "ip": client_ip,
                         "success": False,
                         "reason": "Blocked due to too many attempts",
-                        "adminLogin": True,
-                        "validation_context": validation_context
+                        "adminLogin": True
                     })
                     
                     return jsonify({
@@ -139,49 +122,51 @@ def admin_login():
                         {"_id": failed_attempts["_id"]},
                         {"$set": {
                             "attempts": attempts,
-                            "lastAttempt": now,
-                            "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
+                            "lastAttempt": datetime.utcnow()
                         }}
                     )
             else:
                 db.admin_login_attempts.insert_one({
                     "ip": client_ip,
                     "attempts": 1,
-                    "lastAttempt": now,
-                    "validation_errors": validation_context.get("key_errors", []) + validation_context.get("role_errors", [])
+                    "lastAttempt": datetime.utcnow()
                 })
             
             db.auditLogs.insert_one({
-                "timestamp": now,
+                "timestamp": datetime.utcnow(),
                 "ip": client_ip,
                 "success": False,
                 "reason": "Invalid admin credentials",
-                "adminLogin": True,
-                "validation_context": validation_context
+                "adminLogin": True
             })
         
         return jsonify({"error": "Invalid admin credentials"}), 403
 
-
 @angela_bp.route('/honey/angela', methods=['GET'])
-@csrf_protect() 
 def check_auth_status():
     """
     Checks if the current session belongs to a logged-in and active admin.
     Accessible via GET request.
     """
+    # Log session contents for debugging
+    session_dict = {key: session.get(key) for key in list(session.keys())}
+    current_app.logger.info(f"Auth check - Session: {session_dict}")
+    current_app.logger.info(f"Auth check - Cookies: {request.cookies}")
 
-    is_currently_authenticated = require_admin() 
-
-    if is_currently_authenticated:
-        user_role = session.get('admin_role', 'basic') 
+    is_authenticated = session.get('honeypot_admin_logged_in', False)
+    
+    if is_authenticated:
+        # Update last active time
+        session['admin_last_active'] = datetime.utcnow().isoformat()
+        session.modified = True
+        
         return jsonify({
-            "isAuthenticated": True,
-            "role": user_role
+            "isAuthenticated": True
          }), 200
     else:
         return jsonify({
-            "isAuthenticated": False
+            "isAuthenticated": False,
+            "message": "Not authenticated or session expired"
         }), 401
 
 @angela_bp.route('/logout', methods=['POST'])
@@ -190,17 +175,13 @@ def admin_logout():
     session.pop('honeypot_admin_logged_in', None)
     session.pop('admin_last_active', None)
     session.pop('admin_ip', None)
-    session.pop('admin_role', None)
     
     return jsonify({"message": "Logged out successfully"}), 200
 
-def require_admin(minimum_role='basic'):
+def require_admin():
     """
     Middleware to check if user is authenticated as admin
     
-    Args:
-        minimum_role (str): Minimum required role
-        
     Returns:
         bool: True if properly authenticated
     """
@@ -209,7 +190,7 @@ def require_admin(minimum_role='basic'):
     if not is_authenticated:
         return False
     
-
+    # Check last activity time
     last_active = session.get('admin_last_active')
     if last_active:
         try:
@@ -223,20 +204,7 @@ def require_admin(minimum_role='basic'):
             session.pop('honeypot_admin_logged_in', None)
             return False
     
-    user_role = session.get('admin_role', 'basic')
-    role_hierarchy = {
-        'basic': 0,
-        'supervisor': 1,
-        'superadmin': 2
-    }
-    
-    required_level = role_hierarchy.get(minimum_role, 0)
-    user_level = role_hierarchy.get(user_role, 0)
-    
-    if user_level < required_level:
-        return False
-    
-
+    # Update last active time
     session['admin_last_active'] = datetime.utcnow().isoformat()
     
     return True

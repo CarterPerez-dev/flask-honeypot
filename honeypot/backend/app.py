@@ -6,6 +6,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 import redis
 import logging
+from datetime import datetime, timedelta
 import geoip2.database
 from honeypot.config.settings import get_config
 from honeypot.database.mongodb import init_app as init_db, get_db, initialize_collections
@@ -43,7 +44,6 @@ def create_app(config=None):
 
     # Default config
     app.config.update(
-        SECRET_KEY=app_config.SECRET_KEY,
         SESSION_TYPE='redis',
         SESSION_PERMANENT=True,
         SESSION_USE_SIGNER=True,
@@ -55,13 +55,14 @@ def create_app(config=None):
             password=app_config.REDIS_PASSWORD
         ),
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SECURE=not app_config.DEBUG,
-        JSON_SORT_KEYS=False,
-        PROPAGATE_EXCEPTIONS=True,
-        PRESERVE_CONTEXT_ON_EXCEPTION=False,
-        HONEYPOT_RATE_LIMIT=app_config.HONEYPOT_RATE_LIMIT,
-        HONEYPOT_RATE_PERIOD=app_config.HONEYPOT_RATE_PERIOD
+        SESSION_COOKIE_SECURE=False,  # Set to False for http development
+        SESSION_COOKIE_SAMESITE='Lax',
+        PERMANENT_SESSION_LIFETIME=timedelta(hours=24),
+        SESSION_COOKIE_PATH='/',      # Make sure cookies work across all paths
+        SESSION_COOKIE_DOMAIN=None,   # Will use the application's domain
     )
+    
+    Session(app)  
     
 
 ###########################################################
@@ -205,7 +206,8 @@ def create_app(config=None):
     @app.context_processor
     def inject_csrf_token():
         return {'csrf_token': generate_csrf_token()}
-    
+   
+ 
     # Access GeoIP data
     @app.before_request
     def setup_geoip_readers():
