@@ -165,7 +165,7 @@ def create_app(config=None):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     
     # Blueprints
-    from honeypot.backend.routes.admin import admin_bp
+    from honeypot.backend.routes.admin import angela_bp
     from honeypot.backend.routes.honeypot import honeypot_bp
     from honeypot.backend.routes.honeypot_pages import honeypot_pages_bp, catch_all_honeypot
     from honeypot.backend.routes.honeypot_routes import register_routes_with_blueprint
@@ -183,7 +183,7 @@ def create_app(config=None):
 ###########################################################
 ###########################################################
    
-    app.register_blueprint(admin_bp, url_prefix='/honeypot/admin')
+    app.register_blueprint(angela_bp, url_prefix='/honeypot/angela')
     app.register_blueprint(honeypot_bp, url_prefix='/honeypot')
        
 
@@ -200,7 +200,6 @@ def create_app(config=None):
 ###############################################################
 ###############################################################
 
-    # CSRF 
     from honeypot.backend.middleware.csrf_protection import generate_csrf_token
     
     @app.context_processor

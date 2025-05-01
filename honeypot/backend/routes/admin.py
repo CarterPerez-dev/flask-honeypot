@@ -5,7 +5,6 @@ import time
 import math
 from datetime import datetime, timedelta
 from flask import Blueprint, request, session, jsonify, current_app
-from honeypot.backend.helpers.unhackable import sanitize_admin_key, sanitize_role
 from honeypot.backend.middleware.csrf_protection import generate_csrf_token, csrf_protect
 from functools import wraps
 
@@ -14,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Create blueprint
-admin_bp = Blueprint('admin', __name__, url_prefix='/honeypot/admin')
+angela_bp = Blueprint('angela', __name__, url_prefix=ls'/honeypot/angela')
 
 
 # Get admin password from environment variable
@@ -70,11 +69,7 @@ def admin_login():
         return jsonify({
             "error": f"Too many failed login attempts. Try again in {minutes_remaining} minutes."
         }), 429
-    
-    # Sanitize inputs
-    sanitized_key, key_valid, key_errors = sanitize_admin_key(raw_admin_key)
-    sanitized_role, role_valid, role_errors = sanitize_role(raw_role)
-    
+     
 
     validation_context = {
         "validation_time": time.time(),

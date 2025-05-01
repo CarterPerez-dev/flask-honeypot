@@ -155,13 +155,6 @@ def validate_admin_credentials(admin_key: str, role: str) -> Tuple[bool, List[st
     
     stages_passed += 1
     
-    # ----- STAGE 6: Role Validation -----
-    valid_roles = {"basic", "supervisor", "superadmin"}
-    if role not in valid_roles:
-        errors.append(f"Invalid role. Must be one of: {', '.join(valid_roles)}")
-        return False, errors
-        
-    stages_passed += 1
     
     # ----- STAGE 7: Special Validations -----    
     # Validate excessive repetition of characters (e.g., 'aaaaa')
@@ -430,75 +423,6 @@ def sanitize_admin_key(admin_key: str) -> Tuple[str, bool, List[str]]:
     return sanitized_key, is_valid, errors
 
 
-def sanitize_role(role: str) -> Tuple[str, bool, List[str]]:
-    """
-    Sanitize and validate admin role
-    
-    Args:
-        role: The raw role string to sanitize
-    
-    Returns:
-        Tuple of (sanitized_role, is_valid, error_messages)
-    """
-    valid_roles = {"basic", "supervisor", "superadmin"}
-    errors = []
-    
-    if role is None:
-        return "basic", False, ["Role cannot be None, defaulting to 'basic'"]
-    
-    if not isinstance(role, str):
-        return "basic", False, ["Role must be a string, defaulting to 'basic'"]
-        
-    # Trim whitespace and convert to lowercase for case-insensitive comparison
-    sanitized_role = role.strip().lower()
-    
-    # Map any variant to the correct casing
-    if sanitized_role == "basic" or sanitized_role == "supervisor" or sanitized_role == "superadmin":
-        sanitized_role = sanitized_role  # Keep as is
-    else:
-        errors.append(f"Invalid role '{role}'. Must be one of: basic, supervisor, superadmin")
-        sanitized_role = "basic"  # Default to basic if invalid
-    
-    is_valid = len(errors) == 0
-    
-    return sanitized_role, is_valid, errors
-
-
-def secure_admin_login(admin_key: str, role: str) -> Tuple[bool, str, Dict[str, Any]]:
-    """
-    Comprehensive secure admin login validation and sanitization
-    
-    Args:
-        admin_key: The admin key/password provided by the user
-        role: The requested role
-    
-    Returns:
-        Tuple of (success, message, context)
-    """
-    sanitized_key, key_valid, key_errors = sanitize_admin_key(admin_key)
-    sanitized_role, role_valid, role_errors = sanitize_role(role)
-    
-    context = {
-        "validation_time": time.time(),
-        "key_errors": key_errors,
-        "role_errors": role_errors,
-        "ip_address": None,  # To be filled by caller
-        "request_id": secrets.token_hex(8),
-        "total_error_count": len(key_errors) + len(role_errors)
-    }
-    
-    if not key_valid or not role_valid:
-        logger.warning(f"Input validation failed with {context['total_error_count']} errors")
-        return False, "Input validation failed", context
-    
-    # Create a verification hash for logging/auditing
-    verification_hash = hashlib.sha256(sanitized_key.encode()).hexdigest()
-    
-    context["verification_performed"] = True
-    context["key_hash_snippet"] = verification_hash[:8] + "..." + verification_hash[-8:]
-    
-    return True, "Input validation successful", context
-
 
 # =========================================================================
 # Password Generation
@@ -547,55 +471,6 @@ def generate_secure_password(length: int = 16, special_chars: bool = True) -> st
     return ''.join(password)
 
 
-# =========================================================================
-# Token Generation and Validation
-# =========================================================================
-
-def generate_secure_token(length: int = 32) -> str:
-    """
-    Generate a secure random token
-    
-    Args:
-        length: Byte length of token
-        
-    Returns:
-        str: Base64 encoded token
-    """
-    return base64.urlsafe_b64encode(secrets.token_bytes(length)).decode('utf-8').rstrip('=')
-
-
-def create_hmac_signature(message: str, secret_key: str) -> str:
-    """
-    Create HMAC signature for message
-    
-    Args:
-        message: Message to sign
-        secret_key: Secret key for signing
-        
-    Returns:
-        str: Hex-encoded HMAC signature
-    """
-    return hmac.new(
-        secret_key.encode('utf-8'),
-        message.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-
-
-def verify_hmac_signature(message: str, signature: str, secret_key: str) -> bool:
-    """
-    Verify HMAC signature
-    
-    Args:
-        message: Original message
-        signature: Hex-encoded signature to verify
-        secret_key: Secret key used for signing
-        
-    Returns:
-        bool: True if signature is valid
-    """
-    expected_sig = create_hmac_signature(message, secret_key)
-    return constant_time_compare(signature, expected_sig)
 
 
 # =========================================================================
