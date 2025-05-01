@@ -22,14 +22,10 @@ classifiers=[
         "Topic :: Security",
 ]
 
-# --- NEW Standard Fields ---
+
 authors = [
     { name = "Carter", email = "support@certgames.com" },
 ]
-[project.urls]
-Homepage = "https://github.com/CarterPerez-dev/honeypot-framework" 
-Repository = "https://github.com/CarterPerez-dev/honeypot-framework"
-
 dependencies = [
     "flask>=2.2.0",
     "flask-cors>=3.0.0",
@@ -47,6 +43,21 @@ dependencies = [
     "ipaddress>=1.0.0",
     "requests>=2.27.0",
     "click>=8.1.0",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/CarterPerez-dev/honeypot-framework"
+Repository = "https://github.com/CarterPerez-dev/honeypot-framework"
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "flake8>=5.0.0",
+    "black>=22.10.0",
+    "pytest-cov",
+    "mypy",
 ]
 
 
