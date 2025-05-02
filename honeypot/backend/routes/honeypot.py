@@ -1247,3 +1247,173 @@ def get_html_interactions():
         return jsonify({
             "error": f"Failed to retrieve HTML interactions: {str(e)}"
         }), 500
+        
+        
+@honeypot_bp.route('/combined-analytics', methods=['GET'])
+def combined_honeypot_analytics():
+    """Return combined analytics from both honeypot collections"""
+    if not require_cracked_admin():  
+        return jsonify({"error": "Not authorized"}), 401
+    
+    try:
+        # Get statistics from both collections
+        scan_attempts_count = db.scanAttempts.count_documents({})
+        interactions_count = db.honeypot_interactions.count_documents({})
+        total_attempts = scan_attempts_count + interactions_count
+        
+        # Combine unique IPs from both collections
+        scan_ips = set(db.scanAttempts.distinct("ip"))
+        interaction_ips = set(db.honeypot_interactions.distinct("ip_address"))
+        unique_ips = len(scan_ips.union(interaction_ips))
+        
+        # Combine unique clients
+        scan_clients = set(db.scanAttempts.distinct("clientId"))
+        interaction_clients = set(db.honeypot_interactions.distinct("interaction_id"))
+        unique_clients = len(scan_clients.union(interaction_clients))
+        
+        # Get top paths from both collections
+        paths_data = []
+        
+        # Get paths from scanAttempts
+        if scan_attempts_count > 0:
+            scan_paths_pipeline = [
+                {"$group": {"_id": "$path", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]
+            scan_paths = list(db.scanAttempts.aggregate(scan_paths_pipeline))
+            paths_data.extend(scan_paths)
+        
+        # Get paths from honeypot_interactions
+        if interactions_count > 0:
+            interaction_paths_pipeline = [
+                {"$group": {"_id": "$path", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]
+            interaction_paths = list(db.honeypot_interactions.aggregate(interaction_paths_pipeline))
+            paths_data.extend(interaction_paths)
+        
+        # Combine and sort paths
+        path_counts = {}
+        for item in paths_data:
+            path = item["_id"]
+            count = item["count"]
+            if path in path_counts:
+                path_counts[path] += count
+            else:
+                path_counts[path] = count
+        
+        top_paths = [{"_id": k, "count": v} for k, v in path_counts.items()]
+        top_paths.sort(key=lambda x: x["count"], reverse=True)
+        top_paths = top_paths[:10]
+        
+        # Similar approach for IPs
+        ips_data = []
+        
+        # Get IPs from scanAttempts
+        if scan_attempts_count > 0:
+            scan_ips_pipeline = [
+                {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]
+            scan_ips_list = list(db.scanAttempts.aggregate(scan_ips_pipeline))
+            ips_data.extend(scan_ips_list)
+        
+        # Get IPs from honeypot_interactions
+        if interactions_count > 0:
+            interaction_ips_pipeline = [
+                {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]
+            interaction_ips_list = list(db.honeypot_interactions.aggregate(interaction_ips_pipeline))
+            ips_data.extend(interaction_ips_list)
+        
+        # Combine and sort IPs
+        ip_counts = {}
+        for item in ips_data:
+            ip = item["_id"]
+            count = item["count"]
+            if ip in ip_counts:
+                ip_counts[ip] += count
+            else:
+                ip_counts[ip] = count
+        
+        top_ips = [{"_id": k, "count": v} for k, v in ip_counts.items()]
+        top_ips.sort(key=lambda x: x["count"], reverse=True)
+        top_ips = top_ips[:10]
+        
+        # Get recent activity (combine both collections)
+        recent_scan_attempts = list(db.scanAttempts.find().sort("timestamp", -1).limit(10))
+        recent_interactions = list(db.honeypot_interactions.find().sort("timestamp", -1).limit(10))
+        
+        # Format scan attempts
+        for item in recent_scan_attempts:
+            item["_id"] = str(item["_id"])
+            if isinstance(item.get("timestamp"), datetime):
+                item["timestamp"] = item["timestamp"].isoformat()
+            # Normalize data structure
+            item["ip"] = item.get("ip")
+            item["path"] = item.get("path", "")
+            item["type"] = item.get("type", "page_view")
+        
+        # Format interactions
+        for item in recent_interactions:
+            item["_id"] = str(item["_id"])
+            if isinstance(item.get("timestamp"), datetime):
+                item["timestamp"] = item["timestamp"].isoformat()
+            # Normalize data structure
+            item["ip"] = item.get("ip_address")
+            item["path"] = item.get("path", "")
+            item["type"] = item.get("interaction_type", "page_view")
+        
+        # Combine, sort by timestamp, and limit to 20
+        combined_activity = recent_scan_attempts + recent_interactions
+        combined_activity.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        recent_activity = combined_activity[:20]
+        
+        # Count detected threats
+        threats_detected = (
+            db.scanAttempts.count_documents({
+                "$or": [
+                    {"is_scanner": True},
+                    {"is_port_scan": True},
+                    {"suspicious_params": True},
+                    {"bot_indicators": {"$exists": True, "$ne": []}}
+                ]
+            }) +
+            db.honeypot_interactions.count_documents({
+                "$or": [
+                    {"is_scanner": True},
+                    {"is_port_scan": True},
+                    {"suspicious_params": True}
+                ]
+            })
+        )
+        
+        return jsonify({
+            "total_attempts": total_attempts,
+            "unique_ips": unique_ips,
+            "unique_clients": unique_clients,
+            "threats_detected": threats_detected,
+            "top_paths": top_paths,
+            "top_ips": top_ips,
+            "recent_activity": recent_activity
+        }), 200
+    except Exception as e:
+        logger.error(f"Error in combined honeypot analytics: {str(e)}")
+        # Return empty data with 200 status
+        return jsonify({
+            "total_attempts": 0,
+            "unique_ips": 0,
+            "unique_clients": 0,
+            "threats_detected": 0,
+            "top_paths": [],
+            "top_ips": [],
+            "recent_activity": []
+        }), 200
+
+        
+        

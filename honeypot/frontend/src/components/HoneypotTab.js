@@ -1,4 +1,3 @@
-// src/components/cracked/tabs/HoneypotTab.js
 import React, { useState, useEffect, useCallback } from "react";
 import { 
   FaSpider, FaSync, FaSpinner, FaExclamationTriangle, FaFilter, 
@@ -29,8 +28,7 @@ const HoneypotTab = () => {
   const [sortField, setSortField] = useState("timestamp");
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedInteraction, setSelectedInteraction] = useState(null);
-  const [viewMode, setViewMode] = useState("overview"); // overview, interactions, details
-
+  const [viewMode, setViewMode] = useState("overview"); 
   // Chart colors
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57'];
 
