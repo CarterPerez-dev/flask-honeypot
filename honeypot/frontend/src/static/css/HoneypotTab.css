@@ -1,59 +1,5 @@
 /* HoneypotTab.css - Enhanced Professional Design */
 
-:root {
-  --hp-bg-dark: #080a1a;
-  --hp-bg-medium: #0f1225;
-  --hp-bg-card: #141832;
-  --hp-accent-primary: #6543cc;
-  --hp-accent-secondary: #ff4c8b;
-  --hp-accent-tertiary: #00c6ff;
-  --hp-accent-quaternary: #72e06a;
-  --hp-accent-warning: #ff9d00;
-  --hp-accent-danger: #ff4563;
-  --hp-text-primary: #f0f2ff;
-  --hp-text-secondary: #9da8b9;
-  --hp-text-tertiary: #636c80;
-  --hp-border-light: #252a3c;
-  --hp-border-medium: #1e2130;
-  --hp-border-heavy: #323752;
-  --hp-input-bg: rgba(10, 12, 28, 0.5);
-  --hp-card-bg: rgba(16, 18, 35, 0.7);
-  --hp-card-bg-hover: rgba(20, 22, 45, 0.8);
-  --hp-gradient-purple: linear-gradient(135deg, #6543cc, #8a58fc);
-  --hp-gradient-pink: linear-gradient(135deg, #ff4c8b, #ff7950);
-  --hp-gradient-blue: linear-gradient(135deg, #00c6ff, #4d8cff);
-  --hp-gradient-green: linear-gradient(135deg, #40c463, #72e06a);
-  --hp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --hp-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --hp-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --hp-glow-purple: 0 0 15px rgba(134, 88, 252, 0.5);
-  --hp-glow-pink: 0 0 15px rgba(255, 76, 139, 0.5);
-  --hp-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
-  --hp-white-10: rgba(255, 255, 255, 0.1);
-  --hp-white-20: rgba(255, 255, 255, 0.2);
-  --hp-black-10: rgba(0, 0, 0, 0.1);
-  --hp-black-20: rgba(0, 0, 0, 0.2);
-  --hp-black-50: rgba(0, 0, 0, 0.5);
-  --hp-status-success: #2ecc71;
-  --hp-status-warning: #f39c12;
-  --hp-status-danger: #e74c3c;
-  --hp-status-info: #3498db;
-  --hp-animation-duration: 0.3s;
-  --hp-border-radius-sm: 8px;
-  --hp-border-radius-md: 12px;
-  --hp-border-radius-lg: 16px;
-  --hp-border-radius-xl: 24px;
-  --hp-font-size-xs: 0.75rem;
-  --hp-font-size-sm: 0.875rem;
-  --hp-font-size-md: 1rem;
-  --hp-font-size-lg: 1.125rem;
-  --hp-font-size-xl: 1.25rem;
-  --hp-font-size-2xl: 1.5rem;
-  --hp-transition-fast: 0.15s ease;
-  --hp-transition-normal: 0.3s ease;
-  --hp-transition-slow: 0.5s ease;
-}
-
 /* Main Tab Styles */
 .honeypot-tab {
   display: flex;

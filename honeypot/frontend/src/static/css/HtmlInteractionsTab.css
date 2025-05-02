@@ -1,60 +1,6 @@
 /* HtmlInteractionsTab.css - Enhanced Professional Design */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
 
-:root {
-  --html-bg-dark: #080a1a;
-  --html-bg-medium: #0f1225;
-  --html-bg-card: #141832;
-  --html-accent-primary: #8252f4;
-  --html-accent-secondary: #ff4c8b;
-  --html-accent-tertiary: #50bffe;
-  --html-accent-quaternary: #72e06a;
-  --html-accent-warning: #ffb84d;
-  --html-accent-danger: #ff5472;
-  --html-text-primary: #f0f2ff;
-  --html-text-secondary: #a8b9d0;
-  --html-text-tertiary: #6a7a99;
-  --html-border-light: #252a3c;
-  --html-border-medium: #1e2130;
-  --html-border-heavy: #323752;
-  --html-input-bg: rgba(10, 12, 28, 0.5);
-  --html-card-bg: rgba(16, 18, 35, 0.7);
-  --html-card-bg-hover: rgba(20, 22, 45, 0.8);
-  --html-gradient-purple: linear-gradient(135deg, #6543cc, #8a58fc);
-  --html-gradient-pink: linear-gradient(135deg, #ff4c8b, #ff7950);
-  --html-gradient-blue: linear-gradient(135deg, #00c6ff, #4d8cff);
-  --html-gradient-green: linear-gradient(135deg, #40c463, #72e06a);
-  --html-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --html-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --html-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --html-glow-purple: 0 0 15px rgba(134, 88, 252, 0.5);
-  --html-glow-pink: 0 0 15px rgba(255, 76, 139, 0.5);
-  --html-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
-  --html-white-10: rgba(255, 255, 255, 0.1);
-  --html-white-20: rgba(255, 255, 255, 0.2);
-  --html-black-10: rgba(0, 0, 0, 0.1);
-  --html-black-20: rgba(0, 0, 0, 0.2);
-  --html-black-50: rgba(0, 0, 0, 0.5);
-  --html-status-success: #2ecc71;
-  --html-status-warning: #f39c12;
-  --html-status-danger: #e74c3c;
-  --html-status-info: #3498db;
-  --html-animation-duration: 0.3s;
-  --html-border-radius-sm: 8px;
-  --html-border-radius-md: 12px;
-  --html-border-radius-lg: 16px;
-  --html-border-radius-xl: 24px;
-  --html-font-size-xs: 0.75rem;
-  --html-font-size-sm: 0.875rem;
-  --html-font-size-md: 1rem;
-  --html-font-size-lg: 1.125rem;
-  --html-font-size-xl: 1.25rem;
-  --html-font-size-2xl: 1.5rem;
-  --html-transition-fast: 0.15s ease;
-  --html-transition-normal: 0.3s ease;
-  --html-transition-slow: 0.5s ease;
-}
-
 /* Main Tab Styles */
 .html-interactions-tab {
   display: flex;

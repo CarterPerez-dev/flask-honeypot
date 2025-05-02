@@ -339,13 +339,13 @@ const OverviewTab = () => {
             </div>
           </div>
           
-          <div className="honeypot-admin-status-item honeypot-admin-status-warning">
+          <div className="honeypot-admin-status-item honeypot-admin-status-ok">
             <div className="honeypot-admin-status-icon">
               <FaHdd />
             </div>
             <div className="honeypot-admin-status-content">
-              <div className="honeypot-admin-status-label">Data Retention</div>
-              <div className="honeypot-admin-status-value">76% Capacity</div>
+              <div className="honeypot-admin-status-label">Lure Activation</div>
+              <div className="honeypot-admin-status-value">99.99% Capacity</div>
             </div>
           </div>
         </div>
