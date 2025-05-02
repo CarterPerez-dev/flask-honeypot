@@ -1,516 +1,934 @@
-/* src/static/css/admin.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap');
+
 :root {
-  --honeypot-bg-dark: #121212;
-  --honeypot-bg-card: #1e1e1e;
-  --honeypot-accent: #6543cc;
-  --honeypot-accent-hover: #7b54e8;
-  --honeypot-accent-glow: #8a58fc;
-  --honeypot-secondary: #ff4c8b;
-  --honeypot-secondary-hover: #ff6ba1;
-  --honeypot-text: #e2e2e2;
-  --honeypot-text-secondary: #9da8b9;
-  --honeypot-border: #252a3c;
-  --honeypot-input-bg: rgba(0, 0, 0, 0.2);
-  --honeypot-gradient-primary: linear-gradient(135deg, #6543cc, #8a58fc);
-  --honeypot-gradient-secondary: linear-gradient(135deg, #ff4c8b, #ff7950);
-  --honeypot-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --honeypot-glow: 0 0 15px rgba(134, 88, 252, 0.5);
+  /* Theme Variables - Default Theme (Purple) */
+  --admin-theme-name: "Cyber Purple";
   
-  /* Status Colors */
-  --honeypot-success: #2ecc71;
-  --honeypot-error: #e74c3c;
-  --honeypot-warning: #f39c12;
-  --honeypot-info: #3498db;
+  /* Background Colors */
+  --admin-bg-darkest: #0a0b14;
+  --admin-bg-dark: #121525;
+  --admin-bg-medium: #1a1f38;
+  --admin-bg-card: #22283e;
+  --admin-bg-card-hover: #2a3149;
+  --admin-bg-elevated: #2e3655;
+  
+  /* Primary Accent Colors */
+  --admin-primary: #7048e8;
+  --admin-primary-hover: #7e5af0;
+  --admin-primary-active: #6039d1;
+  --admin-primary-muted: rgba(112, 72, 232, 0.2);
+  --admin-primary-glow: rgba(112, 72, 232, 0.5);
+  
+  /* Secondary Accent Colors */
+  --admin-secondary: #ff4c8b;
+  --admin-secondary-hover: #ff689e;
+  --admin-secondary-active: #e73c7a;
+  --admin-secondary-muted: rgba(255, 76, 139, 0.2);
+  --admin-secondary-glow: rgba(255, 76, 139, 0.5);
+  
+  /* Tertiary Accent Colors */
+  --admin-tertiary: #50bffe;
+  --admin-tertiary-hover: #6acaff;
+  --admin-tertiary-active: #3aa9f5;
+  --admin-tertiary-muted: rgba(80, 191, 254, 0.2);
+  --admin-tertiary-glow: rgba(80, 191, 254, 0.5);
+  
+  /* Quaternary Accent Colors */
+  --admin-quaternary: #72e06a;
+  --admin-quaternary-hover: #85e97e;
+  --admin-quaternary-active: #61cc5a;
+  --admin-quaternary-muted: rgba(114, 224, 106, 0.2);
+  --admin-quaternary-glow: rgba(114, 224, 106, 0.5);
+  
+  /* Text Colors */
+  --admin-text-primary: #f0f2ff;
+  --admin-text-secondary: #a8b9d0;
+  --admin-text-tertiary: #6c7a9c;
+  --admin-text-success: #4CD964;
+  --admin-text-warning: #FFCC00;
+  --admin-text-danger: #FF3B30;
+  
+  /* Status/Alert Colors */
+  --admin-success: #4CD964;
+  --admin-success-bg: rgba(76, 217, 100, 0.15);
+  --admin-success-border: rgba(76, 217, 100, 0.3);
+  
+  --admin-warning: #FFCC00;
+  --admin-warning-bg: rgba(255, 204, 0, 0.15);
+  --admin-warning-border: rgba(255, 204, 0, 0.3);
+  
+  --admin-danger: #FF3B30;
+  --admin-danger-bg: rgba(255, 59, 48, 0.15);
+  --admin-danger-border: rgba(255, 59, 48, 0.3);
+  
+  --admin-info: #5AC8FA;
+  --admin-info-bg: rgba(90, 200, 250, 0.15);
+  --admin-info-border: rgba(90, 200, 250, 0.3);
+  
+  /* Border Colors */
+  --admin-border-light: rgba(255, 255, 255, 0.07);
+  --admin-border-medium: rgba(255, 255, 255, 0.12);
+  --admin-border-heavy: rgba(255, 255, 255, 0.18);
+  
+  /* Shadow Effects */
+  --admin-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --admin-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --admin-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.3);
+  --admin-shadow-primary: 0 5px 15px var(--admin-primary-glow);
+  --admin-shadow-secondary: 0 5px 15px var(--admin-secondary-glow);
+  
+  /* Gradient Effects */
+  --admin-gradient-primary: linear-gradient(135deg, var(--admin-primary), #925cf1);
+  --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #ff7950);
+  --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #5483ff);
+  --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #3fdc92);
+  --admin-gradient-dark: linear-gradient(135deg, var(--admin-bg-dark), var(--admin-bg-medium));
+  
+  /* Z-index Layers */
+  --admin-z-sidebar: 100;
+  --admin-z-header: 90;
+  --admin-z-dropdown: 110;
+  --admin-z-modal: 1000;
+  
+  /* Animation Speed */
+  --admin-transition-fast: 0.15s ease;
+  --admin-transition-normal: 0.25s ease;
+  --admin-transition-slow: 0.5s ease;
+  
+  /* Border Radius */
+  --admin-radius-sm: 6px;
+  --admin-radius-md: 10px;
+  --admin-radius-lg: 16px;
+  --admin-radius-xl: 24px;
+  
+  /* Font Sizes */
+  --admin-font-xs: 0.75rem;  /* 12px */
+  --admin-font-sm: 0.875rem; /* 14px */
+  --admin-font-md: 1rem;     /* 16px */
+  --admin-font-lg: 1.125rem; /* 18px */
+  --admin-font-xl: 1.25rem;  /* 20px */
+  --admin-font-2xl: 1.5rem;  /* 24px */
+  --admin-font-3xl: 1.875rem; /* 30px */
+  
+  /* Spacing */
+  --admin-spacing-xs: 0.25rem;  /* 4px */
+  --admin-spacing-sm: 0.5rem;   /* 8px */
+  --admin-spacing-md: 1rem;     /* 16px */
+  --admin-spacing-lg: 1.5rem;   /* 24px */
+  --admin-spacing-xl: 2rem;     /* 32px */
+  --admin-spacing-2xl: 2.5rem;  /* 40px */
+  --admin-spacing-3xl: 3rem;    /* 48px */
+  
+  /* Element Sizes */
+  --admin-sidebar-width: 280px;
+  --admin-sidebar-collapsed-width: 70px;
+  --admin-header-height: 70px;
+  --admin-footer-height: 50px;
+  
+  /* Grid Breakpoints */
+  --admin-breakpoint-sm: 576px;
+  --admin-breakpoint-md: 768px;
+  --admin-breakpoint-lg: 992px;
+  --admin-breakpoint-xl: 1200px;
 }
 
-/* Reset */
-*, *::before, *::after {
+/* Cyberpunk Theme */
+.theme-cyberpunk {
+  --admin-theme-name: "Cyberpunk";
+  
+  /* Background */
+  --admin-bg-darkest: #0a0a0c;
+  --admin-bg-dark: #151419;
+  --admin-bg-medium: #1e1c25;
+  --admin-bg-card: #252230;
+  --admin-bg-card-hover: #2d293d;
+  --admin-bg-elevated: #332e48;
+  
+  /* Primary = Neon Yellow */
+  --admin-primary: #f3f00a;
+  --admin-primary-hover: #ffff0f;
+  --admin-primary-active: #d9d80a;
+  --admin-primary-muted: rgba(243, 240, 10, 0.2);
+  --admin-primary-glow: rgba(243, 240, 10, 0.4);
+  
+  /* Secondary = Neon Pink */
+  --admin-secondary: #ff2e97;
+  --admin-secondary-hover: #ff4ca7;
+  --admin-secondary-active: #e01f85;
+  --admin-secondary-muted: rgba(255, 46, 151, 0.2);
+  --admin-secondary-glow: rgba(255, 46, 151, 0.4);
+  
+  /* Tertiary = Neon Blue */
+  --admin-tertiary: #0af0f0;
+  --admin-tertiary-hover: #2cffff;
+  --admin-tertiary-active: #05d1d1;
+  --admin-tertiary-muted: rgba(10, 240, 240, 0.2);
+  --admin-tertiary-glow: rgba(10, 240, 240, 0.4);
+  
+  /* Quaternary = Neon Green */
+  --admin-quaternary: #17ff6d;
+  --admin-quaternary-hover: #32ff7f;
+  --admin-quaternary-active: #0ce059;
+  --admin-quaternary-muted: rgba(23, 255, 109, 0.2);
+  --admin-quaternary-glow: rgba(23, 255, 109, 0.4);
+  
+  /* Gradients */
+  --admin-gradient-primary: linear-gradient(135deg, var(--admin-primary), #ff8800);
+  --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #fc0077);
+  --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #00a2ff);
+  --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #00ff9d);
+}
+
+/* Dark Ocean Theme */
+.theme-dark-ocean {
+  --admin-theme-name: "Dark Ocean";
+  
+  /* Background */
+  --admin-bg-darkest: #03070e;
+  --admin-bg-dark: #070e19;
+  --admin-bg-medium: #0e1726;
+  --admin-bg-card: #152031;
+  --admin-bg-card-hover: #1d293e;
+  --admin-bg-elevated: #243244;
+  
+  /* Primary = Deep Blue */
+  --admin-primary: #1e90ff;
+  --admin-primary-hover: #3da0ff;
+  --admin-primary-active: #0f7ae0;
+  --admin-primary-muted: rgba(30, 144, 255, 0.2);
+  --admin-primary-glow: rgba(30, 144, 255, 0.5);
+  
+  /* Secondary = Teal */
+  --admin-secondary: #05c3b6;
+  --admin-secondary-hover: #0fd3c5;
+  --admin-secondary-active: #04a89c;
+  --admin-secondary-muted: rgba(5, 195, 182, 0.2);
+  --admin-secondary-glow: rgba(5, 195, 182, 0.5);
+  
+  /* Tertiary = Light Blue */
+  --admin-tertiary: #00a1e0;
+  --admin-tertiary-hover: #10b5f0;
+  --admin-tertiary-active: #0088c2;
+  --admin-tertiary-muted: rgba(0, 161, 224, 0.2);
+  --admin-tertiary-glow: rgba(0, 161, 224, 0.5);
+  
+  /* Quaternary = Aqua */
+  --admin-quaternary: #00e0d5;
+  --admin-quaternary-hover: #12f1e5;
+  --admin-quaternary-active: #00c2b8;
+  --admin-quaternary-muted: rgba(0, 224, 213, 0.2);
+  --admin-quaternary-glow: rgba(0, 224, 213, 0.5);
+  
+  /* Gradients */
+  --admin-gradient-primary: linear-gradient(135deg, var(--admin-primary), #207cca);
+  --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #05a79a);
+  --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #0090c5);
+  --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #00c2b8);
+}
+
+/* Blood Red Theme */
+.theme-blood-red {
+  --admin-theme-name: "Blood Red";
+  
+  /* Background */
+  --admin-bg-darkest: #0c0203;
+  --admin-bg-dark: #150506;
+  --admin-bg-medium: #230a0c;
+  --admin-bg-card: #2e0d10;
+  --admin-bg-card-hover: #3b1114;
+  --admin-bg-elevated: #461519;
+  
+  /* Primary = Blood Red */
+  --admin-primary: #e1132a;
+  --admin-primary-hover: #f02437;
+  --admin-primary-active: #c50f23;
+  --admin-primary-muted: rgba(225, 19, 42, 0.2);
+  --admin-primary-glow: rgba(225, 19, 42, 0.5);
+  
+  /* Secondary = Dark Crimson */
+  --admin-secondary: #9e0e1c;
+  --admin-secondary-hover: #b21020;
+  --admin-secondary-active: #870c18;
+  --admin-secondary-muted: rgba(158, 14, 28, 0.2);
+  --admin-secondary-glow: rgba(158, 14, 28, 0.5);
+  
+  /* Tertiary = Dark Orange */
+  --admin-tertiary: #d93f0c;
+  --admin-tertiary-hover: #eb4c13;
+  --admin-tertiary-active: #be3709;
+  --admin-tertiary-muted: rgba(217, 63, 12, 0.2);
+  --admin-tertiary-glow: rgba(217, 63, 12, 0.5);
+  
+  /* Quaternary = Vermilion */
+  --admin-quaternary: #c42626;
+  --admin-quaternary-hover: #d62e2e;
+  --admin-quaternary-active: #b11f1f;
+  --admin-quaternary-muted: rgba(196, 38, 38, 0.2);
+  --admin-quaternary-glow: rgba(196, 38, 38, 0.5);
+  
+  /* Gradients */
+  --admin-gradient-primary: linear-gradient(135deg, var(--admin-primary), #a80b1c);
+  --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #770915);
+  --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #aa3109);
+  --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #9c1e1e);
+}
+
+/* Global Reset */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-}
-
-
-/* Main Layout */
-.honeypot-admin-dashboard {
   margin: 0;
   padding: 0;
+  transition: background-color var(--admin-transition-normal),
+              border-color var(--admin-transition-normal),
+              color var(--admin-transition-normal),
+              box-shadow var(--admin-transition-normal);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  color: var(--admin-text-primary);
+  background-color: var(--admin-bg-darkest);
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Admin Dashboard Layout */
+.honeypot-admin-dashboard {
+  display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: var(--honeypot-bg-dark);
-  background-image: 
-    radial-gradient(circle at 15% 25%, rgba(26, 20, 64, 0.4) 0%, transparent 45%),
-    radial-gradient(circle at 75% 65%, rgba(42, 26, 89, 0.3) 0%, transparent 40%);
-  display: flex;
   position: relative;
   overflow: hidden;
+  background-color: var(--admin-bg-darkest);
 }
 
-/* Sidebar Styles */
+/* Sidebar Styling */
 .honeypot-admin-sidebar {
-  width: 250px;
+  width: var(--admin-sidebar-width);
   height: 100vh;
-  background-color: var(--honeypot-bg-card);
-  border-right: 1px solid var(--honeypot-border);
+  background-color: var(--admin-bg-dark);
+  border-right: 1px solid var(--admin-border-light);
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.3s ease;
+  position: sticky;
+  top: 0;
+  left: 0;
+  transition: width var(--admin-transition-normal),
+              transform var(--admin-transition-normal);
+  z-index: var(--admin-z-sidebar);
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--honeypot-accent) var(--honeypot-bg-card);
+  overflow-x: hidden;
+  box-shadow: var(--admin-shadow-md);
 }
 
-.honeypot-admin-sidebar::-webkit-scrollbar {
-  width: 6px;
+.honeypot-admin-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 15% 15%, var(--admin-primary-muted), transparent 60%);
+  opacity: 0.5;
+  z-index: -1;
 }
 
-.honeypot-admin-sidebar::-webkit-scrollbar-track {
-  background: var(--honeypot-bg-card);
+.honeypot-admin-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: var(--admin-gradient-primary);
+  z-index: 1;
 }
 
-.honeypot-admin-sidebar::-webkit-scrollbar-thumb {
-  background-color: var(--honeypot-accent);
-  border-radius: 6px;
-}
-
-.nav-collapsed .honeypot-admin-sidebar {
-  width: 70px;
+.honeypot-admin-dashboard.nav-collapsed .honeypot-admin-sidebar {
+  width: var(--admin-sidebar-collapsed-width);
 }
 
 .honeypot-admin-sidebar-header {
-  padding: 15px;
+  padding: var(--admin-spacing-lg) var(--admin-spacing-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--honeypot-border);
+  position: relative;
+  border-bottom: 1px solid var(--admin-border-light);
 }
 
 .honeypot-admin-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--admin-spacing-sm);
+  color: var(--admin-text-primary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .honeypot-admin-logo svg {
+  min-width: 24px;
+  min-height: 24px;
+  width: 24px;
+  height: 24px;
   font-size: 24px;
-  color: var(--honeypot-accent);
+  color: var(--admin-primary);
+  filter: drop-shadow(0 0 5px var(--admin-primary-glow));
+  animation: pulse-light 3s infinite alternate;
+}
+
+@keyframes pulse-light {
+  0% {
+    filter: drop-shadow(0 0 3px var(--admin-primary-glow));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px var(--admin-primary-glow));
+  }
 }
 
 .honeypot-admin-logo h1 {
-  font-size: 18px;
-  margin: 0;
-  background: var(--honeypot-gradient-primary);
+  font-size: var(--admin-font-lg);
+  white-space: nowrap;
+  background: var(--admin-gradient-primary);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  transition: opacity 0.3s ease;
+  font-family: 'Orbitron', sans-serif;
+  margin-left: var(--admin-spacing-sm);
+  transition: opacity var(--admin-transition-fast),
+              transform var(--admin-transition-fast);
 }
 
 .nav-collapsed .honeypot-admin-logo h1 {
   opacity: 0;
-  width: 0;
-  overflow: hidden;
+  transform: translateX(-20px);
+  position: absolute;
 }
 
 .honeypot-admin-collapse-btn {
-  background: none;
-  border: none;
-  color: var(--honeypot-text-secondary);
-  cursor: pointer;
-  padding: 5px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+  background-color: var(--admin-bg-medium);
+  border: 1px solid var(--admin-border-light);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+  position: relative;
+  z-index: 5;
 }
 
 .honeypot-admin-collapse-btn:hover {
-  background: var(--honeypot-input-bg);
-  color: var(--honeypot-text);
+  background-color: var(--admin-bg-card-hover);
+  color: var(--admin-text-primary);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px var(--admin-primary-glow);
 }
 
+.honeypot-admin-collapse-btn svg {
+  font-size: 0.875rem;
+  transition: transform var(--admin-transition-fast);
+}
+
+.nav-collapsed .honeypot-admin-collapse-btn svg {
+  transform: rotate(180deg);
+}
+
+/* Sidebar Navigation */
 .honeypot-admin-nav {
   flex: 1;
-  padding: 10px 0;
+  padding: var(--admin-spacing-md) 0;
+  overflow-y: auto;
 }
 
 .honeypot-admin-nav-list {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-xs);
+  padding: 0 var(--admin-spacing-sm);
 }
 
 .honeypot-admin-nav-list li {
-  margin-bottom: 5px;
+  position: relative;
+  border-radius: var(--admin-radius-md);
+  overflow: hidden;
 }
 
 .honeypot-admin-nav-list li button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--admin-spacing-md);
+  padding: var(--admin-spacing-md) var(--admin-spacing-lg);
   width: 100%;
-  padding: 12px 15px;
-  background: none;
   border: none;
-  color: var(--honeypot-text-secondary);
-  font-family: inherit;
-  font-size: 14px;
+  background-color: transparent;
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-font-md);
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
-  border-left: 3px solid transparent;
+  transition: all var(--admin-transition-fast);
   position: relative;
+  border-radius: var(--admin-radius-md);
   overflow: hidden;
-}
-
-.honeypot-admin-nav-list li button:hover {
-  background: var(--honeypot-input-bg);
-  color: var(--honeypot-text);
-}
-
-.honeypot-admin-nav-list li.active button {
-  color: var(--honeypot-accent);
-  border-left-color: var(--honeypot-accent);
-  background: rgba(101, 67, 204, 0.1);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .honeypot-admin-nav-list li button svg {
-  font-size: 18px;
-  flex-shrink: 0;
+  min-width: 20px;
+  min-height: 20px;
+  font-size: 20px;
+  transition: transform var(--admin-transition-fast),
+              color var(--admin-transition-fast);
 }
 
 .honeypot-admin-nav-list li button span {
   white-space: nowrap;
-  transition: opacity 0.2s;
+  transition: opacity var(--admin-transition-fast),
+              transform var(--admin-transition-fast);
 }
 
 .nav-collapsed .honeypot-admin-nav-list li button span {
   opacity: 0;
-  width: 0;
-  overflow: hidden;
+  transform: translateX(-20px);
+  position: absolute;
 }
 
+.honeypot-admin-nav-list li button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--admin-gradient-primary);
+  opacity: 0;
+  transition: opacity var(--admin-transition-fast);
+  z-index: -1;
+}
+
+.honeypot-admin-nav-list li button:hover {
+  color: var(--admin-text-primary);
+  background-color: var(--admin-bg-card-hover);
+  transform: translateY(-1px);
+}
+
+.honeypot-admin-nav-list li button:hover svg {
+  color: var(--admin-primary);
+  transform: scale(1.1);
+}
+
+.honeypot-admin-nav-list li.active button {
+  color: var(--admin-text-primary);
+  background-color: var(--admin-primary-muted);
+  box-shadow: inset 0 0 0 1px var(--admin-primary-muted),
+              0 0 10px var(--admin-primary-muted);
+}
+
+.honeypot-admin-nav-list li.active button::before {
+  opacity: 0.05;
+}
+
+.honeypot-admin-nav-list li.active button svg {
+  color: var(--admin-primary);
+}
+
+.honeypot-admin-nav-list li.active::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 25px;
+  background-color: var(--admin-primary);
+  border-radius: 0 var(--admin-radius-sm) var(--admin-radius-sm) 0;
+}
+
+.nav-collapsed .honeypot-admin-nav-list li.active::after {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 25px;
+}
+
+/* Sidebar Footer */
 .honeypot-admin-sidebar-footer {
-  padding: 15px;
-  border-top: 1px solid var(--honeypot-border);
+  padding: var(--admin-spacing-md);
+  border-top: 1px solid var(--admin-border-light);
+  background-color: var(--admin-bg-medium);
 }
 
 .honeypot-admin-logout-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  gap: var(--admin-spacing-md);
+  padding: var(--admin-spacing-md) var(--admin-spacing-lg);
   width: 100%;
-  padding: 10px;
-  background: var(--honeypot-input-bg);
-  border: 1px solid var(--honeypot-border);
-  border-radius: 8px;
-  color: var(--honeypot-text);
-  font-family: inherit;
-  font-size: 14px;
+  border: 1px solid var(--admin-border-light);
+  background-color: var(--admin-bg-card);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-font-md);
+  font-weight: 500;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--admin-transition-fast);
+  border-radius: var(--admin-radius-md);
+  font-family: 'Inter', sans-serif;
 }
 
 .honeypot-admin-logout-btn:hover {
-  background: var(--honeypot-secondary);
-  color: white;
+  color: var(--admin-danger);
+  background-color: var(--admin-danger-bg);
+  border-color: var(--admin-danger-border);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .honeypot-admin-logout-btn svg {
-  font-size: 16px;
+  min-width: 20px;
+  min-height: 20px;
+  font-size: 20px;
+  transition: transform var(--admin-transition-fast);
+}
+
+.honeypot-admin-logout-btn:hover svg {
+  transform: translateX(-3px);
 }
 
 .honeypot-admin-logout-btn span {
-  transition: opacity 0.2s;
+  white-space: nowrap;
+  transition: opacity var(--admin-transition-fast),
+              transform var(--admin-transition-fast);
 }
 
 .nav-collapsed .honeypot-admin-logout-btn span {
   opacity: 0;
-  width: 0;
-  overflow: hidden;
+  transform: translateX(-20px);
+  position: absolute;
 }
 
-/* Mobile Navigation */
+/* Mobile Menu */
 .honeypot-admin-mobile-header {
   display: none;
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  height: 60px;
-  padding: 0 15px;
-  background-color: var(--honeypot-bg-card);
-  border-bottom: 1px solid var(--honeypot-border);
-  z-index: 200;
+  width: 100%;
+  padding: var(--admin-spacing-md);
+  background-color: var(--admin-bg-dark);
+  border-bottom: 1px solid var(--admin-border-light);
+  z-index: var(--admin-z-header);
+  justify-content: space-between;
   align-items: center;
-}
-
-.honeypot-admin-mobile-menu-toggle {
-  background: none;
-  border: none;
-  color: var(--honeypot-text);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px;
+  box-shadow: var(--admin-shadow-md);
 }
 
 .honeypot-admin-mobile-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-left: 10px;
+  gap: var(--admin-spacing-sm);
+  color: var(--admin-text-primary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .honeypot-admin-mobile-logo svg {
-  font-size: 20px;
-  color: var(--honeypot-accent);
+  font-size: 22px;
+  color: var(--admin-primary);
+  filter: drop-shadow(0 0 5px var(--admin-primary-glow));
 }
 
 .honeypot-admin-mobile-logo h1 {
-  font-size: 16px;
-  margin: 0;
-  color: var(--honeypot-text);
+  font-size: var(--admin-font-lg);
+  white-space: nowrap;
+  background: var(--admin-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.honeypot-admin-mobile-menu-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--admin-bg-medium);
+  border: 1px solid var(--admin-border-light);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+  position: relative;
+  z-index: 1010;
+}
+
+.honeypot-admin-mobile-menu-toggle:hover {
+  background-color: var(--admin-bg-card-hover);
+  color: var(--admin-text-primary);
+  transform: scale(1.05);
+}
+
+.honeypot-admin-mobile-menu-toggle svg {
+  font-size: 20px;
+  transition: transform var(--admin-transition-fast);
 }
 
 .honeypot-admin-mobile-nav {
-  display: none;
   position: fixed;
-  top: 60px;
+  top: 0;
   left: 0;
-  bottom: 0;
-  width: 250px;
-  background-color: var(--honeypot-bg-card);
-  border-right: 1px solid var(--honeypot-border);
-  z-index: 199;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  padding: 80px var(--admin-spacing-md) var(--admin-spacing-md);
   transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  overflow-y: auto;
-  padding: 20px 0;
+  transition: transform var(--admin-transition-normal);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .honeypot-admin-mobile-nav.active {
   transform: translateX(0);
 }
 
+.honeypot-admin-mobile-nav nav {
+  background-color: var(--admin-bg-card);
+  border-radius: var(--admin-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--admin-shadow-lg);
+  border: 1px solid var(--admin-border-light);
+}
+
 .honeypot-admin-mobile-nav ul {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.honeypot-admin-mobile-nav li {
+  border-bottom: 1px solid var(--admin-border-light);
+}
+
+.honeypot-admin-mobile-nav li:last-child {
+  border-bottom: none;
 }
 
 .honeypot-admin-mobile-nav button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--admin-spacing-md);
+  padding: var(--admin-spacing-lg);
   width: 100%;
-  padding: 12px 15px;
-  background: none;
   border: none;
-  color: var(--honeypot-text);
-  font-family: inherit;
-  font-size: 14px;
+  background-color: transparent;
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-font-lg);
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
-  border-left: 3px solid transparent;
+  transition: all var(--admin-transition-fast);
 }
 
 .honeypot-admin-mobile-nav button:hover {
-  background: var(--honeypot-input-bg);
-  color: var(--honeypot-accent);
+  color: var(--admin-text-primary);
+  background-color: var(--admin-bg-card-hover);
+}
+
+.honeypot-admin-mobile-nav button svg {
+  min-width: 24px;
+  min-height: 24px;
+  font-size: 24px;
 }
 
 .honeypot-mobile-logout-btn {
-  color: var(--honeypot-secondary) !important;
-  margin-top: 20px;
-  border-top: 1px solid var(--honeypot-border) !important;
-  padding-top: 15px !important;
+  color: var(--admin-danger) !important;
 }
 
 /* Main Content Area */
 .honeypot-admin-main-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--honeypot-accent) var(--honeypot-bg-dark);
-  max-height: 100vh;
-}
-
-.honeypot-admin-main-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.honeypot-admin-main-content::-webkit-scrollbar-track {
-  background: var(--honeypot-bg-dark);
-}
-
-.honeypot-admin-main-content::-webkit-scrollbar-thumb {
-  background-color: var(--honeypot-accent);
-  border-radius: 6px;
-}
-
-/* Tab Content Styles */
-.honeypot-admin-tab-content {
-  background-color: var(--honeypot-bg-card);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--honeypot-shadow);
-  border: 1px solid var(--honeypot-border);
+  padding: var(--admin-spacing-lg);
+  max-width: calc(100% - var(--admin-sidebar-width));
+  transition: max-width var(--admin-transition-normal);
+  overflow-x: hidden;
+  background-color: var(--admin-bg-darkest);
   position: relative;
-  overflow: hidden;
 }
 
-.honeypot-admin-tab-content::before {
+.honeypot-admin-main-content::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--honeypot-gradient-primary);
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 10% 10%, var(--admin-primary-muted), transparent 40%),
+    radial-gradient(circle at 90% 90%, var(--admin-secondary-muted), transparent 40%);
+  opacity: 0.15;
+  z-index: -1;
+  pointer-events: none;
 }
 
+.nav-collapsed .honeypot-admin-main-content {
+  max-width: calc(100% - var(--admin-sidebar-collapsed-width));
+}
+
+/* Content Header */
 .honeypot-admin-content-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-  gap: 15px;
+  align-items: center;
+  margin-bottom: var(--admin-spacing-lg);
+  padding-bottom: var(--admin-spacing-md);
+  border-bottom: 1px solid var(--admin-border-light);
+  position: relative;
+}
+
+.honeypot-admin-content-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background: var(--admin-gradient-primary);
+  border-radius: 2px;
 }
 
 .honeypot-admin-content-header h2 {
-  font-size: 24px;
-  margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--admin-spacing-sm);
+  font-size: var(--admin-font-2xl);
+  color: var(--admin-text-primary);
+  font-weight: 600;
+  position: relative;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .honeypot-admin-content-header h2 svg {
-  color: var(--honeypot-accent);
+  color: var(--admin-primary);
+  font-size: 1.5em;
+  filter: drop-shadow(0 0 5px var(--admin-primary-glow));
 }
 
-.honeypot-admin-refresh-btn {
+/* Theme Switcher */
+.honeypot-theme-switcher {
+  position: relative;
+  margin-top: var(--admin-spacing-lg);
+}
+
+.honeypot-theme-switcher-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--honeypot-accent);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  padding: 10px 15px;
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  gap: var(--admin-spacing-sm);
+  font-size: var(--admin-font-sm);
+  color: var(--admin-text-secondary);
+  margin-bottom: var(--admin-spacing-sm);
+  padding-left: var(--admin-spacing-sm);
 }
 
-.honeypot-admin-refresh-btn:hover:not(:disabled) {
-  background: var(--honeypot-accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--honeypot-glow);
+.honeypot-theme-switcher-title svg {
+  color: var(--admin-primary);
+  font-size: 16px;
 }
 
-.honeypot-admin-refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.honeypot-admin-refresh-btn svg {
-  font-size: 14px;
-}
-
-/* Stats Cards */
-.honeypot-admin-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.honeypot-admin-stat-card {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  padding: 20px;
+.honeypot-theme-options {
   display: flex;
-  align-items: center;
-  gap: 15px;
-  border: 1px solid var(--honeypot-border);
-  transition: transform 0.3s, box-shadow 0.3s;
+  gap: var(--admin-spacing-sm);
+  padding: var(--admin-spacing-sm);
+  background-color: var(--admin-bg-card);
+  border-radius: var(--admin-radius-md);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--admin-border-light);
 }
 
-.honeypot-admin-stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--honeypot-shadow);
-}
-
-.honeypot-admin-stat-icon {
-  width: 60px;
-  height: 60px;
+.honeypot-theme-option {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--admin-border-medium);
 }
 
-.honeypot-admin-total-icon {
-  background: rgba(101, 67, 204, 0.1);
-  color: var(--honeypot-accent);
+.honeypot-theme-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2),
+              inset 0 0 0 1px var(--admin-border-medium);
 }
 
-.honeypot-admin-ips-icon {
-  background: rgba(52, 152, 219, 0.1);
-  color: var(--honeypot-info);
+.honeypot-theme-option.active {
+  box-shadow: 0 0 0 2px var(--admin-primary),
+              0 0 10px var(--admin-primary-glow);
 }
 
-.honeypot-admin-clients-icon {
-  background: rgba(230, 126, 34, 0.1);
-  color: var(--honeypot-warning);
+.honeypot-theme-option.active::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.honeypot-admin-today-icon {
-  background: rgba(46, 204, 113, 0.1);
-  color: var(--honeypot-success);
+.honeypot-theme-purple {
+  background: linear-gradient(135deg, #7048e8, #925cf1);
 }
 
-.honeypot-admin-stat-content {
-  flex: 1;
+.honeypot-theme-cyberpunk {
+  background: linear-gradient(135deg, #f3f00a, #ff2e97);
 }
 
-.honeypot-admin-stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 5px;
-  background: var(--honeypot-gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.honeypot-theme-ocean {
+  background: linear-gradient(135deg, #1e90ff, #05c3b6);
 }
 
-.honeypot-admin-stat-label {
-  font-size: 14px;
-  color: var(--honeypot-text-secondary);
+.honeypot-theme-red {
+  background: linear-gradient(135deg, #e1132a, #9e0e1c);
 }
 
-/* Loading and Error States */
+/* Loading States */
 .honeypot-admin-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
-  color: var(--honeypot-text-secondary);
+  min-height: 300px;
+  width: 100%;
+  color: var(--admin-text-secondary);
+  gap: var(--admin-spacing-md);
 }
 
 .honeypot-admin-spinner {
-  font-size: 30px;
-  color: var(--honeypot-accent);
+  font-size: 2rem;
+  color: var(--admin-primary);
   animation: spin 1.5s linear infinite;
-  margin-bottom: 15px;
 }
 
 @keyframes spin {
@@ -518,140 +936,511 @@
   to { transform: rotate(360deg); }
 }
 
+/* Error Messages */
 .honeypot-admin-error-message {
-  padding: 15px;
-  background: rgba(231, 76, 60, 0.1);
-  border-left: 4px solid var(--honeypot-error);
-  border-radius: 4px;
-  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--honeypot-error);
+  gap: var(--admin-spacing-md);
+  padding: var(--admin-spacing-lg);
+  background-color: var(--admin-danger-bg);
+  border-left: 4px solid var(--admin-danger);
+  color: var(--admin-danger);
+  border-radius: var(--admin-radius-md);
+  margin: var(--admin-spacing-md) 0;
+}
+
+.honeypot-admin-error-message svg {
+  font-size: 24px;
+  flex-shrink: 0;
 }
 
 .honeypot-admin-retry-btn {
   margin-left: auto;
-  padding: 5px 10px;
-  border-radius: 4px;
-  background: var(--honeypot-accent);
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  background-color: var(--admin-danger);
   color: white;
   border: none;
-  font-size: 12px;
+  border-radius: var(--admin-radius-sm);
   cursor: pointer;
+  transition: all var(--admin-transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+}
+
+.honeypot-admin-retry-btn:hover {
+  background-color: #ff5447;
+  transform: translateY(-1px);
+}
+
+/* Overview Tab */
+.honeypot-admin-tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.honeypot-admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--admin-spacing-md);
+  margin-bottom: var(--admin-spacing-lg);
+}
+
+.honeypot-admin-stat-card {
+  background-color: var(--admin-bg-card);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-md);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--admin-transition-normal);
+  border: 1px solid var(--admin-border-light);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.honeypot-admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--admin-gradient-primary);
+  opacity: 0.7;
+  z-index: 1;
+  transition: opacity var(--admin-transition-normal);
+}
+
+.honeypot-admin-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--admin-shadow-md);
+  border-color: var(--admin-border-medium);
+}
+
+.honeypot-admin-stat-card:hover::before {
+  opacity: 1;
+}
+
+.honeypot-admin-stat-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--admin-bg-medium);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-primary);
+  font-size: 28px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: all var(--admin-transition-normal);
+  border: 1px solid var(--admin-border-light);
+}
+
+.honeypot-admin-stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, var(--admin-primary-muted), transparent 70%);
+  opacity: 0.5;
+  z-index: -1;
+  transition: opacity var(--admin-transition-normal);
+}
+
+.honeypot-admin-stat-icon svg {
+  filter: drop-shadow(0 0 5px var(--admin-primary-glow));
+}
+
+.honeypot-admin-stat-card:hover .honeypot-admin-stat-icon {
+  background-color: var(--admin-primary-muted);
+  color: var(--admin-primary);
+  border-color: var(--admin-primary-muted);
+  transform: scale(1.05) rotate(5deg);
+  box-shadow: 0 0 15px var(--admin-primary-glow);
+}
+
+.honeypot-admin-stat-content {
+  flex: 1;
+}
+
+.honeypot-admin-stat-value {
+  font-size: var(--admin-font-3xl);
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 5px;
+  line-height: 1.1;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.honeypot-admin-stat-label {
+  font-size: var(--admin-font-sm);
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Icon Variations */
+.honeypot-admin-total-icon {
+  color: var(--admin-primary);
+}
+
+.honeypot-admin-ips-icon {
+  color: var(--admin-secondary);
+}
+
+.honeypot-admin-clients-icon {
+  color: var(--admin-tertiary);
+}
+
+.honeypot-admin-today-icon {
+  color: var(--admin-quaternary);
 }
 
 /* Overview Description */
 .honeypot-admin-overview-description {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--honeypot-border);
+  background-color: var(--admin-bg-card);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-spacing-lg);
+  margin-top: var(--admin-spacing-lg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--admin-border-light);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.honeypot-admin-overview-description::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--admin-gradient-tertiary);
+  opacity: 0.7;
+  z-index: 1;
 }
 
 .honeypot-admin-overview-description h3 {
-  font-size: 18px;
-  margin: 0 0 15px 0;
-  color: var(--honeypot-text);
+  font-size: var(--admin-font-xl);
+  color: var(--admin-text-primary);
+  margin-bottom: var(--admin-spacing-md);
+  position: relative;
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.honeypot-admin-overview-description h3::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--admin-gradient-tertiary);
+  border-radius: 3px;
 }
 
 .honeypot-admin-overview-description p {
-  color: var(--honeypot-text-secondary);
+  color: var(--admin-text-secondary);
   line-height: 1.6;
+  margin-bottom: var(--admin-spacing-md);
 }
 
 .honeypot-admin-overview-description ul {
-  margin: 15px 0;
-  padding-left: 20px;
+  padding-left: var(--admin-spacing-lg);
+  margin-bottom: var(--admin-spacing-md);
 }
 
 .honeypot-admin-overview-description li {
-  margin-bottom: 8px;
-  color: var(--honeypot-text-secondary);
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--admin-spacing-sm);
+  position: relative;
 }
 
-/* Responsive styles */
+.honeypot-admin-overview-description li strong {
+  color: var(--admin-text-primary);
+  font-weight: 600;
+}
+
+/* System Status Card */
+.honeypot-admin-system-status {
+  background-color: var(--admin-bg-card);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-spacing-lg);
+  margin-top: var(--admin-spacing-lg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--admin-border-light);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.honeypot-admin-system-status::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--admin-gradient-quaternary);
+  opacity: 0.7;
+  z-index: 1;
+}
+
+.honeypot-admin-system-status h3 {
+  font-size: var(--admin-font-xl);
+  color: var(--admin-text-primary);
+  margin-bottom: var(--admin-spacing-md);
+  position: relative;
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.honeypot-admin-system-status h3::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--admin-gradient-quaternary);
+  border-radius: 3px;
+}
+
+.honeypot-admin-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--admin-spacing-md);
+  margin-top: var(--admin-spacing-md);
+}
+
+.honeypot-admin-status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-sm);
+  padding: var(--admin-spacing-md);
+  background-color: var(--admin-bg-medium);
+  border-radius: var(--admin-radius-md);
+  border: 1px solid var(--admin-border-light);
+}
+
+.honeypot-admin-status-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--admin-bg-card);
+  border-radius: 50%;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.honeypot-admin-status-content {
+  flex: 1;
+}
+
+.honeypot-admin-status-label {
+  font-size: var(--admin-font-xs);
+  color: var(--admin-text-tertiary);
+  margin-bottom: 2px;
+}
+
+.honeypot-admin-status-value {
+  font-size: var(--admin-font-sm);
+  color: var(--admin-text-primary);
+  font-weight: 500;
+}
+
+.honeypot-admin-status-ok .honeypot-admin-status-icon {
+  color: var(--admin-success);
+  background-color: var(--admin-success-bg);
+}
+
+.honeypot-admin-status-warning .honeypot-admin-status-icon {
+  color: var(--admin-warning);
+  background-color: var(--admin-warning-bg);
+}
+
+.honeypot-admin-status-danger .honeypot-admin-status-icon {
+  color: var(--admin-danger);
+  background-color: var(--admin-danger-bg);
+}
+
+.honeypot-admin-status-info .honeypot-admin-status-icon {
+  color: var(--admin-info);
+  background-color: var(--admin-info-bg);
+}
+
+/* Refresh Button */
+.honeypot-admin-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-sm);
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  background: var(--admin-gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--admin-radius-md);
+  font-size: var(--admin-font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+  box-shadow: var(--admin-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.honeypot-admin-refresh-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.honeypot-admin-refresh-btn:hover::before {
+  left: 100%;
+}
+
+.honeypot-admin-refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-primary);
+}
+
+.honeypot-admin-refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.honeypot-admin-refresh-btn svg {
+  transition: transform var(--admin-transition-fast);
+}
+
+.honeypot-admin-refresh-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* Media Queries */
+@media (max-width: 1200px) {
+  .honeypot-admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 992px) {
-  .honeypot-admin-sidebar {
-    width: 200px;
+  :root {
+    --admin-sidebar-width: 240px;
   }
   
-  .honeypot-admin-nav-list li button {
-    padding: 10px;
-    font-size: 13px;
+  .honeypot-admin-sidebar-header {
+    padding: var(--admin-spacing-md) var(--admin-spacing-sm);
   }
   
   .honeypot-admin-logo h1 {
-    font-size: 16px;
+    font-size: var(--admin-font-md);
   }
   
-  .honeypot-admin-stat-card {
-    padding: 15px;
+  .honeypot-admin-nav-list li button {
+    padding: var(--admin-spacing-sm) var(--admin-spacing-md);
   }
   
-  .honeypot-admin-stat-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-  
-  .honeypot-admin-stat-value {
-    font-size: 20px;
+  .honeypot-admin-main-content {
+    padding: var(--admin-spacing-md);
   }
 }
 
 @media (max-width: 768px) {
   .honeypot-admin-sidebar {
-    display: none;
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: var(--admin-z-sidebar);
+    width: 280px !important;
+  }
+  
+  .honeypot-admin-dashboard.nav-collapsed .honeypot-admin-sidebar {
+    transform: translateX(-100%);
   }
   
   .honeypot-admin-mobile-header {
     display: flex;
   }
   
-  .honeypot-admin-mobile-nav {
-    display: block;
-  }
-  
   .honeypot-admin-main-content {
-    margin-top: 60px;
-    padding: 15px;
-  }
-  
-  .honeypot-admin-stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
+    padding-top: calc(var(--admin-spacing-lg) + 60px);
+    max-width: 100% !important;
   }
   
   .honeypot-admin-content-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--admin-spacing-sm);
   }
   
-  .honeypot-admin-content-header h2 {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 576px) {
   .honeypot-admin-stats-grid {
     grid-template-columns: 1fr;
   }
   
-  .honeypot-admin-main-content {
-    padding: 10px;
+  .honeypot-admin-status-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .honeypot-admin-tab-content {
-    padding: 15px;
+}
+
+@media (max-width: 576px) {
+  .honeypot-admin-main-content {
+    padding: var(--admin-spacing-md) var(--admin-spacing-sm);
+    padding-top: calc(var(--admin-spacing-lg) + 60px);
   }
   
   .honeypot-admin-content-header h2 {
-    font-size: 18px;
+    font-size: var(--admin-font-xl);
   }
   
-  .honeypot-admin-mobile-logo h1 {
-    font-size: 14px;
+  .honeypot-admin-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .honeypot-admin-stat-icon {
+    margin-bottom: var(--admin-spacing-sm);
+  }
+  
+  .honeypot-theme-options {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

@@ -92,35 +92,35 @@
 
 /* Syntax Highlighting Colors */
 .json-key {
-  color: #ff79c6;
+  color: #bd0205;
   font-weight: 500;
 }
 
 .json-string {
-  color: #f1fa8c;
+  color: #3b3bff;
 }
 
 .json-number {
-  color: #bd93f9;
+  color: #eefa07;
 }
 
 .json-boolean {
-  color: #ffb86c;
+  color: #fff83b;
   font-weight: 600;
 }
 
 .json-null {
-  color: #ff5555;
+  color: #40aec2;
   font-style: italic;
 }
 
 .json-bracket {
-  color: #8be9fd;
+  color: #3bd8ff;
   font-weight: 600;
 }
 
 .json-comma {
-  color: #6272a4;
+  color: #3bff6f;
 }
 
 .json-syntax-error {

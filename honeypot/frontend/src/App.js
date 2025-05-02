@@ -1,6 +1,6 @@
-// honeypot/frontend/src/App.js
-import React, { useState, useEffect } from 'react'; 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// honeypot/frontend/src/App.js - Enhanced version with theme support
+import React, { useState, useEffect, useCallback } from 'react'; 
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { getCsrfToken } from './components/csrfHelper';
 import Login from './static/js/login';
 import AdminDashboard from './static/js/admin';
@@ -9,6 +9,7 @@ import './index.css';
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const verifySession = async () => {
@@ -46,10 +47,15 @@ const ProtectedRoute = ({ children }) => {
     };
 
     verifySession();
-  }, []); 
+  }, [location.pathname]); // Re-verify when path changes
 
   if (isLoading) {
-    return <div className="honeypot-loading">Checking authentication...</div>; 
+    return (
+      <div className="honeypot-loading-screen">
+        <div className="honeypot-loading-spinner"></div>
+        <p>Verifying authentication...</p>
+      </div>
+    ); 
   }
 
   if (!isAuthenticated) {
@@ -60,6 +66,31 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('honeypotTheme');
+    if (savedTheme) {
+      const themeMap = {
+        'default': '',
+        'cyberpunk': 'theme-cyberpunk',
+        'ocean': 'theme-dark-ocean',
+        'red': 'theme-blood-red'
+      };
+      
+      // Clear existing theme classes
+      document.body.classList.remove(
+        'theme-cyberpunk', 
+        'theme-dark-ocean', 
+        'theme-blood-red'
+      );
+      
+      // Apply theme class if it's not the default
+      const themeClass = themeMap[savedTheme];
+      if (themeClass) {
+        document.body.classList.add(themeClass);
+      }
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
