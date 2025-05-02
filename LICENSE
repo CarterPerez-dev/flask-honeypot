@@ -1,43 +1,23 @@
-## 10. Migration Challenges
+MIT License
 
-Let's address some challenges you might face when packaging your honeypot system:
+Author @CarterPerez-dev
 
-### 10.1 Database Dependencies
+Copyright (c) 2025 Flask-Honeypot @Angelamos 
 
-Your system uses MongoDB extensively. The package should:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1. Provide clear documentation on MongoDB requirements
-2. Include proper error handling for when MongoDB isn't available
-3. Allow users to configure MongoDB connection details
-4. Support optional database backends in the future
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-### 10.2 GeoIP Database
-
-The system uses MaxMind GeoIP databases:
-
-1. Include mechanisms to download and update these databases
-2. Handle cases where the license key isn't provided
-3. Gracefully handle missing or outdated databases
-
-### 10.3 Frontend Integration
-
-Since your frontend is React-based:
-
-1. Provide compiled JS/CSS files for users who aren't using React
-2. Include source components for those who want to integrate with their React apps
-3. Document how to customize and extend the frontend
-
-### 10.4 Security Considerations
-
-For a security-focused package:
-
-1. Ensure default settings are secure
-2. Validate configuration parameters
-3. Include proper security headers and CSRF protection
-4. Document security best practices for deployment
-
-## Conclusion
-
-This comprehensive guide provides a detailed roadmap for extracting your honeypot system into a reusable Python package. By following these steps, you'll create a flexible, maintainable package that others can easily integrate into their security infrastructure.
-
-The package structure respects your existing architecture while making it more modular and configurable. The examples and documentation will help users quickly get started with your powerful honeypot framework.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
