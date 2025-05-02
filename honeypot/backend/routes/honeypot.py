@@ -1091,18 +1091,17 @@ def view_honeypot_interactions():
         return jsonify({"error": "Not authorized"}), 401
     
     try:
-        # Get database connection
         db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
-        # Get interactions with pagination
+
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 20))
         skip = (page - 1) * limit
         
-        # Apply filters if provided
+
         filter_query = {}
         
         page_type = request.args.get('page_type')
@@ -1113,19 +1112,19 @@ def view_honeypot_interactions():
         if interaction_type:
             filter_query['interaction_type'] = interaction_type
         
-        # Get interactions
+
         interactions = list(db.honeypot_interactions.find(filter_query)
                             .sort("timestamp", -1)
                             .skip(skip)
                             .limit(limit))
         
-        # Format for JSON response
+
         for interaction in interactions:
             interaction['_id'] = str(interaction['_id'])
             if isinstance(interaction.get('timestamp'), datetime):
                 interaction['timestamp'] = interaction['timestamp'].isoformat()
         
-        # Get total count
+
         total_count = db.honeypot_interactions.count_documents(filter_query)
         
         return jsonify({
@@ -1157,22 +1156,21 @@ def get_honeypot_interaction(interaction_id):
         return jsonify({"error": "Not authorized"}), 401
     
     try:
-        # Get database connection
         db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
-        # Find the interaction by ID
+
         interaction = db.honeypot_interactions.find_one({"_id": ObjectId(interaction_id)})
         
         if not interaction:
             return jsonify({"error": "Interaction not found"}), 404
         
-        # Convert ObjectId to string for JSON serialization
+
         interaction["_id"] = str(interaction["_id"])
         
-        # Make timestamp JSON serializable if it's a datetime
+
         if isinstance(interaction.get("timestamp"), datetime):
             interaction["timestamp"] = interaction["timestamp"].isoformat()
         

@@ -322,14 +322,14 @@ Type 'help' for a list of available commands.
                                         children: {
                                             'index.html': {
                                                 type: 'file',
-                                                content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Welcome to SecureServer</title>\n    <link rel="stylesheet" href="/main.css">\n</head>\n<body>\n    <h1>Welcome to SecureServer</h1>\n    <p>This server is running Apache/2.4.41 on Ubuntu.</p>\n    <p>Default website. Please configure your virtual host.</p>\n    <script src="/js/scripts.js"></script>\n</body>\n</html>'
+                                                content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Welcome to SecureServer</title>\n    <style>\n        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }\n        h1 { color: #333; }\n        p { line-height: 1.5; }\n    </style>\n</head>\n<body>\n    <h1>Welcome to SecureServer</h1>\n    <p>This server is running Apache/2.4.41 on Ubuntu.</p>\n    <p>Default website. Please configure your virtual host.</p>\n</body>\n</html>'
                                             },
                                             'admin': {
                                                 type: 'dir',
                                                 children: {
                                                     'index.html': {
                                                         type: 'file',
-                                                        content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Administration Panel</title>\n    <link rel="stylesheet" href="/admin.css">\n</head>\n<body>\n    <h1>Admin Panel</h1>\n    <form action="/admin/login.php" method="post">\n        <label for="username">Username:</label>\n        <input type="text" id="username" name="username" required>\n        <label for="password">Password:</label>\n        <input type="password" id="password" name="password" required>\n        <button type="submit">Login</button>\n    </form>\n    <script src="/js/admin.js"></script>\n</body>\n</html>'
+                                                        content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Administration Panel</title>\n    <style>\n        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }\n        h1 { color: #333; }\n        form { max-width: 400px; margin: 20px 0; }\n        label { display: block; margin: 10px 0 5px; }\n        input { width: 100%; padding: 8px; margin-bottom: 15px; }\n        button { background: #4285f4; color: white; border: none; padding: 10px 15px; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <h1>Admin Panel</h1>\n    <form action="/admin/login.php" method="post">\n        <label for="username">Username:</label>\n        <input type="text" id="username" name="username" required>\n        <label for="password">Password:</label>\n        <input type="password" id="password" name="password" required>\n        <button type="submit">Login</button>\n    </form>\n</body>\n</html>'
                                                     },
                                                     'login.php': {
                                                         type: 'file',
@@ -426,34 +426,6 @@ Type 'help' for a list of available commands.
                                 content: 'Binary file: bash'
                             }
                         }
-                    },
-                    'users.db': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('users.db', 40)
-                    },
-                    'configs': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('configs', 40)
-                    },
-                    'logs': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('logs', 40)
-                    },
-                    'backups': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('backups', 40)
-                    },
-                    'api': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('api', 40)
-                    },
-                    'secrets': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('secrets', 40)
-                    },
-                    'credentials': {
-                        type: 'dir',
-                        children: this.generateNestedDirs('credentials', 40)
                     }
                 }
             }
@@ -509,6 +481,42 @@ Type 'help' for a list of available commands.
             const hash = dirName.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0);
             return secretMessages[hash % secretMessages.length];
         }
+        
+        // Create some nested directories
+        fileSystem['/'].children['users.db'] = {
+            type: 'dir',
+            children: generateNestedDirs('users.db', 3)
+        };
+        
+        fileSystem['/'].children['configs'] = {
+            type: 'dir',
+            children: generateNestedDirs('configs', 3)
+        };
+        
+        fileSystem['/'].children['logs'] = {
+            type: 'dir',
+            children: generateNestedDirs('logs', 3)
+        };
+        
+        fileSystem['/'].children['backups'] = {
+            type: 'dir',
+            children: generateNestedDirs('backups', 3)
+        };
+        
+        fileSystem['/'].children['api'] = {
+            type: 'dir',
+            children: generateNestedDirs('api', 3)
+        };
+        
+        fileSystem['/'].children['secrets'] = {
+            type: 'dir',
+            children: generateNestedDirs('secrets', 3)
+        };
+        
+        fileSystem['/'].children['credentials'] = {
+            type: 'dir',
+            children: generateNestedDirs('credentials', 3)
+        };
         
         // Current directory and user state
         let currentDir = '/home/admin';
@@ -1656,7 +1664,18 @@ Note: Some commands may be restricted due to permissions.`;
         
         // Log interaction with honeypot
         function logInteraction(command) {
-            // Send the interaction data to the server
+            // Just log to console for now (avoids 404 errors)
+            console.log('Command logged:', {
+                page_type: 'terminal_shell',
+                interaction_type: 'terminal_command',
+                additional_data: {
+                    command: command,
+                    current_directory: currentDir,
+                    timestamp: new Date().toISOString()
+                }
+            });
+            
+            /* Uncomment this if the server endpoint is available
             fetch('/honeypot/log-interaction', {
                 method: 'POST',
                 headers: {
@@ -1674,6 +1693,7 @@ Note: Some commands may be restricted due to permissions.`;
             }).catch(() => {
                 // Ignore errors since this is just logging
             });
+            */
         }
         
         // Create a new line with command prompt
@@ -1687,14 +1707,25 @@ Note: Some commands may be restricted due to permissions.`;
         createPrompt();
         
         // Event listeners
-        document.getElementById('input').addEventListener('keydown', function(event) {
+        document.addEventListener('click', function() {
+            const input = document.getElementById('input');
+            if (input) {
+                input.focus();
+            }
+        });
+        
+        // Handle key events on the input field
+        document.addEventListener('keydown', function(event) {
+            const input = document.getElementById('input');
+            if (!input) return;
+            
             if (event.key === 'Enter') {
                 // Get the command
-                const command = this.value;
+                const command = input.value;
                 
                 // Create a new output line with the command
                 const cmdLine = document.getElementById('input-line');
-                cmdLine.removeChild(document.getElementById('input'));
+                cmdLine.removeChild(input);
                 cmdLine.innerHTML += command;
                 cmdLine.id = '';
                 
@@ -1715,7 +1746,7 @@ Note: Some commands may be restricted due to permissions.`;
                 // Navigate command history
                 if (historyIndex > 0) {
                     historyIndex--;
-                    this.value = commandHistory[historyIndex];
+                    input.value = commandHistory[historyIndex];
                 }
             } else if (event.key === 'ArrowDown') {
                 event.preventDefault();
@@ -1723,15 +1754,14 @@ Note: Some commands may be restricted due to permissions.`;
                 // Navigate command history
                 if (historyIndex < commandHistory.length) {
                     historyIndex++;
-                    this.value = historyIndex === commandHistory.length ? '' : commandHistory[historyIndex];
+                    input.value = historyIndex === commandHistory.length ? '' : commandHistory[historyIndex];
                 }
             } else if (event.key === 'Tab') {
                 event.preventDefault();
                 
-                // Very basic tab completion for paths
-                const command = this.value.trim();
+                // Basic tab completion for paths
+                const command = input.value.trim();
                 
-                // Only try to complete if the command has at least one character
                 if (command.length > 0) {
                     // Check if we're at a path that might need completion
                     const parts = command.split(' ');
@@ -1774,7 +1804,7 @@ Note: Some commands may be restricted due to permissions.`;
                                     parts[parts.length - 1] += '/';
                                 }
                                 
-                                this.value = parts.join(' ');
+                                input.value = parts.join(' ');
                             }
                         }
                     }
@@ -1791,21 +1821,13 @@ Note: Some commands may be restricted due to permissions.`;
                 }
                 
                 // Add ^C to the current line
-                this.value += '^C';
-                document.getElementById('input-line').removeChild(document.getElementById('input'));
+                input.value += '^C';
+                document.getElementById('input-line').removeChild(input);
                 document.getElementById('input-line').innerHTML += '^C';
                 document.getElementById('input-line').id = '';
                 
                 // Create a new prompt
                 createPrompt();
-            }
-        });
-        
-        // Handle terminal focus
-        terminal.addEventListener('click', function() {
-            const input = document.getElementById('input');
-            if (input) {
-                input.focus();
             }
         });
         

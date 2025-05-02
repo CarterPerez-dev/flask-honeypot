@@ -24,6 +24,7 @@
             width: 100%;
             max-width: 400px;
             padding: 30px;
+            position: relative;
         }
         .logo {
             text-align: center;
@@ -258,18 +259,106 @@
             color: #666;
             font-size: 12px;
         }
+        /* Troll notification */
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 15px;
+            z-index: 2000;
+            max-width: 300px;
+            animation: slideIn 0.5s;
+        }
+        @keyframes slideIn {
+            from {right: -300px;}
+            to {right: 20px;}
+        }
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+        }
+        /* Moving CAPTCHA text */
+        .captcha-text-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        .moving-captcha-text {
+            position: absolute;
+            transition: all 0.4s ease;
+        }
+        /* Fake system alerts */
+        .system-alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            max-width: 400px;
+            text-align: center;
+        }
+        .system-alert-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .system-alert-message {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .system-alert-button {
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        /* Vanishing login button */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .fake-loading-bar {
+            height: 4px;
+            width: 0%;
+            background-color: #3498db;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 1.5s linear;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="login-container">
+        <div class="fake-loading-bar" id="fake-loading-bar"></div>
         <div class="logo">
             <i class="fas fa-shield-alt"></i>
             <div class="company-name">AdminControl</div>
             <div style="font-size: 14px; color: #777;">Secure Administration Panel</div>
         </div>
         
-        <form id="login-form" onsubmit="return processLogin(event);">
+        <form id="login-form">
             <div class="form-group">
                 <label for="username">Username or Email</label>
                 <input type="text" id="username" name="username" required>
@@ -289,7 +378,9 @@
             <div class="captcha-container" id="captcha-container">
                 <label>Please verify you're not a robot</label>
                 <div class="captcha-image" id="captcha-image">
-                    <span id="captcha-text">AB12CD</span>
+                    <div class="captcha-text-container" id="captcha-text-container">
+                        <span id="captcha-text" class="moving-captcha-text">AB12CD</span>
+                    </div>
                 </div>
                 <div class="captcha-input">
                     <input type="text" id="captcha" name="captcha" placeholder="Enter the code above" required>
@@ -367,11 +458,29 @@
         </div>
     </div>
 
+    <!-- Notification Element -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notification-title">Information</div>
+        <div class="notification-message" id="notification-message">This is a notification message.</div>
+    </div>
+
+    <!-- System Alert -->
+    <div class="system-alert" id="system-alert">
+        <div class="system-alert-title" id="system-alert-title">System Alert</div>
+        <div class="system-alert-message" id="system-alert-message">System message goes here.</div>
+        <button class="system-alert-button" id="system-alert-button" onclick="closeSystemAlert();">OK</button>
+    </div>
+
     <script>
         // Track failed login attempts
         let failedAttempts = 0;
         let redirects = 0;
         let lockoutTimer = null;
+        let loginButtonMoving = false;
+        let isCaptchaMoving = false;
+        let mousePositions = [];
+        let isPasswordLeaking = false;
+        let keyboardMapping = {};
         
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -381,6 +490,9 @@
                 refreshCaptcha();
             }
             
+            // Add event listener to the form submission
+            document.getElementById('login-form').addEventListener('submit', processLogin);
+            
             // Track form interactions
             const form = document.getElementById('login-form');
             const formElements = form.elements;
@@ -389,6 +501,13 @@
                 if (formElements[i].type !== 'submit') {
                     formElements[i].addEventListener('input', function() {
                         logInteraction('form_input', { field: this.name });
+                        
+                        // Sometimes show a fake "we detected your input" notification
+                        if (Math.random() < 0.2) {
+                            setTimeout(() => {
+                                showNotification('Input Detected', 'We have detected your keystroke pattern.');
+                            }, 800);
+                        }
                     });
                     
                     formElements[i].addEventListener('blur', function() {
@@ -402,9 +521,88 @@
                 }
             }
             
+            // Track mouse movement
+            document.addEventListener('mousemove', function(e) {
+                // Store last 10 mouse positions
+                mousePositions.push({x: e.clientX, y: e.clientY, time: Date.now()});
+                if (mousePositions.length > 10) {
+                    mousePositions.shift();
+                }
+                
+                // Randomly make the login button dodge the cursor
+                if (mousePositions.length >= 5 && !loginButtonMoving && Math.random() < 0.01) {
+                    const loginButton = document.getElementById('login-button');
+                    const rect = loginButton.getBoundingClientRect();
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+                    
+                    // Check if mouse is approaching the button
+                    if (Math.abs(mouseX - (rect.left + rect.width/2)) < 100 && 
+                        Math.abs(mouseY - (rect.top + rect.height/2)) < 100) {
+                        loginButtonMoving = true;
+                        
+                        // Shake the button
+                        loginButton.style.animation = 'shake 0.5s';
+                        
+                        setTimeout(() => {
+                            loginButton.style.animation = '';
+                            loginButtonMoving = false;
+                        }, 500);
+                        
+                        // Log the interaction
+                        logInteraction('button_dodge', { mouseX, mouseY });
+                    }
+                }
+            });
+            
+            // Simulate some loading when the page loads
+            document.getElementById('fake-loading-bar').style.width = '100%';
+            setTimeout(() => {
+                document.getElementById('fake-loading-bar').style.display = 'none';
+            }, 1500);
+            
+            // Set up keyboard scrambling for password field
+            const passwordField = document.getElementById('password');
+            passwordField.addEventListener('focus', function() {
+                if (Math.random() < 0.3) {
+                    // Create a random keyboard mapping
+                    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+                    const shuffled = characters.split('').sort(() => 0.5 - Math.random()).join('');
+                    
+                    for (let i = 0; i < characters.length; i++) {
+                        keyboardMapping[characters[i]] = shuffled[i];
+                    }
+                    
+                    isPasswordLeaking = true;
+                    showNotification('Security Enabled', 'Advanced keylogger protection activated.');
+                    
+                    // Attach the keydown event
+                    passwordField.addEventListener('keydown', scramblePassword);
+                }
+            });
+            
             // Log page view
             logInteraction('page_view');
         });
+        
+        function scramblePassword(event) {
+            // Only process if it's a single character key
+            if (event.key.length === 1 && keyboardMapping[event.key]) {
+                event.preventDefault();
+                
+                const passwordField = document.getElementById('password');
+                passwordField.value += keyboardMapping[event.key];
+                
+                // Leak the password sometimes for trolling
+                if (isPasswordLeaking && Math.random() < 0.2) {
+                    setTimeout(() => {
+                        showNotification('Password Update', 'Current password strength: Weak');
+                    }, 300);
+                }
+                
+                return false;
+            }
+        }
         
         // Process login (capture credentials and always fail)
         function processLogin(event) {
@@ -441,6 +639,14 @@
                     // First attempt - invalid credentials
                     document.getElementById('password-error').textContent = 'Invalid username or password';
                     document.getElementById('password-error').style.display = 'block';
+                    
+                    // Troll: Sometimes show a fake "suspicious activity" alert
+                    if (Math.random() < 0.3) {
+                        setTimeout(() => {
+                            showSystemAlert('Suspicious Activity Detected', 
+                                'Our security system has detected unusual login patterns. Your IP address has been logged.');
+                        }, 500);
+                    }
                 } 
                 else if (failedAttempts === 2) {
                     // Second attempt - Show CAPTCHA
@@ -453,6 +659,12 @@
                     // Third attempt - CAPTCHA failed
                     document.getElementById('captcha-error').style.display = 'block';
                     refreshCaptcha();
+                    
+                    // Make the CAPTCHA impossible by making it move
+                    if (!isCaptchaMoving) {
+                        isCaptchaMoving = true;
+                        makeMovingCaptcha();
+                    }
                 } 
                 else if (failedAttempts >= 5) {
                     // Fifth attempt - Account lockout
@@ -480,6 +692,12 @@
                     }, 1000);
                     
                     logInteraction('account_lockout', { attempts: failedAttempts });
+                    
+                    // Troll: Show fake security alert
+                    setTimeout(() => {
+                        showSystemAlert('Account Protection Activated', 
+                            'Multiple failed login attempts detected. Security lockdown initiated. This incident has been reported to system administrators.');
+                    }, 1000);
                 }
                 
                 document.getElementById('login-button').disabled = false;
@@ -504,6 +722,32 @@
             }, 2000 + Math.random() * 1000);
             
             return false;
+        }
+        
+        // Make the CAPTCHA text move around, making it nearly impossible to solve
+        function makeMovingCaptcha() {
+            const captchaText = document.getElementById('captcha-text');
+            const container = document.getElementById('captcha-text-container');
+            const containerRect = container.getBoundingClientRect();
+            
+            function moveCaptcha() {
+                if (!isCaptchaMoving) return;
+                
+                // Generate random position within the container
+                const maxX = containerRect.width - captchaText.offsetWidth;
+                const maxY = containerRect.height - captchaText.offsetHeight;
+                
+                const randX = Math.floor(Math.random() * maxX);
+                const randY = Math.floor(Math.random() * maxY);
+                
+                captchaText.style.left = randX + 'px';
+                captchaText.style.top = randY + 'px';
+                
+                // Schedule next movement
+                setTimeout(moveCaptcha, 800 + Math.random() * 1000);
+            }
+            
+            moveCaptcha();
         }
         
         // Check for SQL injection attempts
@@ -545,6 +789,13 @@
                         matched_pattern: pattern
                     });
                     
+                    // Troll: Show a fake security notification
+                    if (Math.random() < 0.5) {
+                        setTimeout(() => {
+                            showNotification('Security Alert', 'Potential SQL injection detected. IP logged: ' + generateFakeIP());
+                        }, 500);
+                    }
+                    
                     return true;
                 }
             }
@@ -564,9 +815,27 @@
                 captcha += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             
+            // Troll: Sometimes make the CAPTCHA ridiculously hard
+            if (failedAttempts >= 3 || Math.random() < 0.3) {
+                // Add special characters and make it longer
+                const specialChars = "!@#$%^&*()_+{}|:<>?~`-=[]\\;',./";
+                for (let i = 0; i < 2; i++) {
+                    captcha += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+                }
+                
+                // Sometimes use similar-looking characters (0/O, 1/I/l, etc.)
+                captcha = captcha.replace(/O/g, "0").replace(/I/g, "l").replace(/B/g, "8").replace(/S/g, "5");
+            }
+            
             document.getElementById('captcha-text').textContent = captcha;
             document.getElementById('captcha').value = '';
             document.getElementById('captcha-error').style.display = 'none';
+            
+            // Position the text in the center initially
+            const captchaText = document.getElementById('captcha-text');
+            captchaText.style.left = '50%';
+            captchaText.style.top = '50%';
+            captchaText.style.transform = 'translate(-50%, -50%)';
             
             // Log the interaction
             logInteraction('captcha_refreshed', { new_captcha: captcha });
@@ -647,11 +916,22 @@
                 
                 document.getElementById('reset-progress-bar').style.width = `${progress}%`;
                 
+                // Troll: Show fake notifications
+                if (progress >= 30 && progress < 40 && Math.random() < 0.2) {
+                    showNotification('Security Check', 'Checking email reputation score...');
+                }
+                
                 // After a while, add an error message and stop
                 if (progress >= 85 && Math.random() < 0.1) {
                     clearInterval(interval);
                     document.getElementById('reset-progress-text').textContent = "Error connecting to mail server";
                     logInteraction('reset_password_error', { progress: progress.toFixed(1) });
+                    
+                    // Show fake error notification
+                    setTimeout(() => {
+                        showSystemAlert('Mail Server Error', 
+                            'Unable to connect to mail server. Our security system has detected unusual activity from your network. This incident has been flagged for review.');
+                    }, 500);
                 }
             }, 500);
         }
@@ -683,6 +963,9 @@
                     document.getElementById('twofa-button').onclick = verifyTwoFactorCode;
                     
                     logInteraction('twofa_code_sent', { username: username });
+                    
+                    // Troll: Show fake notification
+                    showNotification('2FA Code Sent', 'Verification code has been sent to your registered device.');
                 } else if (progress >= 75) {
                     document.getElementById('twofa-progress-text').textContent = "Sending SMS code...";
                 } else if (progress >= 50) {
@@ -719,7 +1002,15 @@
                 if (progress >= 50) {
                     clearInterval(interval);
                     document.getElementById('twofa-progress').classList.add('hidden');
-                    alert("Invalid verification code. Please try again.");
+                    
+                    // Troll: Different failure messages based on randomness
+                    if (Math.random() < 0.3) {
+                        alert("Invalid verification code. Please try again.");
+                    } else if (Math.random() < 0.5) {
+                        alert("Code expired. Please request a new code.");
+                    } else {
+                        alert("Verification failed. Too many attempts.");
+                    }
                     
                     logInteraction('twofa_code_invalid', { code: code });
                 }
@@ -742,6 +1033,51 @@
             setTimeout(() => {
                 window.location.href = "/system/verify";
             }, 3000);
+        }
+        
+        // Show notification
+        function showNotification(title, message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-message').textContent = message;
+            
+            notification.style.display = 'block';
+            
+            // Auto-hide after some seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 4000);
+            
+            // Log the interaction
+            logInteraction('notification_shown', { title, message });
+        }
+        
+        // Show system alert
+        function showSystemAlert(title, message) {
+            const alert = document.getElementById('system-alert');
+            document.getElementById('system-alert-title').textContent = title;
+            document.getElementById('system-alert-message').textContent = message;
+            
+            alert.style.display = 'block';
+            
+            // Log the interaction
+            logInteraction('system_alert_shown', { title, message });
+        }
+        
+        // Close system alert
+        function closeSystemAlert() {
+            document.getElementById('system-alert').style.display = 'none';
+            
+            // Log the interaction
+            logInteraction('system_alert_closed');
+        }
+        
+        // Generate a fake IP address
+        function generateFakeIP() {
+            return Math.floor(Math.random() * 256) + '.' + 
+                   Math.floor(Math.random() * 256) + '.' + 
+                   Math.floor(Math.random() * 256) + '.' + 
+                   Math.floor(Math.random() * 256);
         }
         
         // Function to log interactions with the honeypot

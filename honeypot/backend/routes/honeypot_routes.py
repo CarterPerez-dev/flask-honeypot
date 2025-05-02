@@ -1192,7 +1192,6 @@ def register_routes_with_blueprint(blueprint, handler_function):
     # Register all routes with the blueprint
     for category, paths in routes.items():
         for path in paths:
-            # Register both GET and POST methods for each route
             blueprint.add_url_rule(
                 path, 
                 endpoint=f"honeypot_{category}_{path.replace('/', '_').replace('.', '_')}",
