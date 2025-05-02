@@ -1,0 +1,158 @@
+/* src/components/JsonSyntaxHighlighter.css */
+.json-syntax-highlighter {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid var(--admin-border, #252a3c);
+  overflow: hidden;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.json-syntax-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--admin-border, #252a3c);
+}
+
+.json-syntax-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.json-copy-btn {
+  background: rgba(101, 67, 204, 0.8);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.json-copy-btn:hover {
+  background: rgba(101, 67, 204, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(101, 67, 204, 0.4);
+}
+
+.json-copy-btn:active {
+  transform: translateY(1px);
+}
+
+.json-copy-btn::before {
+  content: '📋';
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.json-syntax-content {
+  padding: 15px;
+  overflow-x: auto;
+  overflow-y: auto;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.json-syntax-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: #e2e2e2;
+}
+
+/* Syntax Highlighting Colors */
+.json-key {
+  color: #ff79c6;
+  font-weight: 500;
+}
+
+.json-string {
+  color: #f1fa8c;
+}
+
+.json-number {
+  color: #bd93f9;
+}
+
+.json-boolean {
+  color: #ffb86c;
+  font-weight: 600;
+}
+
+.json-null {
+  color: #ff5555;
+  font-style: italic;
+}
+
+.json-bracket {
+  color: #8be9fd;
+  font-weight: 600;
+}
+
+.json-comma {
+  color: #6272a4;
+}
+
+.json-syntax-error {
+  padding: 15px;
+  color: #ff5555;
+  background: rgba(255, 85, 85, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #ff5555;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  margin: 15px 0;
+}
+
+/* Animation for hover effect */
+@keyframes json-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(101, 67, 204, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(101, 67, 204, 0.5);
+  }
+}
+
+.json-syntax-highlighter:hover {
+  animation: json-glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Custom scrollbar for the JSON content */
+.json-syntax-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.json-syntax-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.json-syntax-content::-webkit-scrollbar-thumb {
+  background: rgba(101, 67, 204, 0.6);
+  border-radius: 3px;
+}
+
+.json-syntax-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(101, 67, 204, 0.8);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .json-syntax-highlighter {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  
+  .json-syntax-content {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}

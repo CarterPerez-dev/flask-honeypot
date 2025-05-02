@@ -1,15 +1,53 @@
-// src/components/common/LoadingPlaceholder.js
+// src/components/LoadingPlaceholder.js
 import React from 'react';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaCircleNotch, FaAtom } from 'react-icons/fa';
+import './LoadingPlaceholder.css';
 
-// Simple placeholder component
-const LoadingPlaceholder = ({ height = '100px', message = "Loading...", className = '' }) => {
-    const combinedClassName = `honeypot-loading-placeholder ${className}`.trim();
+const LoadingPlaceholder = ({ 
+  height = '100px', 
+  message = "Loading...", 
+  className = '',
+  type = 'default',
+  showSpinner = true
+}) => {
+    const combinedClassName = `honeypot-loading-placeholder ${className} ${type}-loader`.trim();
+    
+    // Different spinner types for variety
+    const renderSpinner = () => {
+        if (!showSpinner) return null;
+        
+        switch(type) {
+            case 'pulse':
+                return <div className="honeypot-pulse-spinner"></div>;
+            case 'wave':
+                return (
+                    <div className="honeypot-wave-spinner">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className="honeypot-wave-bar"></div>
+                        ))}
+                    </div>
+                );
+            case 'dot-pulse':
+                return (
+                    <div className="honeypot-dot-pulse-spinner">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="honeypot-dot"></div>
+                        ))}
+                    </div>
+                );
+            case 'atom':
+                return <FaAtom className="honeypot-atom-spinner" />;
+            case 'circle':
+                return <FaCircleNotch className="honeypot-spinner" />;
+            default:
+                return <FaSpinner className="honeypot-spinner" />;
+        }
+    };
 
     return (
         <div className={combinedClassName} style={{ minHeight: height }}>
-            <FaSpinner className="honeypot-spinner" />
-            {message && <span>{message}</span>}
+            {renderSpinner()}
+            {message && <span className="honeypot-loading-message">{message}</span>}
         </div>
     );
 };

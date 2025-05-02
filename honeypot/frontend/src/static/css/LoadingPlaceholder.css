@@ -1,26 +1,72 @@
+/* src/components/LoadingPlaceholder.css */
 .honeypot-loading-placeholder {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--admin-bg-card-secondary);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
     padding: 20px;
-    color: var(--admin-text-secondary);
+    color: var(--admin-text-secondary, #9da8b9);
     width: 100%;
     box-sizing: border-box; 
     text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(101, 67, 204, 0.1);
+    overflow: hidden;
+    position: relative;
 }
 
-.honeypot-loading-placeholder span {
-    margin-top: 10px;
-    font-size: 0.9em;
+.honeypot-loading-placeholder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(101, 67, 204, 0.6), transparent);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.honeypot-loading-message {
+    margin-top: 15px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #9da8b9, #e2e2e2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: pulse-text 2s infinite alternate;
+}
+
+@keyframes pulse-text {
+    0% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .honeypot-spinner {
-    font-size: 1.5em;
-    color: var(--admin-accent);
+    font-size: 2rem;
+    color: var(--admin-accent, #6543cc);
     animation: honeypot-spin 1.5s linear infinite;
+}
+
+.honeypot-atom-spinner {
+    font-size: 2.5rem;
+    color: var(--admin-accent, #6543cc);
+    animation: honeypot-atom-spin 3s linear infinite;
 }
 
 @keyframes honeypot-spin {
@@ -28,21 +74,185 @@
     100% { transform: rotate(360deg); }
 }
 
+@keyframes honeypot-atom-spin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
 
+/* Pulse loader style */
+.honeypot-pulse-spinner {
+    width: 40px;
+    height: 40px;
+    background-color: var(--admin-accent, #6543cc);
+    border-radius: 50%;
+    animation: honeypot-pulse 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+@keyframes honeypot-pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+        box-shadow: 0 0 0 0 rgba(101, 67, 204, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 15px rgba(101, 67, 204, 0);
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+        box-shadow: 0 0 0 0 rgba(101, 67, 204, 0);
+    }
+}
+
+/* Wave loader style */
+.honeypot-wave-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 40px;
+    gap: 5px;
+}
+
+.honeypot-wave-bar {
+    width: 5px;
+    height: 20px;
+    background-color: var(--admin-accent, #6543cc);
+    border-radius: 3px;
+    animation: honeypot-wave-animation 1s ease-in-out infinite;
+}
+
+.honeypot-wave-bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.honeypot-wave-bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.honeypot-wave-bar:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.honeypot-wave-bar:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes honeypot-wave-animation {
+    0% {
+        height: 10px;
+    }
+    50% {
+        height: 30px;
+    }
+    100% {
+        height: 10px;
+    }
+}
+
+/* Dot pulse loader style */
+.honeypot-dot-pulse-spinner {
+    display: flex;
+    gap: 5px;
+}
+
+.honeypot-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--admin-accent, #6543cc);
+    border-radius: 50%;
+    animation: honeypot-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.honeypot-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.honeypot-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes honeypot-dot-pulse {
+    0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Card style adjustments */
 .honeypot-stat-card .honeypot-loading-placeholder {
-    padding: 5px; 
+    padding: 10px; 
     min-height: 40px;
-    background-color: transparent; 
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
 }
 
-.honeypot-stat-card .honeypot-loading-placeholder .honeypot-spinner {
-     font-size: 1.2em;
-}
-.honeypot-stat-card .honeypot-loading-placeholder span {
-     font-size: 0.8em;
+.honeypot-stat-card .honeypot-loading-placeholder .honeypot-spinner,
+.honeypot-stat-card .honeypot-loading-placeholder .honeypot-pulse-spinner,
+.honeypot-stat-card .honeypot-loading-placeholder .honeypot-atom-spinner {
+    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
 }
 
+.honeypot-stat-card .honeypot-loading-placeholder .honeypot-loading-message {
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
 
+/* Chart content loader adjustments */
 .honeypot-chart-content .honeypot-loading-placeholder {
-     height: 100%; /* Fill the chart content area */
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px dashed rgba(101, 67, 204, 0.3);
+}
+
+/* Theme-based adjustments */
+.dark-theme .honeypot-loading-placeholder {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(101, 67, 204, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .honeypot-loading-placeholder {
+        padding: 15px;
+    }
+    
+    .honeypot-spinner,
+    .honeypot-atom-spinner,
+    .honeypot-pulse-spinner {
+        font-size: 1.8rem;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .honeypot-loading-message {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .honeypot-loading-placeholder {
+        padding: 10px;
+    }
+    
+    .honeypot-spinner,
+    .honeypot-atom-spinner,
+    .honeypot-pulse-spinner {
+        font-size: 1.5rem;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .honeypot-loading-message {
+        font-size: 13px;
+    }
 }
