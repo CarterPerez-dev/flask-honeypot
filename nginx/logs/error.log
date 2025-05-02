@@ -119,3 +119,4 @@
 2025/05/01 08:49:30 [error] 20#20: *1 connect() failed (113: Host is unreachable) while connecting to upstream, client: ::1, server: _, request: "GET /api/health HTTP/1.1", upstream: "http://172.18.0.4:5000/health", host: "localhost"
 2025/05/01 08:50:02 [error] 21#21: *3 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: ::1, server: _, request: "GET /api/health HTTP/1.1", upstream: "http://172.18.0.4:5000/health", host: "localhost"
 2025/05/01 08:55:10 [error] 20#20: *1 connect() failed (113: Host is unreachable) while connecting to upstream, client: ::1, server: _, request: "GET /api/health HTTP/1.1", upstream: "http://172.18.0.4:5000/health", host: "localhost"
+2025/05/02 11:07:28 [error] 21#21: *1 connect() failed (113: Host is unreachable) while connecting to upstream, client: ::1, server: _, request: "GET /api/health HTTP/1.1", upstream: "http://172.18.0.4:5000/health", host: "localhost"

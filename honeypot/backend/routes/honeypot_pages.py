@@ -7,15 +7,14 @@ import json
 import hashlib
 from werkzeug.local import LocalProxy
 from honeypot.database.mongodb import get_db
+from honeypot.backend.helpers.db_utils import with_db_recovery
 
 
 honeypot_pages_bp = Blueprint('honeypot_pages', __name__, 
                               template_folder='templates')
 
 
-db = LocalProxy(get_db)
-
-
+@with_db_recovery
 def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
     """Log detailed information about honeypot interactions"""
     try:
@@ -59,7 +58,11 @@ def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
             log_entry["additional_data"] = additional_data
             
         # Store in database
-        db.honeypot_interactions.insert_one(log_entry)
+        db = get_db()
+        if db is not None:
+            db.honeypot_interactions.insert_one(log_entry)
+        else:
+            logging.error("Database connection unavailable, interaction not logged")
         
         return interaction_id
     except Exception as e:
@@ -154,6 +157,7 @@ def determine_category(path):
     return None
 
 @honeypot_pages_bp.route('/system/<path:component>', methods=['GET'])
+@with_db_recovery
 def system_trap(component):
     """
     Handles the redirection loop with realistic-looking URLs
@@ -209,6 +213,7 @@ def system_trap(component):
 @honeypot_pages_bp.route('/wp-admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/wp-login.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/wordpress/wp-admin', methods=['GET', 'POST'])
+@with_db_recovery
 def wordpress_honeypot():
     """WordPress admin honeypot"""
     log_honeypot_interaction('wordpress', 'page_view')
@@ -217,6 +222,7 @@ def wordpress_honeypot():
 # Add specific routes for other categories here...
 @honeypot_pages_bp.route('/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/administrator', methods=['GET', 'POST'])
+@with_db_recovery
 def admin_panel_honeypot():
     """Admin panel honeypot"""
     log_honeypot_interaction('admin_panels', 'page_view')
@@ -229,6 +235,7 @@ def admin_panel_honeypot():
 @honeypot_pages_bp.route('/pma', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/mysql', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/db/phpmyadmin', methods=['GET', 'POST'])
+@with_db_recovery
 def phpmyadmin_honeypot():
     """phpMyAdmin honeypot"""
     log_honeypot_interaction('phpmyadmin', 'page_view')
@@ -238,16 +245,17 @@ def phpmyadmin_honeypot():
 @honeypot_pages_bp.route('/cpanel', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/cPanel', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/cp', methods=['GET', 'POST'])
+@with_db_recovery
 def cpanel_honeypot():
     """cPanel honeypot"""
     log_honeypot_interaction('cpanel', 'page_view')
     return render_template('honeypot/cpanel-dashboard.html')
 
 # Admin panel routes
-
 @honeypot_pages_bp.route('/admin/login', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/admin/dashboard', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/adminpanel', methods=['GET', 'POST'])
+@with_db_recovery
 def admin_honeypot():
     """Generic admin honeypot"""
     log_honeypot_interaction('admin_panels', 'page_view')
@@ -259,6 +267,7 @@ def admin_honeypot():
 @honeypot_pages_bp.route('/woocommerce/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/magento/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/shopify/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def ecommerce_honeypot():
     """E-commerce admin honeypot"""
     log_honeypot_interaction('ecommerce', 'page_view')
@@ -270,6 +279,7 @@ def ecommerce_honeypot():
 @honeypot_pages_bp.route('/drupal/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/craft/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/cms/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def cms_honeypot():
     """CMS admin honeypot"""
     log_honeypot_interaction('additional_cms', 'page_view')
@@ -281,6 +291,7 @@ def cms_honeypot():
 @honeypot_pages_bp.route('/vbulletin/admincp', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/xenforo/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/community/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def forum_honeypot():
     """Forum admin honeypot"""
     log_honeypot_interaction('forums_and_boards', 'page_view')
@@ -292,6 +303,7 @@ def forum_honeypot():
 @honeypot_pages_bp.route('/cloud/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/filerun/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/share/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def file_sharing_honeypot():
     """File sharing admin honeypot"""
     log_honeypot_interaction('file_sharing', 'page_view')
@@ -303,6 +315,7 @@ def file_sharing_honeypot():
 @honeypot_pages_bp.route('/redis', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/elasticsearch', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/couchdb/_utils', methods=['GET', 'POST'])
+@with_db_recovery
 def database_honeypot():
     """Database admin honeypot"""
     log_honeypot_interaction('database_endpoints', 'page_view')
@@ -314,6 +327,7 @@ def database_honeypot():
 @honeypot_pages_bp.route('/squirrelmail', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/mail/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/postfixadmin', methods=['GET', 'POST'])
+@with_db_recovery
 def mail_server_honeypot():
     """Mail server admin honeypot"""
     log_honeypot_interaction('mail_servers', 'page_view')
@@ -325,6 +339,7 @@ def mail_server_honeypot():
 @honeypot_pages_bp.route('/rdp', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/webssh', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/terminal', methods=['GET', 'POST'])
+@with_db_recovery
 def remote_access_honeypot():
     """Remote access honeypot"""
     log_honeypot_interaction('remote_access', 'page_view')
@@ -336,6 +351,7 @@ def remote_access_honeypot():
 @honeypot_pages_bp.route('/ipcam', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/smart-home', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/device/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def iot_device_honeypot():
     """IoT device admin honeypot"""
     log_honeypot_interaction('iot_devices', 'page_view')
@@ -347,6 +363,7 @@ def iot_device_honeypot():
 @honeypot_pages_bp.route('/travis', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/circleci', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/kubernetes', methods=['GET', 'POST'])
+@with_db_recovery
 def devops_honeypot():
     """DevOps tools honeypot"""
     log_honeypot_interaction('devops_tools', 'page_view')
@@ -358,6 +375,7 @@ def devops_honeypot():
 @honeypot_pages_bp.route('/laravel/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/spring/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/flask/admin', methods=['GET', 'POST'])
+@with_db_recovery
 def framework_honeypot():
     """Web framework admin honeypot"""
     log_honeypot_interaction('web_frameworks', 'page_view')
@@ -369,6 +387,7 @@ def framework_honeypot():
 @honeypot_pages_bp.route('/debug/console', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/debug/panel', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/trace', methods=['GET', 'POST'])
+@with_db_recovery
 def debug_honeypot():
     """Logs and debug honeypot"""
     log_honeypot_interaction('logs_and_debug', 'page_view')
@@ -380,6 +399,7 @@ def debug_honeypot():
 @honeypot_pages_bp.route('/cmd.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/backdoor.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/terminal.php', methods=['GET', 'POST'])
+@with_db_recovery
 def shell_honeypot():
     """Backdoor/shell honeypot"""
     log_honeypot_interaction('backdoors_and_shells', 'page_view')
@@ -391,6 +411,7 @@ def shell_honeypot():
 @honeypot_pages_bp.route('/product.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/user.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/view.php', methods=['GET', 'POST'])
+@with_db_recovery
 def injection_honeypot():
     """Injection vulnerabilities honeypot"""
     # Log any parameters passed
@@ -404,6 +425,7 @@ def injection_honeypot():
 @honeypot_pages_bp.route('/mobile/api', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/app/api', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/api/app', methods=['GET', 'POST'])
+@with_db_recovery
 def mobile_api_honeypot():
     """Mobile API honeypot"""
     # Log any JSON data
@@ -417,6 +439,7 @@ def mobile_api_honeypot():
 @honeypot_pages_bp.route('/gcp/login', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/s3/console', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/ec2/console', methods=['GET', 'POST'])
+@with_db_recovery
 def cloud_honeypot():
     """Cloud services honeypot"""
     log_honeypot_interaction('cloud_services', 'page_view')
@@ -428,20 +451,19 @@ def cloud_honeypot():
 @honeypot_pages_bp.route('/grafana', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/prometheus', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/monitoring', methods=['GET', 'POST'])
+@with_db_recovery
 def monitoring_honeypot():
     """Monitoring tools honeypot"""
     log_honeypot_interaction('monitoring_tools', 'page_view')
     return render_template('honeypot/monitoring-dashboard.html')
 
-
-
 @honeypot_pages_bp.route('/<path:path>', methods=['GET', 'POST'])
+@with_db_recovery
 def catch_all_honeypot(path):
     """Catch-all route that categorizes and redirects to specific honeypot handlers"""
     # Determine category from path
     category = determine_category(path)
     
-
     if category == "wordpress":
         return redirect(url_for('honeypot_pages.wordpress_honeypot'))
     elif category == "admin_panels":
@@ -484,5 +506,4 @@ def catch_all_honeypot(path):
     elif 'admin' in path:
         return redirect(url_for('honeypot_pages.admin_honeypot'))
     
-
-    return render_template('honeypot/generic-login.html')  
+    return render_template('honeypot/generic-login.html')

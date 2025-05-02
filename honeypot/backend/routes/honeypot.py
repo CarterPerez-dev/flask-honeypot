@@ -18,6 +18,8 @@ from honeypot.backend.helpers.proxy_detector import get_proxy_detector, ProxyCac
 from honeypot.database.models import HoneypotInteraction, ScanAttempt, WatchlistEntry, BlocklistEntry
 from honeypot.backend.routes.admin import require_admin  
 from honeypot.database.mongodb import get_db, get_mongo_client
+from honeypot.backend.helpers.db_utils import with_db_recovery
+
 # Create logger
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,7 @@ DEFAULT_SCAN_PATHS = {
 # Load common scan paths from database
 COMMON_SCAN_PATHS = set()
 
+@with_db_recovery
 def load_common_scan_paths():
     """Load the most common scan paths from the database"""
     global COMMON_SCAN_PATHS
@@ -46,8 +49,8 @@ def load_common_scan_paths():
     COMMON_SCAN_PATHS = DEFAULT_SCAN_PATHS.copy()
     
     try:
-        from flask import current_app
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        # Get database connection directly
+        db = get_db()
         
         if db:
             # Get top 500 scanned paths from database
@@ -257,6 +260,7 @@ def detect_bot_patterns(user_agent, request_info):
     return bot_indicators if bot_indicators else None
 
 
+@with_db_recovery
 def log_scan_attempt(path, method, params=None, data=None):
     """
     Log comprehensive details about the scan attempt to the database.
@@ -402,7 +406,7 @@ def log_scan_attempt(path, method, params=None, data=None):
                     scan_log["notes"].append(f"Suspicious parameter: {param}")
         
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is not None:
             try:
@@ -453,6 +457,7 @@ def log_scan_attempt(path, method, params=None, data=None):
         return None
 
 
+@with_db_recovery
 def is_rate_limited(client_id):
     """
     Check if the client has exceeded the honeypot rate limit.
@@ -471,7 +476,7 @@ def is_rate_limited(client_id):
     cutoff = now - timedelta(seconds=rate_period)
     
     # Get database connection
-    db = current_app.extensions.get('mongodb', {}).get('db')
+    db = get_db()
     
     if db is None:
         logger.warning("MongoDB connection not available, rate limit check failed")
@@ -490,6 +495,7 @@ def is_rate_limited(client_id):
         return False
 
 
+@with_db_recovery
 def get_threat_score(client_id):
     """
     Calculate a threat score for this client based on past behavior.
@@ -502,7 +508,7 @@ def get_threat_score(client_id):
         int: Threat score (0-100)
     """
     # Get database connection
-    db = current_app.extensions.get('mongodb', {}).get('db')
+    db = get_db()
     
     if db is None:
         logger.warning("MongoDB connection not available, threat score check failed")
@@ -540,6 +546,7 @@ def get_threat_score(client_id):
         return 0
 
 
+@with_db_recovery
 def handle_high_threat(client_id, threat_score):
     """
     Take action based on threat score.
@@ -549,7 +556,7 @@ def handle_high_threat(client_id, threat_score):
         threat_score (int): Threat score (0-100)
     """
     # Get database connection
-    db = current_app.extensions.get('mongodb', {}).get('db')
+    db = get_db()
     
     if db is None:
         logger.warning("MongoDB connection not available, high threat handling failed")
@@ -593,6 +600,7 @@ def handle_high_threat(client_id, threat_score):
         logger.error(f"Error handling high threat: {str(e)}")
 
 
+@with_db_recovery
 def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
     """
     Log honeypot interaction to the database
@@ -652,7 +660,7 @@ def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
         log_entry["is_tor_or_proxy"] = detect_tor_or_proxy(ip)
         
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is not None:
             try:
@@ -711,6 +719,7 @@ def render_fake_response(path, method):
 
 
 @honeypot_bp.route('/log-interaction', methods=['POST'])
+@with_db_recovery
 def log_client_side_interaction():
     """
     Endpoint for logging client-side interactions via AJAX
@@ -720,7 +729,6 @@ def log_client_side_interaction():
     """
     if not require_admin():  
         return jsonify({"error": "Not authorized"}), 401
-
 
     if not request.is_json:
         return jsonify({"status": "error", "message": "Expected JSON data"}), 400
@@ -736,6 +744,7 @@ def log_client_side_interaction():
 
 
 @honeypot_bp.route('/handler', methods=['GET', 'POST'])
+@with_db_recovery
 def honeypot_handler():
     """
     Main handler for all honeypot routes.
@@ -748,7 +757,6 @@ def honeypot_handler():
     path = request.path
     method = request.method
     
-
     client_id = log_scan_attempt(
         path, 
         method, 
@@ -756,25 +764,19 @@ def honeypot_handler():
         data=(request.method == 'POST')
     )
     
-
     if client_id and is_rate_limited(client_id):
-
         threat_score = get_threat_score(client_id)
         
-
         if threat_score >= 50:
             handle_high_threat(client_id, threat_score)
             
-
             if threat_score >= 90:
                 resp = make_response("403 Forbidden", 403)
                 resp.headers['Server'] = 'Apache/2.4.41 (Ubuntu)'
                 return resp
     
-
     resp = make_response(render_fake_response(path, method))
     
-
     resp.headers['Server'] = 'Apache/2.4.41 (Ubuntu)'
     resp.headers['X-Powered-By'] = 'PHP/7.4.3'
     
@@ -782,6 +784,7 @@ def honeypot_handler():
 
 
 @honeypot_bp.route('/analytics', methods=['GET'])
+@with_db_recovery
 def honeypot_analytics():
     """
     Return analytics about honeypot activity
@@ -795,7 +798,7 @@ def honeypot_analytics():
     
     try:
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
@@ -847,6 +850,7 @@ def honeypot_analytics():
 
 
 @honeypot_bp.route('/detailed-stats', methods=['GET'])
+@with_db_recovery
 def honeypot_detailed_stats():
     """
     Return detailed statistics about honeypot activity
@@ -859,7 +863,7 @@ def honeypot_detailed_stats():
     
     try:
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is None:
             logger.error("Database connection not available")
@@ -986,6 +990,7 @@ def honeypot_detailed_stats():
 
 
 @honeypot_bp.route('/interactions', methods=['GET'])
+@with_db_recovery
 def view_honeypot_interactions():
     """
     Get honeypot interactions with filtering and pagination
@@ -998,7 +1003,7 @@ def view_honeypot_interactions():
     
     try:
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
@@ -1048,6 +1053,7 @@ def view_honeypot_interactions():
 
 
 @honeypot_bp.route('/interactions/<interaction_id>', methods=['GET'])
+@with_db_recovery
 def get_honeypot_interaction(interaction_id):
     """
     Get detailed information about a specific honeypot interaction
@@ -1063,7 +1069,7 @@ def get_honeypot_interaction(interaction_id):
     
     try:
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
@@ -1197,6 +1203,7 @@ def get_suspicious_factors(interaction):
 
 
 @honeypot_bp.route('/html-interactions', methods=['GET'])
+@with_db_recovery
 def get_html_interactions():
     """
     Get honeypot HTML page interactions with filtering and pagination
@@ -1209,7 +1216,7 @@ def get_html_interactions():
     
     try:
         # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        db = get_db()
         
         if db is None:
             return jsonify({"error": "Database connection not available"}), 500
@@ -1305,6 +1312,7 @@ def get_html_interactions():
         
         
 @honeypot_bp.route('/combined-analytics', methods=['GET'])
+@with_db_recovery
 def combined_honeypot_analytics():
     """Return combined analytics from both honeypot collections"""
 
@@ -1312,7 +1320,7 @@ def combined_honeypot_analytics():
         return jsonify({"error": "Not authorized"}), 401
     
     try:
-        # Get database connection - use the get_db function directly
+        # Get database connection directly
         db = get_db()
         
         if db is None:
@@ -1339,38 +1347,8 @@ def combined_honeypot_analytics():
             stats["total_attempts"] = scan_attempts_count + interactions_count
         except Exception as e:
             logger.error(f"Error counting documents: {str(e)}")
-            
-            # Try to recover from MongoDB connection errors
-            if "Cannot use MongoClient after close" in str(e):
-                try:
-                    logger.info("Trying to recover MongoDB connection...")
-                    get_mongo_client()  
-                    db = get_db()  
-                    
-                    if db:
-                        # Retry the operation
-                        scan_attempts_count = db.scanAttempts.count_documents({})
-                        interactions_count = db.honeypot_interactions.count_documents({})
-                        stats["total_attempts"] = scan_attempts_count + interactions_count
-                        logger.info("Successfully recovered MongoDB connection")
-                    else:
-                        return jsonify({
-                            "error": "Database reconnection failed",
-                            "details": "Could not reestablish database connection"
-                        }), 500
-                except Exception as recover_e:
-                    logger.error(f"Failed to recover MongoDB connection: {str(recover_e)}")
-                    return jsonify({
-                        "error": "Database operation failed",
-                        "details": "Connection recovery failed: " + str(recover_e)
-                    }), 500
-            else:
-                return jsonify({
-                    "error": "Database operation failed",
-                    "details": str(e)
-                }), 500
+            return jsonify({"error": "Failed to count documents", "details": str(e)}), 500
         
-
         try:
             # Combine unique IPs from both collections
             scan_ips = set(db.scanAttempts.distinct("ip") or [])

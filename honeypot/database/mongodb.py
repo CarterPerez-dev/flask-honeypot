@@ -101,9 +101,7 @@ def get_db():
 def close_db(e=None):
     """
     Clean up request-specific resources.
-    No longer closes the MongoDB connection, just removes it from the request context.
     """
-    # Just remove the db reference from g, but don't close the client
     g.pop('db', None)
 
 def cleanup_db_connections():

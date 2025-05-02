@@ -9,6 +9,8 @@ from honeypot.backend.middleware.csrf_protection import generate_csrf_token, csr
 from functools import wraps
 import logging
 import traceback
+from honeypot.database.mongodb import get_db
+from honeypot.backend.helpers.db_utils import with_db_recovery
 
 from dotenv import load_dotenv
 
@@ -23,14 +25,6 @@ angela_bp = Blueprint('angela', __name__)
 # Get admin password from environment variable
 ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')
 
-# MongoDB connection helper
-def get_db():
-    """Safely get MongoDB database connection"""
-    db = current_app.extensions.get('mongodb', {}).get('db')
-    if db is None:
-        logger.warning("MongoDB connection not available")
-    return db
-
 @angela_bp.route('/csrf-token', methods=['GET'])
 def get_csrf_token():
     """Generate and return a CSRF token"""
@@ -42,6 +36,7 @@ def get_csrf_token():
     return response
 
 @angela_bp.route('/login', methods=['POST'])
+@with_db_recovery
 def admin_login():
     """Handle admin login authentication with explicit session management"""
     try:
@@ -82,7 +77,6 @@ def admin_login():
             current_app.logger.info(f"Session after login: {dict(session)}")
 
             # Log to database if available
-            # --- CORRECTION HERE ---
             if db is not None:
                 try:
                     db.admin_login_attempts.delete_many({"ip": client_ip})
@@ -94,7 +88,6 @@ def admin_login():
                     })
                 except Exception as e:
                     logger.error(f"Error writing to database during login: {e}")
-            # --- END CORRECTION ---
 
             return jsonify({
                 "message": "Authorization successful",
@@ -102,7 +95,6 @@ def admin_login():
             }), 200
         else:
             # Handle failed login
-            # --- CORRECTION HERE ---
             if db is not None:
                 try:
                     failed_attempts = db.admin_login_attempts.find_one({"ip": client_ip})
@@ -158,12 +150,8 @@ def admin_login():
                     })
                 except Exception as e:
                     logger.error(f"Error updating failed login attempts: {e}")
-            # --- END CORRECTION ---
-
-            # Log the failed attempt even if DB connection failed, but don't crash
             else: # db is None
                 logger.warning(f"DB connection unavailable, cannot log failed login attempt for IP: {client_ip}")
-
 
             return jsonify({"error": "Invalid admin credentials"}), 403
     except Exception as e:
@@ -205,22 +193,6 @@ def check_auth_status():
             "isAuthenticated": False,
             "message": "Error checking authentication status"
         }), 500
-
-@angela_bp.route('/logout', methods=['POST'])
-def admin_logout():
-    """Handle admin logout"""
-    try:
-        session.pop('honeypot_admin_logged_in', None)
-        session.pop('admin_last_active', None)
-        session.pop('admin_ip', None)
-        # Also clear the CSRF token from the session on logout
-        session.pop('csrf_token', None)
-        session.modified = True # Ensure session changes are saved
-
-        return jsonify({"message": "Logged out successfully"}), 200
-    except Exception as e:
-        logger.error(f"Error during logout: {e}")
-        return jsonify({"error": "Logout process failed"}), 500
 
 @angela_bp.route('/logout', methods=['POST'])
 def admin_logout():
