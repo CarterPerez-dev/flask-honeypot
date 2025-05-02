@@ -263,6 +263,7 @@ const HtmlInteractionsTab = () => {
       }
     } finally {
       setStatsLoading(false);
+      setLoading(false);
     }
   }, []);
 
