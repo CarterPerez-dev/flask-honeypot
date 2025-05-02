@@ -8,7 +8,7 @@
   --admin-bg-darkest: #0a0b14;
   --admin-bg-dark: #121525;
   --admin-bg-medium: #1a1f38;
-  --admin-bg-card: #22283e;
+  --admin-bg-card: #11131c;
   --admin-bg-card-hover: #2a3149;
   --admin-bg-elevated: #2e3655;
   
@@ -120,8 +120,8 @@
   --admin-spacing-3xl: 3rem;    /* 48px */
   
   /* Element Sizes */
-  --admin-sidebar-width: 280px;
-  --admin-sidebar-collapsed-width: 70px;
+  --admin-sidebar-width: 250px;
+  --admin-sidebar-collapsed-width: 85px;
   --admin-header-height: 70px;
   --admin-footer-height: 50px;
   
@@ -243,7 +243,7 @@
   --admin-bg-darkest: #0a0a0c;
   --admin-bg-dark: #151419;
   --admin-bg-medium: #1e1c25;
-  --admin-bg-card: #252230;
+  --admin-bg-card: #11131c;
   --admin-bg-card-hover: #2d293d;
   --admin-bg-elevated: #332e48;
   
@@ -280,6 +280,67 @@
   --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #fc0077);
   --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #00a2ff);
   --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #00ff9d);
+  
+  /* Add HoneypotTab variable mappings */
+  --hp-bg-dark: var(--admin-bg-darkest);
+  --hp-bg-medium: var(--admin-bg-dark);
+  --hp-bg-card: var(--admin-bg-card);
+  --hp-accent-primary: var(--admin-primary);
+  --hp-accent-secondary: var(--admin-secondary);
+  --hp-accent-tertiary: var(--admin-tertiary);
+  --hp-accent-quaternary: var(--admin-quaternary);
+  --hp-accent-warning: var(--admin-warning);
+  --hp-accent-danger: var(--admin-danger);
+  --hp-text-primary: var(--admin-text-primary);
+  --hp-text-secondary: var(--admin-text-secondary);
+  --hp-text-tertiary: var(--admin-text-tertiary);
+  --hp-border-light: var(--admin-border-light);
+  --hp-border-medium: var(--admin-border-medium);
+  --hp-border-heavy: var(--admin-border-heavy);
+  --hp-card-bg: var(--admin-bg-card);
+  --hp-card-bg-hover: var(--admin-bg-card-hover);
+  --hp-gradient-purple: var(--admin-gradient-primary);
+  --hp-gradient-pink: var(--admin-gradient-secondary);
+  --hp-gradient-blue: var(--admin-gradient-tertiary);
+  --hp-gradient-green: var(--admin-gradient-quaternary);
+  --hp-shadow-sm: var(--admin-shadow-sm);
+  --hp-shadow-md: var(--admin-shadow-md);
+  --hp-shadow-lg: var(--admin-shadow-lg);
+  --hp-glow-purple: var(--admin-shadow-primary);
+  --hp-glow-pink: var(--admin-shadow-secondary);
+  --hp-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
+  
+  /* Add HTMLInteractionsTab variable mappings */
+  --html-bg-dark: var(--admin-bg-darkest);
+  --html-bg-medium: var(--admin-bg-dark);
+  --html-bg-card: var(--admin-bg-card);
+  --html-accent-primary: var(--admin-primary);
+  --html-accent-secondary: var(--admin-secondary);
+  --html-accent-tertiary: var(--admin-tertiary);
+  --html-accent-quaternary: var(--admin-quaternary);
+  --html-accent-warning: var(--admin-warning);
+  --html-accent-danger: var(--admin-danger);
+  --html-text-primary: var(--admin-text-primary);
+  --html-text-secondary: var(--admin-text-secondary);
+  --html-text-tertiary: var(--admin-text-tertiary);
+  --html-border-light: var(--admin-border-light);
+  --html-border-medium: var(--admin-border-medium);
+  --html-border-heavy: var(--admin-border-heavy);
+  --html-card-bg: var(--admin-bg-card);
+  --html-card-bg-hover: var(--admin-bg-card-hover);
+  --html-gradient-purple: var(--admin-gradient-primary);
+  --html-gradient-pink: var(--admin-gradient-secondary);
+  --html-gradient-blue: var(--admin-gradient-tertiary);
+  --html-gradient-green: var(--admin-gradient-quaternary);
+  --html-shadow-sm: var(--admin-shadow-sm);
+  --html-shadow-md: var(--admin-shadow-md);
+  --html-shadow-lg: var(--admin-shadow-lg);
+  --html-glow-purple: var(--admin-shadow-primary);
+  --html-glow-pink: var(--admin-shadow-secondary);
+  --html-status-success: var(--admin-success);
+  --html-status-warning: var(--admin-warning);
+  --html-status-danger: var(--admin-danger);
+  --html-status-info: var(--admin-info);
 }
 
 /* Dark Ocean Theme */
@@ -290,7 +351,7 @@
   --admin-bg-darkest: #03070e;
   --admin-bg-dark: #070e19;
   --admin-bg-medium: #0e1726;
-  --admin-bg-card: #152031;
+  --admin-bg-card: #11131c;
   --admin-bg-card-hover: #1d293e;
   --admin-bg-elevated: #243244;
   
@@ -327,6 +388,67 @@
   --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #05a79a);
   --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #0090c5);
   --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #00c2b8);
+  
+  /* Add HoneypotTab variable mappings */
+  --hp-bg-dark: var(--admin-bg-darkest);
+  --hp-bg-medium: var(--admin-bg-dark);
+  --hp-bg-card: var(--admin-bg-card);
+  --hp-accent-primary: var(--admin-primary);
+  --hp-accent-secondary: var(--admin-secondary);
+  --hp-accent-tertiary: var(--admin-tertiary);
+  --hp-accent-quaternary: var(--admin-quaternary);
+  --hp-accent-warning: var(--admin-warning);
+  --hp-accent-danger: var(--admin-danger);
+  --hp-text-primary: var(--admin-text-primary);
+  --hp-text-secondary: var(--admin-text-secondary);
+  --hp-text-tertiary: var(--admin-text-tertiary);
+  --hp-border-light: var(--admin-border-light);
+  --hp-border-medium: var(--admin-border-medium);
+  --hp-border-heavy: var(--admin-border-heavy);
+  --hp-card-bg: var(--admin-bg-card);
+  --hp-card-bg-hover: var(--admin-bg-card-hover);
+  --hp-gradient-purple: var(--admin-gradient-primary);
+  --hp-gradient-pink: var(--admin-gradient-secondary);
+  --hp-gradient-blue: var(--admin-gradient-tertiary);
+  --hp-gradient-green: var(--admin-gradient-quaternary);
+  --hp-shadow-sm: var(--admin-shadow-sm);
+  --hp-shadow-md: var(--admin-shadow-md);
+  --hp-shadow-lg: var(--admin-shadow-lg);
+  --hp-glow-purple: var(--admin-shadow-primary);
+  --hp-glow-pink: var(--admin-shadow-secondary);
+  --hp-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
+  
+  /* Add HTMLInteractionsTab variable mappings */
+  --html-bg-dark: var(--admin-bg-darkest);
+  --html-bg-medium: var(--admin-bg-dark);
+  --html-bg-card: var(--admin-bg-card);
+  --html-accent-primary: var(--admin-primary);
+  --html-accent-secondary: var(--admin-secondary);
+  --html-accent-tertiary: var(--admin-tertiary);
+  --html-accent-quaternary: var(--admin-quaternary);
+  --html-accent-warning: var(--admin-warning);
+  --html-accent-danger: var(--admin-danger);
+  --html-text-primary: var(--admin-text-primary);
+  --html-text-secondary: var(--admin-text-secondary);
+  --html-text-tertiary: var(--admin-text-tertiary);
+  --html-border-light: var(--admin-border-light);
+  --html-border-medium: var(--admin-border-medium);
+  --html-border-heavy: var(--admin-border-heavy);
+  --html-card-bg: var(--admin-bg-card);
+  --html-card-bg-hover: var(--admin-bg-card-hover);
+  --html-gradient-purple: var(--admin-gradient-primary);
+  --html-gradient-pink: var(--admin-gradient-secondary);
+  --html-gradient-blue: var(--admin-gradient-tertiary);
+  --html-gradient-green: var(--admin-gradient-quaternary);
+  --html-shadow-sm: var(--admin-shadow-sm);
+  --html-shadow-md: var(--admin-shadow-md);
+  --html-shadow-lg: var(--admin-shadow-lg);
+  --html-glow-purple: var(--admin-shadow-primary);
+  --html-glow-pink: var(--admin-shadow-secondary);
+  --html-status-success: var(--admin-success);
+  --html-status-warning: var(--admin-warning);
+  --html-status-danger: var(--admin-danger);
+  --html-status-info: var(--admin-info);
 }
 
 /* Blood Red Theme */
@@ -337,7 +459,7 @@
   --admin-bg-darkest: #0c0203;
   --admin-bg-dark: #150506;
   --admin-bg-medium: #230a0c;
-  --admin-bg-card: #2e0d10;
+  --admin-bg-card: #11131c;
   --admin-bg-card-hover: #3b1114;
   --admin-bg-elevated: #461519;
   
@@ -374,8 +496,68 @@
   --admin-gradient-secondary: linear-gradient(135deg, var(--admin-secondary), #770915);
   --admin-gradient-tertiary: linear-gradient(135deg, var(--admin-tertiary), #aa3109);
   --admin-gradient-quaternary: linear-gradient(135deg, var(--admin-quaternary), #9c1e1e);
+  
+  /* Add HoneypotTab variable mappings */
+  --hp-bg-dark: var(--admin-bg-darkest);
+  --hp-bg-medium: var(--admin-bg-dark);
+  --hp-bg-card: var(--admin-bg-card);
+  --hp-accent-primary: var(--admin-primary);
+  --hp-accent-secondary: var(--admin-secondary);
+  --hp-accent-tertiary: var(--admin-tertiary);
+  --hp-accent-quaternary: var(--admin-quaternary);
+  --hp-accent-warning: var(--admin-warning);
+  --hp-accent-danger: var(--admin-danger);
+  --hp-text-primary: var(--admin-text-primary);
+  --hp-text-secondary: var(--admin-text-secondary);
+  --hp-text-tertiary: var(--admin-text-tertiary);
+  --hp-border-light: var(--admin-border-light);
+  --hp-border-medium: var(--admin-border-medium);
+  --hp-border-heavy: var(--admin-border-heavy);
+  --hp-card-bg: var(--admin-bg-card);
+  --hp-card-bg-hover: var(--admin-bg-card-hover);
+  --hp-gradient-purple: var(--admin-gradient-primary);
+  --hp-gradient-pink: var(--admin-gradient-secondary);
+  --hp-gradient-blue: var(--admin-gradient-tertiary);
+  --hp-gradient-green: var(--admin-gradient-quaternary);
+  --hp-shadow-sm: var(--admin-shadow-sm);
+  --hp-shadow-md: var(--admin-shadow-md);
+  --hp-shadow-lg: var(--admin-shadow-lg);
+  --hp-glow-purple: var(--admin-shadow-primary);
+  --hp-glow-pink: var(--admin-shadow-secondary);
+  --hp-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
+  
+  /* Add HTMLInteractionsTab variable mappings */
+  --html-bg-dark: var(--admin-bg-darkest);
+  --html-bg-medium: var(--admin-bg-dark);
+  --html-bg-card: var(--admin-bg-card);
+  --html-accent-primary: var(--admin-primary);
+  --html-accent-secondary: var(--admin-secondary);
+  --html-accent-tertiary: var(--admin-tertiary);
+  --html-accent-quaternary: var(--admin-quaternary);
+  --html-accent-warning: var(--admin-warning);
+  --html-accent-danger: var(--admin-danger);
+  --html-text-primary: var(--admin-text-primary);
+  --html-text-secondary: var(--admin-text-secondary);
+  --html-text-tertiary: var(--admin-text-tertiary);
+  --html-border-light: var(--admin-border-light);
+  --html-border-medium: var(--admin-border-medium);
+  --html-border-heavy: var(--admin-border-heavy);
+  --html-card-bg: var(--admin-bg-card);
+  --html-card-bg-hover: var(--admin-bg-card-hover);
+  --html-gradient-purple: var(--admin-gradient-primary);
+  --html-gradient-pink: var(--admin-gradient-secondary);
+  --html-gradient-blue: var(--admin-gradient-tertiary);
+  --html-gradient-green: var(--admin-gradient-quaternary);
+  --html-shadow-sm: var(--admin-shadow-sm);
+  --html-shadow-md: var(--admin-shadow-md);
+  --html-shadow-lg: var(--admin-shadow-lg);
+  --html-glow-purple: var(--admin-shadow-primary);
+  --html-glow-pink: var(--admin-shadow-secondary);
+  --html-status-success: var(--admin-success);
+  --html-status-warning: var(--admin-warning);
+  --html-status-danger: var(--admin-danger);
+  --html-status-info: var(--admin-info);
 }
-
 /* Global Reset */
 *,
 *::before,
@@ -517,13 +699,13 @@ body {
 }
 
 .honeypot-admin-collapse-btn {
-  width: 30px;
+  width: 25px;
   height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--admin-bg-medium);
+  background-color: transparent;
   border: 1px solid var(--admin-border-light);
   color: var(--admin-text-secondary);
   cursor: pointer;
@@ -721,9 +903,10 @@ body {
 
 .nav-collapsed .honeypot-admin-logout-btn span {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-30px);
   position: absolute;
 }
+
 
 /* Mobile Menu */
 .honeypot-admin-mobile-header {

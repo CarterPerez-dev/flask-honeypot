@@ -12,7 +12,7 @@ import OverviewTab from '../tabs/OverviewTab';
 
 // Import icons
 import { 
-  FaHome, FaSpider, FaCode, FaSignOutAlt, 
+  FaChessKnight, FaChessRook, FaChessKing, FaChess, FaSignOutAlt, 
   FaBars, FaTimes, FaChevronRight, FaChevronDown 
 } from 'react-icons/fa';
 
@@ -65,8 +65,8 @@ function AdminDashboard() {
       <div className="honeypot-admin-sidebar">
         <div className="honeypot-admin-sidebar-header">
           <div className="honeypot-admin-logo">
-            <FaSpider />
-            <h1>Honeypot Admin</h1>
+            <FaChessKnight />
+            <h1>Honeypot</h1>
           </div>
           <button 
             className="honeypot-admin-collapse-btn"
@@ -81,19 +81,19 @@ function AdminDashboard() {
           <ul className="honeypot-admin-nav-list">
             <li className={activeTab === "overview" ? "active" : ""}>
               <button onClick={() => switchTab("overview")}>
-                <FaHome />
+                <FaChess />
                 <span>Overview</span>
               </button>
             </li>
             <li className={activeTab === "honeypot" ? "active" : ""}>
               <button onClick={() => switchTab("honeypot")}>
-                <FaSpider />
+                <FaChessKing />
                 <span>Honeypot</span>
               </button>
             </li>
             <li className={activeTab === "html" ? "active" : ""}>
               <button onClick={() => switchTab("html")}>
-                <FaCode />
+                <FaChessRook />
                 <span>HTML Interactions</span>
               </button>
             </li>
@@ -117,8 +117,8 @@ function AdminDashboard() {
           {mobileNavOpen ? <FaTimes /> : <FaBars />}
         </button>
         <div className="honeypot-admin-mobile-logo">
-          <FaSpider />
-          <h1>Honeypot Admin</h1>
+          <FaChessKnight />
+          <h1>Honeypot </h1>
         </div>
       </div>
       
@@ -128,17 +128,17 @@ function AdminDashboard() {
           <ul>
             <li>
               <button onClick={() => switchTab("overview")}>
-                <FaHome /> Overview
+                <FaChess /> Overview
               </button>
             </li>
             <li>
               <button onClick={() => switchTab("honeypot")}>
-                <FaSpider /> Honeypot
+                <FaChessKing /> Honeypot
               </button>
             </li>
             <li>
               <button onClick={() => switchTab("html")}>
-                <FaCode /> HTML Interactions
+                <FaChessRook/> HTML Interactions
               </button>
             </li>
             <li>

@@ -17,6 +17,7 @@
   padding-bottom: 15px;
   border-bottom: 1px solid var(--hp-border-light);
   position: relative;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .honeypot-tab .admin-content-header::after {
@@ -581,6 +582,15 @@
   text-align: left;
   border-bottom: 2px solid var(--hp-border-light);
   z-index: 10;
+}
+
+
+.honeypot-section-icon {
+  margin: 10px;
+}
+
+.honeypot-chart-icon {
+  margin: 10px;
 }
 
 .honeypot-tab .honeypot-data-table td {
