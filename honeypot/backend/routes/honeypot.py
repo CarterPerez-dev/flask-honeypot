@@ -16,6 +16,7 @@ import traceback
 # Import helpers
 from honeypot.backend.helpers.proxy_detector import get_proxy_detector, ProxyCache
 from honeypot.database.models import HoneypotInteraction, ScanAttempt, WatchlistEntry, BlocklistEntry
+from honeypot.backend.routes.admin import require_admin  
 
 # Create logger
 logger = logging.getLogger(__name__)
@@ -700,6 +701,10 @@ def log_client_side_interaction():
     Returns:
         dict: Status response
     """
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401
+
+
     if not request.is_json:
         return jsonify({"status": "error", "message": "Expected JSON data"}), 400
     
@@ -721,11 +726,12 @@ def honeypot_handler():
     
     Returns:
         Response: Fake response
-    """
+    """ 
+    
     path = request.path
     method = request.method
     
-    # Log this scan attempt
+
     client_id = log_scan_attempt(
         path, 
         method, 
@@ -733,25 +739,25 @@ def honeypot_handler():
         data=(request.method == 'POST')
     )
     
-    # Check if this client is rate limited
+
     if client_id and is_rate_limited(client_id):
-        # Calculate threat score for this client
+
         threat_score = get_threat_score(client_id)
         
-        # Handle high-threat clients
+
         if threat_score >= 50:
             handle_high_threat(client_id, threat_score)
             
-            # For very high threats, we might want to return a different response
+
             if threat_score >= 90:
                 resp = make_response("403 Forbidden", 403)
                 resp.headers['Server'] = 'Apache/2.4.41 (Ubuntu)'
                 return resp
     
-    # Return a fake but convincing response
+
     resp = make_response(render_fake_response(path, method))
     
-    # Add some realistic headers
+
     resp.headers['Server'] = 'Apache/2.4.41 (Ubuntu)'
     resp.headers['X-Powered-By'] = 'PHP/7.4.3'
     
@@ -766,8 +772,9 @@ def honeypot_analytics():
     Returns:
         dict: Honeypot analytics
     """
-    # This should be protected by authentication
-    # In a real implementation, you would check for admin credentials
+    
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401    
     
     try:
         # Get database connection
@@ -830,8 +837,8 @@ def honeypot_detailed_stats():
     Returns:
         dict: Detailed honeypot statistics
     """
-    # This should be protected by authentication
-    # In a real implementation, you would check for admin credentials
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401    
     
     try:
         # Get database connection
@@ -938,8 +945,8 @@ def view_honeypot_interactions():
     Returns:
         dict: Honeypot interactions
     """
-    # This should be protected by authentication
-    # In a real implementation, you would check for admin credentials
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401
     
     try:
         # Get database connection
@@ -1003,8 +1010,8 @@ def get_honeypot_interaction(interaction_id):
     Returns:
         dict: Honeypot interaction details
     """
-    # This should be protected by authentication
-    # In a real implementation, you would check for admin credentials
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401
     
     try:
         # Get database connection
@@ -1149,8 +1156,8 @@ def get_html_interactions():
     Returns:
         dict: HTML interactions
     """
-    # This should be protected by authentication
-    # In a real implementation, you would check for admin credentials
+    if not require_admin():  
+        return jsonify({"error": "Not authorized"}), 401
     
     try:
         # Get database connection
@@ -1252,11 +1259,18 @@ def get_html_interactions():
 @honeypot_bp.route('/combined-analytics', methods=['GET'])
 def combined_honeypot_analytics():
     """Return combined analytics from both honeypot collections"""
-    if not require_cracked_admin():  
+
+    if not require_admin():  
         return jsonify({"error": "Not authorized"}), 401
     
     try:
-        # Get statistics from both collections
+        # Get database connection
+        db = current_app.extensions.get('mongodb', {}).get('db')
+        
+        if not db:
+            return jsonify({"error": "Database connection not available"}), 500
+        
+        # Statistics from both collections
         scan_attempts_count = db.scanAttempts.count_documents({})
         interactions_count = db.honeypot_interactions.count_documents({})
         total_attempts = scan_attempts_count + interactions_count
@@ -1404,7 +1418,7 @@ def combined_honeypot_analytics():
         }), 200
     except Exception as e:
         logger.error(f"Error in combined honeypot analytics: {str(e)}")
-        # Return empty data with 200 status
+        
         return jsonify({
             "total_attempts": 0,
             "unique_ips": 0,
@@ -1414,6 +1428,3 @@ def combined_honeypot_analytics():
             "top_ips": [],
             "recent_activity": []
         }), 200
-
-        
-        
