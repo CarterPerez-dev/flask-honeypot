@@ -545,7 +545,6 @@ const HtmlInteractionsTab = () => {
     
     const prepareTimeSeriesData = () => {
       if (!statsData.time_series || !Array.isArray(statsData.time_series) || statsData.time_series.length === 0) {
-        // Generate placeholder data for better UI
         const today = new Date();
         const data = [];
         for (let i = 30; i >= 0; i--) {
