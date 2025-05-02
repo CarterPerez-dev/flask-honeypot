@@ -1,3 +1,35 @@
+const CSRF_TOKEN_KEY = 'csrfToken'; // Define a key for storage
+
+/**
+ * Retrieves the CSRF token from sessionStorage.
+ * @returns {string | null} The token or null if not found.
+ */
+export const getCsrfToken = () => {
+  try {
+    return sessionStorage.getItem(CSRF_TOKEN_KEY);
+  } catch (e) {
+    console.error("Error reading CSRF token from sessionStorage:", e);
+    return null;
+  }
+};
+
+/**
+ * Stores the CSRF token in sessionStorage.
+ * @param {string} token The CSRF token to store.
+ */
+export const setCsrfToken = (token) => {
+  if (typeof token !== 'string') {
+    console.error("Invalid token passed to setCsrfToken:", token);
+    return;
+  }
+  try {
+    sessionStorage.setItem(CSRF_TOKEN_KEY, token);
+  } catch (e) {
+    console.error("Error writing CSRF token to sessionStorage:", e);
+  }
+};
+
+
 export const adminFetch = async (url, options = {}) => {
   const method = options.method || 'GET';
   let headers = { ...options.headers || {} };

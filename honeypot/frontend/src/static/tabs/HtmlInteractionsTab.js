@@ -6,11 +6,13 @@ import {
   FaAngleRight, FaClock, FaLocationArrow, FaFingerprint, 
   FaUser, FaKey, FaShieldAlt, FaSortUp, FaSortDown, FaSort
 } from "react-icons/fa";
-import { adminFetch } from './csrfHelper';
+import { adminFetch } from '../../components/csrfHelper';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 
 } from 'recharts';
+import { formatTimestamp } from '../../utils/dateUtils';
+
 
 const HtmlInteractionsTab = () => {
   // State management
@@ -20,7 +22,7 @@ const HtmlInteractionsTab = () => {
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState("overview"); // overview, interactions, details
+  const [viewMode, setViewMode] = useState("overview"); 
   
   // Filter states
   const [pageType, setPageType] = useState("all");
@@ -324,16 +326,6 @@ const HtmlInteractionsTab = () => {
     return sortOrder === "asc" ? <FaSortUp className="html-sort-icon" /> : <FaSortDown className="html-sort-icon" />;
   };
 
-
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "Unknown";
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleString();
-    } catch (e) {
-      return timestamp;
-    }
-  };
 
 
   const exportData = () => {
