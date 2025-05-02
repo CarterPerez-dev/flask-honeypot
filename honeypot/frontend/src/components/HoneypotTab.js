@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 
 const HoneypotTab = () => {
-  // State management
   const [honeypotData, setHoneypotData] = useState(null);
   const [detailedStats, setDetailedStats] = useState(null);
   const [interactions, setInteractions] = useState([]);
@@ -29,54 +28,68 @@ const HoneypotTab = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedInteraction, setSelectedInteraction] = useState(null);
   const [viewMode, setViewMode] = useState("overview"); 
+  const [retryCount, setRetryCount] = useState(0);
   // Chart colors
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57'];
 
-  // Fetch main honeypot data
   // Fetch main honeypot data
   const fetchHoneypotData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-
+      console.log("Fetching honeypot analytics data...");
       const response = await adminFetch("/api/honeypot/combined-analytics");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch honeypot analytics");
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Failed to fetch honeypot analytics: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
       console.log("Honeypot analytics data:", data);
       setHoneypotData(data);
       
-
       if (data && typeof data.total_attempts === 'number') {
         setTotalInteractions(data.total_attempts);
       } else if (data && Array.isArray(data.recent_activity)) {
-
         setTotalInteractions(data.recent_activity.length);
       }
       
     } catch (err) {
       console.error("Error fetching honeypot data:", err);
       setError(err.message || "Failed to fetch honeypot data");
+      
+
+      if (retryCount < 3) {
+        setTimeout(() => {
+          setRetryCount(prevCount => prevCount + 1);
+          fetchHoneypotData();
+        }, 3000); 
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [retryCount]);
 
-  // Fetch detailed statistics
+
   const fetchDetailedStats = useCallback(async () => {
     setStatsLoading(true);
     try {
+      console.log("Fetching detailed stats...");
       const response = await adminFetch("/api/honeypot/detailed-stats");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch detailed statistics");
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Failed to fetch detailed statistics: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
       console.log("Detailed stats data:", data);
       setDetailedStats(data);
     } catch (err) {
       console.error("Error fetching detailed stats:", err);
-      // Don't set main error, just log it
     } finally {
       setStatsLoading(false);
     }
@@ -102,9 +115,13 @@ const HoneypotTab = () => {
       }
       
       const response = await adminFetch(`/api/honeypot/interactions?${queryParams.toString()}`);
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch honeypot interactions");
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Failed to fetch interactions: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
       console.log("Interactions data:", data);
       
@@ -132,9 +149,13 @@ const HoneypotTab = () => {
     try {
       setLoading(true);
       const response = await adminFetch(`/api/honeypot/interactions/${id}`);
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch interaction details");
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Failed to fetch interaction details: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
       console.log("Interaction details:", data);
       
@@ -147,6 +168,13 @@ const HoneypotTab = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Reset retry count when component unmounts
+  useEffect(() => {
+    return () => {
+      setRetryCount(0);
+    };
   }, []);
 
   // Initial data load
@@ -337,7 +365,10 @@ const HoneypotTab = () => {
           <FaExclamationTriangle /> Error: {error}
           <button 
             className="honeypot-retry-btn" 
-            onClick={fetchHoneypotData}
+            onClick={() => {
+              setRetryCount(0); // Reset retry count
+              fetchHoneypotData();
+            }}
           >
             Retry
           </button>
@@ -1128,6 +1159,7 @@ const HoneypotTab = () => {
             className="honeypot-refresh-btn" 
             onClick={() => {
               console.log("Refresh button clicked");
+              setRetryCount(0); // Reset retry count
               fetchHoneypotData();
               fetchDetailedStats();
               if (viewMode === "interactions") {

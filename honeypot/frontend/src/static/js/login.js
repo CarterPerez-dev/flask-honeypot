@@ -31,8 +31,8 @@ const Login = () => {
         try {
           const data = JSON.parse(text);
           console.log("CSRF token received:", data.csrf_token.substring(0, 5) + '...');
-          setCsrfToken(data.csrf_token); // Store in localStorage
-          setCsrfTokenState(data.csrf_token); // Update component state
+          setCsrfToken(data.csrf_token); 
+          setCsrfTokenState(data.csrf_token); 
         } catch (e) {
           console.error("Failed to parse CSRF token response", e);
           setError("Server configuration error. Please contact admin.");
@@ -77,7 +77,7 @@ const Login = () => {
         if (response.ok) {
           console.log("Login successful!");
           
-          // Verify the session was created
+
           try {
             const verifyResponse = await fetch('/api/honeypot/angela/honey/angela', {
               credentials: 'include',

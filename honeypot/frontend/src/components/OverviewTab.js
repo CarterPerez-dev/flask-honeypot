@@ -7,22 +7,37 @@ const OverviewTab = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const fetchStats = async () => {
     setLoading(true);
     setError(null);
     
     try {
+      console.log("Fetching combined analytics...");
       const response = await adminFetch("/api/honeypot/combined-analytics");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch honeypot analytics");
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Failed to fetch honeypot analytics: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log("Overview data:", data);
       setStats(data);
     } catch (err) {
       console.error("Error fetching overview data:", err);
       setError(err.message || "Failed to fetch overview data");
+      
+      // If this is a server error (500), retry up to 3 times
+      if (retryCount < 3) {
+        console.log(`Retry attempt ${retryCount + 1}...`);
+        setTimeout(() => {
+          setRetryCount(prevCount => prevCount + 1);
+          fetchStats();
+        }, 3000); // Retry after 3 seconds
+      }
     } finally {
       setLoading(false);
     }
@@ -31,6 +46,11 @@ const OverviewTab = () => {
   // Initial data load
   useEffect(() => {
     fetchStats();
+    
+    // Cleanup function to reset retry count when component unmounts
+    return () => {
+      setRetryCount(0);
+    };
   }, []);
 
   if (loading) {
@@ -46,7 +66,13 @@ const OverviewTab = () => {
     return (
       <div className="honeypot-admin-error-message">
         <FaExclamationTriangle /> {error}
-        <button className="honeypot-admin-retry-btn" onClick={fetchStats}>
+        <button 
+          className="honeypot-admin-retry-btn" 
+          onClick={() => {
+            setRetryCount(0); // Reset retry count on manual retry
+            fetchStats();
+          }}
+        >
           Retry
         </button>
       </div>
@@ -68,7 +94,10 @@ const OverviewTab = () => {
         <h2><FaChartLine /> Honeypot Overview</h2>
         <button 
           className="honeypot-admin-refresh-btn" 
-          onClick={fetchStats}
+          onClick={() => {
+            setRetryCount(0); 
+            fetchStats();
+          }}
           disabled={loading}
         >
           {loading ? <FaSpinner className="honeypot-admin-spinner" /> : <FaSync />} Refresh

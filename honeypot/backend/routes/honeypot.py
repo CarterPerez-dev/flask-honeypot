@@ -405,39 +405,42 @@ def log_scan_attempt(path, method, params=None, data=None):
         db = current_app.extensions.get('mongodb', {}).get('db')
         
         if db:
-            # Insert into database
-            db.scanAttempts.insert_one(scan_log)
-            
-            # Update watchlist with this client
-            severity = 1  # Base severity level
-            
-            # Increase severity based on certain factors
-            if bot_indicators:
-                severity += 1
-            if is_tor_or_proxy:
-                severity += 1
-            if scan_log["notes"]:
-                severity += len(scan_log["notes"])
-            if is_port_scan:
-                severity += 2
-            if is_scanner:
-                severity += 3
-            if suspicious_params:
-                severity += 2
-            
-            # Update the watchlist
-            db.watchList.update_one(
-                {"clientId": client_id},
-                {
-                    "$set": {
-                        "lastSeen": datetime.utcnow(),
-                        "lastPath": path,
-                        "ip": ip
+            try:
+                # Insert into database
+                db.scanAttempts.insert_one(scan_log)
+                
+                # Update watchlist with this client
+                severity = 1  # Base severity level
+                
+                # Increase severity based on certain factors
+                if bot_indicators:
+                    severity += 1
+                if is_tor_or_proxy:
+                    severity += 1
+                if scan_log["notes"]:
+                    severity += len(scan_log["notes"])
+                if is_port_scan:
+                    severity += 2
+                if is_scanner:
+                    severity += 3
+                if suspicious_params:
+                    severity += 2
+                
+                # Update the watchlist
+                db.watchList.update_one(
+                    {"clientId": client_id},
+                    {
+                        "$set": {
+                            "lastSeen": datetime.utcnow(),
+                            "lastPath": path,
+                            "ip": ip
+                        },
+                        "$inc": {"count": 1, "severity": severity}
                     },
-                    "$inc": {"count": 1, "severity": severity}
-                },
-                upsert=True
-            )
+                    upsert=True
+                )
+            except Exception as e:
+                logger.error(f"Error saving scan attempt to database: {str(e)}")
         else:
             logger.warning("MongoDB connection not available, scan attempt not saved")
         
@@ -474,13 +477,17 @@ def is_rate_limited(client_id):
         logger.warning("MongoDB connection not available, rate limit check failed")
         return False
     
-    # Count recent requests from this client to honeypot endpoints
-    count = db.scanAttempts.count_documents({
-        "clientId": client_id,
-        "timestamp": {"$gte": cutoff}
-    })
-    
-    return count >= rate_limit
+    try:
+        # Count recent requests from this client to honeypot endpoints
+        count = db.scanAttempts.count_documents({
+            "clientId": client_id,
+            "timestamp": {"$gte": cutoff}
+        })
+        
+        return count >= rate_limit
+    except Exception as e:
+        logger.error(f"Error checking rate limit: {str(e)}")
+        return False
 
 
 def get_threat_score(client_id):
@@ -501,32 +508,36 @@ def get_threat_score(client_id):
         logger.warning("MongoDB connection not available, threat score check failed")
         return 0
     
-    # Get client history
-    client = db.watchList.find_one({"clientId": client_id})
-    if not client:
+    try:
+        # Get client history
+        client = db.watchList.find_one({"clientId": client_id})
+        if not client:
+            return 0
+        
+        # Base score
+        score = 0
+        
+        # Number of scan attempts
+        count = client.get("count", 0)
+        if count > 1:
+            score += min(count * 5, 50)  # Max 50 points from count
+        
+        # Severity from past scans
+        severity = client.get("severity", 0)
+        score += min(severity * 2, 30)  # Max 30 points from severity
+        
+        # Recent activity (within last hour)
+        cutoff = datetime.utcnow() - timedelta(hours=1)
+        recent_count = db.scanAttempts.count_documents({
+            "clientId": client_id,
+            "timestamp": {"$gte": cutoff}
+        })
+        score += min(recent_count * 2, 20)  # Max 20 points from recent activity
+        
+        return min(score, 100)  # Cap at 100
+    except Exception as e:
+        logger.error(f"Error calculating threat score: {str(e)}")
         return 0
-    
-    # Base score
-    score = 0
-    
-    # Number of scan attempts
-    count = client.get("count", 0)
-    if count > 1:
-        score += min(count * 5, 50)  # Max 50 points from count
-    
-    # Severity from past scans
-    severity = client.get("severity", 0)
-    score += min(severity * 2, 30)  # Max 30 points from severity
-    
-    # Recent activity (within last hour)
-    cutoff = datetime.utcnow() - timedelta(hours=1)
-    recent_count = db.scanAttempts.count_documents({
-        "clientId": client_id,
-        "timestamp": {"$gte": cutoff}
-    })
-    score += min(recent_count * 2, 20)  # Max 20 points from recent activity
-    
-    return min(score, 100)  # Cap at 100
 
 
 def handle_high_threat(client_id, threat_score):
@@ -544,39 +555,42 @@ def handle_high_threat(client_id, threat_score):
         logger.warning("MongoDB connection not available, high threat handling failed")
         return
     
-    if threat_score >= 80:
-        # Very high threat - add to blocklist for 7 days
-        db.securityBlocklist.update_one(
-            {"clientId": client_id},
-            {
-                "$set": {
-                    "blockUntil": datetime.utcnow() + timedelta(days=7),
-                    "reason": "Excessive scanning activity",
-                    "threatScore": threat_score,
-                    "updatedAt": datetime.utcnow()
-                }
-            },
-            upsert=True
-        )
-        
-        logger.warning(f"Added client {client_id} to blocklist (threat score: {threat_score})")
-        
-    elif threat_score >= 50:
-        # Medium-high threat - temporary block for 24 hours
-        db.securityBlocklist.update_one(
-            {"clientId": client_id},
-            {
-                "$set": {
-                    "blockUntil": datetime.utcnow() + timedelta(hours=24),
-                    "reason": "Suspicious scanning activity",
-                    "threatScore": threat_score,
-                    "updatedAt": datetime.utcnow()
-                }
-            },
-            upsert=True
-        )
-        
-        logger.info(f"Added client {client_id} to temporary blocklist (threat score: {threat_score})")
+    try:
+        if threat_score >= 80:
+            # Very high threat - add to blocklist for 7 days
+            db.securityBlocklist.update_one(
+                {"clientId": client_id},
+                {
+                    "$set": {
+                        "blockUntil": datetime.utcnow() + timedelta(days=7),
+                        "reason": "Excessive scanning activity",
+                        "threatScore": threat_score,
+                        "updatedAt": datetime.utcnow()
+                    }
+                },
+                upsert=True
+            )
+            
+            logger.warning(f"Added client {client_id} to blocklist (threat score: {threat_score})")
+            
+        elif threat_score >= 50:
+            # Medium-high threat - temporary block for 24 hours
+            db.securityBlocklist.update_one(
+                {"clientId": client_id},
+                {
+                    "$set": {
+                        "blockUntil": datetime.utcnow() + timedelta(hours=24),
+                        "reason": "Suspicious scanning activity",
+                        "threatScore": threat_score,
+                        "updatedAt": datetime.utcnow()
+                    }
+                },
+                upsert=True
+            )
+            
+            logger.info(f"Added client {client_id} to temporary blocklist (threat score: {threat_score})")
+    except Exception as e:
+        logger.error(f"Error handling high threat: {str(e)}")
 
 
 def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
@@ -641,8 +655,11 @@ def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
         db = current_app.extensions.get('mongodb', {}).get('db')
         
         if db:
-            # Store in database
-            db.honeypot_interactions.insert_one(log_entry)
+            try:
+                # Store in database
+                db.honeypot_interactions.insert_one(log_entry)
+            except Exception as e:
+                logger.error(f"Error saving interaction to database: {str(e)}")
         else:
             logger.warning("MongoDB connection not available, interaction not saved")
         
@@ -845,6 +862,7 @@ def honeypot_detailed_stats():
         db = current_app.extensions.get('mongodb', {}).get('db')
         
         if not db:
+            logger.error("Database connection not available")
             return jsonify({"error": "Database connection not available"}), 500
         
         # Get time frames for stats
@@ -853,80 +871,110 @@ def honeypot_detailed_stats():
         last_week = now - timedelta(days=7)
         last_month = now - timedelta(days=30)
         
-        # Get threats detected (interactions with certain patterns)
-        threats_detected = db.honeypot_interactions.count_documents({
-            "$or": [
-                {"suspicious_params": True},
-                {"is_scanner": True},
-                {"is_port_scan": True}
-            ]
-        })
-        
-        # Get unique page types and counts
-        page_types = db.honeypot_interactions.aggregate([
-            {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}}
-        ])
-        page_type_stats = list(page_types)
-        
-        # Get interaction types
-        interaction_types = db.honeypot_interactions.aggregate([
-            {"$group": {"_id": "$interaction_type", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}}
-        ])
-        interaction_stats = list(interaction_types)
-        
-        # Get time-based stats
-        today_count = db.honeypot_interactions.count_documents({
-            "timestamp": {"$gte": yesterday}
-        })
-        
-        week_count = db.honeypot_interactions.count_documents({
-            "timestamp": {"$gte": last_week}
-        })
-        
-        month_count = db.honeypot_interactions.count_documents({
-            "timestamp": {"$gte": last_month}
-        })
-        
-        # Get top interactors (IPs with most interactions)
-        top_interactors = list(db.honeypot_interactions.aggregate([
-            {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 10}
-        ]))
-        
-        # Get most downloaded payloads
-        payload_downloads = list(db.honeypot_interactions.aggregate([
-            {"$match": {"interaction_type": "download_attempt"}},
-            {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 5}
-        ]))
-        
-        # Get geographical distribution
-        countries = list(db.honeypot_interactions.aggregate([
-            {"$match": {"geoInfo.country": {"$exists": True}}},
-            {"$group": {"_id": "$geoInfo.country", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 10}
-        ]))
-        
-        # Combine all stats
+        # Initialize stats with default values
         stats = {
-            "threats_detected": threats_detected,
-            "unique_page_types": len(page_type_stats),
-            "unique_interaction_types": len(interaction_stats),
-            "today_interactions": today_count,
-            "week_interactions": week_count,
-            "month_interactions": month_count,
-            "page_type_stats": page_type_stats,
-            "interaction_stats": interaction_stats,
-            "top_interactors": top_interactors,
-            "payload_downloads": payload_downloads,
-            "geographic_stats": countries,
+            "threats_detected": 0,
+            "unique_page_types": 0,
+            "unique_interaction_types": 0,
+            "today_interactions": 0,
+            "week_interactions": 0,
+            "month_interactions": 0,
+            "page_type_stats": [],
+            "interaction_stats": [],
+            "top_interactors": [],
+            "payload_downloads": [],
+            "geographic_stats": [],
             "timestamp": now.isoformat()
         }
+        
+        # Wrap each database operation in its own try/except
+        try:
+            # Get threats detected (interactions with certain patterns)
+            stats["threats_detected"] = db.honeypot_interactions.count_documents({
+                "$or": [
+                    {"suspicious_params": True},
+                    {"is_scanner": True},
+                    {"is_port_scan": True}
+                ]
+            })
+        except Exception as e:
+            logger.error(f"Error counting threats: {str(e)}")
+        
+        try:
+            # Get unique page types and counts
+            page_types = db.honeypot_interactions.aggregate([
+                {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}}
+            ])
+            stats["page_type_stats"] = list(page_types)
+            stats["unique_page_types"] = len(stats["page_type_stats"])
+        except Exception as e:
+            logger.error(f"Error getting page types: {str(e)}")
+        
+        try:
+            # Get interaction types
+            interaction_types = db.honeypot_interactions.aggregate([
+                {"$group": {"_id": "$interaction_type", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}}
+            ])
+            stats["interaction_stats"] = list(interaction_types)
+            stats["unique_interaction_types"] = len(stats["interaction_stats"])
+        except Exception as e:
+            logger.error(f"Error getting interaction types: {str(e)}")
+        
+        try:
+            # Get time-based stats
+            stats["today_interactions"] = db.honeypot_interactions.count_documents({
+                "timestamp": {"$gte": yesterday}
+            })
+        except Exception as e:
+            logger.error(f"Error counting today's interactions: {str(e)}")
+        
+        try:
+            stats["week_interactions"] = db.honeypot_interactions.count_documents({
+                "timestamp": {"$gte": last_week}
+            })
+        except Exception as e:
+            logger.error(f"Error counting week's interactions: {str(e)}")
+        
+        try:
+            stats["month_interactions"] = db.honeypot_interactions.count_documents({
+                "timestamp": {"$gte": last_month}
+            })
+        except Exception as e:
+            logger.error(f"Error counting month's interactions: {str(e)}")
+        
+        try:
+            # Get top interactors (IPs with most interactions)
+            stats["top_interactors"] = list(db.honeypot_interactions.aggregate([
+                {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]))
+        except Exception as e:
+            logger.error(f"Error getting top interactors: {str(e)}")
+        
+        try:
+            # Get most downloaded payloads
+            stats["payload_downloads"] = list(db.honeypot_interactions.aggregate([
+                {"$match": {"interaction_type": "download_attempt"}},
+                {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 5}
+            ]))
+        except Exception as e:
+            logger.error(f"Error getting payload downloads: {str(e)}")
+        
+        try:
+            # Get geographical distribution
+            stats["geographic_stats"] = list(db.honeypot_interactions.aggregate([
+                {"$match": {"geoInfo.country": {"$exists": True}}},
+                {"$group": {"_id": "$geoInfo.country", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]))
+        except Exception as e:
+            logger.error(f"Error getting geographic stats: {str(e)}")
         
         return jsonify(stats), 200
     except Exception as e:
@@ -1268,45 +1316,79 @@ def combined_honeypot_analytics():
         db = current_app.extensions.get('mongodb', {}).get('db')
         
         if not db:
+            logger.error("Database connection not available")
             return jsonify({"error": "Database connection not available"}), 500
         
-        # Statistics from both collections
-        scan_attempts_count = db.scanAttempts.count_documents({})
-        interactions_count = db.honeypot_interactions.count_documents({})
-        total_attempts = scan_attempts_count + interactions_count
+        # Initialize with empty values
+        stats = {
+            "total_attempts": 0,
+            "unique_ips": 0,
+            "unique_clients": 0,
+            "today_interactions": 0,
+            "week_interactions": 0,
+            "threats_detected": 0,
+            "top_paths": [],
+            "top_ips": [],
+            "recent_activity": []
+        }
         
-        # Combine unique IPs from both collections
-        scan_ips = set(db.scanAttempts.distinct("ip"))
-        interaction_ips = set(db.honeypot_interactions.distinct("ip_address"))
-        unique_ips = len(scan_ips.union(interaction_ips))
+        try:
+            # Statistics from both collections
+            scan_attempts_count = db.scanAttempts.count_documents({})
+            interactions_count = db.honeypot_interactions.count_documents({})
+            stats["total_attempts"] = scan_attempts_count + interactions_count
+        except Exception as e:
+            logger.error(f"Error counting documents: {str(e)}")
+            return jsonify({
+                "error": "Database operation failed",
+                "details": str(e)
+            }), 500
         
-        # Combine unique clients
-        scan_clients = set(db.scanAttempts.distinct("clientId"))
-        interaction_clients = set(db.honeypot_interactions.distinct("interaction_id"))
-        unique_clients = len(scan_clients.union(interaction_clients))
+        # Error handling for each database operation
+        try:
+            # Combine unique IPs from both collections
+            scan_ips = set(db.scanAttempts.distinct("ip") or [])
+            interaction_ips = set(db.honeypot_interactions.distinct("ip_address") or [])
+            stats["unique_ips"] = len(scan_ips.union(interaction_ips))
+        except Exception as e:
+            logger.error(f"Error getting unique IPs: {str(e)}")
+        
+        try:
+            # Combine unique clients
+            scan_clients = set(db.scanAttempts.distinct("clientId") or [])
+            interaction_clients = set(db.honeypot_interactions.distinct("interaction_id") or [])
+            stats["unique_clients"] = len(scan_clients.union(interaction_clients))
+        except Exception as e:
+            logger.error(f"Error getting unique clients: {str(e)}")
         
         # Get top paths from both collections
         paths_data = []
         
-        # Get paths from scanAttempts
-        if scan_attempts_count > 0:
-            scan_paths_pipeline = [
-                {"$group": {"_id": "$path", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}},
-                {"$limit": 10}
-            ]
-            scan_paths = list(db.scanAttempts.aggregate(scan_paths_pipeline))
-            paths_data.extend(scan_paths)
+        try:
+            # Get paths from scanAttempts
+            if scan_attempts_count > 0:
+                scan_paths_pipeline = [
+                    {"$group": {"_id": "$path", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                    {"$limit": 10}
+                ]
+                scan_paths = list(db.scanAttempts.aggregate(scan_paths_pipeline))
+                paths_data.extend(scan_paths)
+        except Exception as e:
+            logger.error(f"Error getting scan paths: {str(e)}")
         
-        # Get paths from honeypot_interactions
-        if interactions_count > 0:
-            interaction_paths_pipeline = [
-                {"$group": {"_id": "$path", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}},
-                {"$limit": 10}
-            ]
-            interaction_paths = list(db.honeypot_interactions.aggregate(interaction_paths_pipeline))
-            paths_data.extend(interaction_paths)
+        try:
+            # Get paths from honeypot_interactions
+            if interactions_count > 0:
+                interaction_paths_pipeline = [
+                    {"$group": {"_id": "$path", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                    {"$limit": 10}
+                ]
+                interaction_paths = list(db.honeypot_interactions.aggregate(interaction_paths_pipeline))
+                paths_data.extend(interaction_paths)
+        except Exception as e:
+            logger.error(f"Error getting interaction paths: {str(e)}")
         
         # Combine and sort paths
         path_counts = {}
@@ -1318,32 +1400,38 @@ def combined_honeypot_analytics():
             else:
                 path_counts[path] = count
         
-        top_paths = [{"_id": k, "count": v} for k, v in path_counts.items()]
-        top_paths.sort(key=lambda x: x["count"], reverse=True)
-        top_paths = top_paths[:10]
+        stats["top_paths"] = [{"_id": k, "count": v} for k, v in path_counts.items()]
+        stats["top_paths"].sort(key=lambda x: x["count"], reverse=True)
+        stats["top_paths"] = stats["top_paths"][:10]
         
         # Similar approach for IPs
         ips_data = []
         
-        # Get IPs from scanAttempts
-        if scan_attempts_count > 0:
-            scan_ips_pipeline = [
-                {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}},
-                {"$limit": 10}
-            ]
-            scan_ips_list = list(db.scanAttempts.aggregate(scan_ips_pipeline))
-            ips_data.extend(scan_ips_list)
+        try:
+            # Get IPs from scanAttempts
+            if scan_attempts_count > 0:
+                scan_ips_pipeline = [
+                    {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                    {"$limit": 10}
+                ]
+                scan_ips_list = list(db.scanAttempts.aggregate(scan_ips_pipeline))
+                ips_data.extend(scan_ips_list)
+        except Exception as e:
+            logger.error(f"Error getting scan IPs: {str(e)}")
         
-        # Get IPs from honeypot_interactions
-        if interactions_count > 0:
-            interaction_ips_pipeline = [
-                {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}},
-                {"$limit": 10}
-            ]
-            interaction_ips_list = list(db.honeypot_interactions.aggregate(interaction_ips_pipeline))
-            ips_data.extend(interaction_ips_list)
+        try:
+            # Get IPs from honeypot_interactions
+            if interactions_count > 0:
+                interaction_ips_pipeline = [
+                    {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                    {"$limit": 10}
+                ]
+                interaction_ips_list = list(db.honeypot_interactions.aggregate(interaction_ips_pipeline))
+                ips_data.extend(interaction_ips_list)
+        except Exception as e:
+            logger.error(f"Error getting interaction IPs: {str(e)}")
         
         # Combine and sort IPs
         ip_counts = {}
@@ -1355,76 +1443,73 @@ def combined_honeypot_analytics():
             else:
                 ip_counts[ip] = count
         
-        top_ips = [{"_id": k, "count": v} for k, v in ip_counts.items()]
-        top_ips.sort(key=lambda x: x["count"], reverse=True)
-        top_ips = top_ips[:10]
+        stats["top_ips"] = [{"_id": k, "count": v} for k, v in ip_counts.items()]
+        stats["top_ips"].sort(key=lambda x: x["count"], reverse=True)
+        stats["top_ips"] = stats["top_ips"][:10]
         
         # Get recent activity (combine both collections)
-        recent_scan_attempts = list(db.scanAttempts.find().sort("timestamp", -1).limit(10))
-        recent_interactions = list(db.honeypot_interactions.find().sort("timestamp", -1).limit(10))
+        recent_activities = []
         
-        # Format scan attempts
-        for item in recent_scan_attempts:
-            item["_id"] = str(item["_id"])
-            if isinstance(item.get("timestamp"), datetime):
-                item["timestamp"] = item["timestamp"].isoformat()
-            # Normalize data structure
-            item["ip"] = item.get("ip")
-            item["path"] = item.get("path", "")
-            item["type"] = item.get("type", "page_view")
+        try:
+            recent_scan_attempts = list(db.scanAttempts.find().sort("timestamp", -1).limit(10))
+            # Format scan attempts
+            for item in recent_scan_attempts:
+                item["_id"] = str(item["_id"])
+                if isinstance(item.get("timestamp"), datetime):
+                    item["timestamp"] = item["timestamp"].isoformat()
+                # Normalize data structure
+                item["ip"] = item.get("ip")
+                item["path"] = item.get("path", "")
+                item["type"] = item.get("type", "page_view")
+                recent_activities.extend([item])
+        except Exception as e:
+            logger.error(f"Error getting recent scan attempts: {str(e)}")
         
-        # Format interactions
-        for item in recent_interactions:
-            item["_id"] = str(item["_id"])
-            if isinstance(item.get("timestamp"), datetime):
-                item["timestamp"] = item["timestamp"].isoformat()
-            # Normalize data structure
-            item["ip"] = item.get("ip_address")
-            item["path"] = item.get("path", "")
-            item["type"] = item.get("interaction_type", "page_view")
+        try:
+            recent_interactions = list(db.honeypot_interactions.find().sort("timestamp", -1).limit(10))
+            # Format interactions
+            for item in recent_interactions:
+                item["_id"] = str(item["_id"])
+                if isinstance(item.get("timestamp"), datetime):
+                    item["timestamp"] = item["timestamp"].isoformat()
+                # Normalize data structure
+                item["ip"] = item.get("ip_address")
+                item["path"] = item.get("path", "")
+                item["type"] = item.get("interaction_type", "page_view")
+                recent_activities.extend([item])
+        except Exception as e:
+            logger.error(f"Error getting recent interactions: {str(e)}")
         
         # Combine, sort by timestamp, and limit to 20
-        combined_activity = recent_scan_attempts + recent_interactions
-        combined_activity.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-        recent_activity = combined_activity[:20]
+        recent_activities.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        stats["recent_activity"] = recent_activities[:20]
         
         # Count detected threats
-        threats_detected = (
-            db.scanAttempts.count_documents({
+        try:
+            threats_detected = 0
+            threats_detected += db.scanAttempts.count_documents({
                 "$or": [
                     {"is_scanner": True},
                     {"is_port_scan": True},
                     {"suspicious_params": True},
                     {"bot_indicators": {"$exists": True, "$ne": []}}
                 ]
-            }) +
-            db.honeypot_interactions.count_documents({
+            })
+            threats_detected += db.honeypot_interactions.count_documents({
                 "$or": [
                     {"is_scanner": True},
                     {"is_port_scan": True},
                     {"suspicious_params": True}
                 ]
             })
-        )
+            stats["threats_detected"] = threats_detected
+        except Exception as e:
+            logger.error(f"Error counting threats: {str(e)}")
         
-        return jsonify({
-            "total_attempts": total_attempts,
-            "unique_ips": unique_ips,
-            "unique_clients": unique_clients,
-            "threats_detected": threats_detected,
-            "top_paths": top_paths,
-            "top_ips": top_ips,
-            "recent_activity": recent_activity
-        }), 200
+        return jsonify(stats), 200
     except Exception as e:
         logger.error(f"Error in combined honeypot analytics: {str(e)}")
-        
         return jsonify({
-            "total_attempts": 0,
-            "unique_ips": 0,
-            "unique_clients": 0,
-            "threats_detected": 0,
-            "top_paths": [],
-            "top_ips": [],
-            "recent_activity": []
-        }), 200
+            "error": "Failed to retrieve analytics",
+            "details": str(e)
+        }), 500

@@ -92,7 +92,6 @@ const HtmlInteractionsTab = () => {
       
     } catch (err) {
       console.error("Error fetching statistics:", err);
-      // Don't set main error, just log it
     } finally {
       setStatsLoading(false);
     }
@@ -122,25 +121,25 @@ const HtmlInteractionsTab = () => {
     }
   }, []);
 
-  // Initial data load
+
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
 
-  // Fetch interactions when filter, pagination changes
+
   useEffect(() => {
     if (viewMode === "interactions") {
       fetchInteractions();
     }
   }, [fetchInteractions, viewMode, page, limit]);
 
-  // Apply filters
+
   const applyFilters = () => {
-    setPage(1); // Reset to first page
+    setPage(1);
     fetchInteractions();
   };
 
-  // Handle search
+
   const handleSearch = (e) => {
     if (e.key === 'Enter') {
       applyFilters();
@@ -159,25 +158,25 @@ const HtmlInteractionsTab = () => {
   // Handle sort changes
   const handleSort = (field) => {
     if (sortField === field) {
-      // Toggle order if same field
+
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      // New field, default to desc
+
       setSortField(field);
       setSortOrder("desc");
     }
     
-    // Refetch with new sort
+
     fetchInteractions();
   };
 
-  // Render sort indicator
+
   const renderSortIndicator = (field) => {
     if (sortField !== field) return <FaSort className="html-sort-icon" />;
     return sortOrder === "asc" ? <FaSortUp className="html-sort-icon" /> : <FaSortDown className="html-sort-icon" />;
   };
 
-  // Format timestamp
+
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "Unknown";
     try {
@@ -188,7 +187,7 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Export data as JSON
+
   const exportData = () => {
     try {
       // Create a blob with the JSON data
