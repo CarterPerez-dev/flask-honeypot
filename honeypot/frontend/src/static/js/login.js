@@ -1,7 +1,7 @@
 // src/static/js/login.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSpider, FaLock, FaExclamationTriangle, FaEye, FaEyeSlash, FaKey, FaSignInAlt } from 'react-icons/fa'; 
+import { FaSpider, FaLock, FaExclamationTriangle, FaEye, FaEyeSlash, FaUserSecret, FaSignInAlt } from 'react-icons/fa'; 
 import { setCsrfToken } from '../../components/csrfHelper'; 
 import '../css/login.css';
 
@@ -167,7 +167,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="honeypot-login-form">
             <div className="honeypot-login-field">
               <label htmlFor="adminKey">
-                <FaKey /> Admin Key
+                <FaUserSecret /> Admin Key
               </label>
               <div className="honeypot-login-input-wrapper">
                 <input

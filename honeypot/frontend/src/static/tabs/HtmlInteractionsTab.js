@@ -915,7 +915,7 @@ const HtmlInteractionsTab = () => {
                   <input 
                     type="text" 
                     className="html-search-input" 
-                    placeholder="Search by IP, username, details..." 
+                    placeholder="Search by IP, type, details, time..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={handleSearch}

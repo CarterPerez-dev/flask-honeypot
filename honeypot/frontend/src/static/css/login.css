@@ -256,6 +256,7 @@
               0 10px 20px -10px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
+  perspective: 800px;
 }
 
 .honeypot-login-logo-container::before {
@@ -286,12 +287,16 @@
   font-size: 40px;
   color: white;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  animation: honeypot-pulse 2s ease-in-out infinite alternate;
+  animation: honeypot-spin-3d 6s linear infinite
 }
 
-@keyframes honeypot-pulse {
-  0% { transform: scale(0.95); }
-  100% { transform: scale(1.05); }
+@keyframes honeypot-spin-3d {
+  from {
+    transform: rotateY(0deg); 
+  }
+  to {
+    transform: rotateY(360deg);
+  }
 }
 
 .honeypot-login-title {
@@ -357,6 +362,8 @@
   gap: 8px;
   font-weight: 500;
   letter-spacing: 0.5px;
+  margin-left: 6px;
+  font-style: italic;
 }
 
 .honeypot-login-input-wrapper {

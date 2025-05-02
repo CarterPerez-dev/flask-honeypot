@@ -363,13 +363,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--hp-white-10);
+  background: rgba(240, 240, 240, 0.05);
   color: var(--hp-accent-primary);
   font-size: 26px;
   border-radius: 16px;
   position: relative;
   transition: all var(--hp-transition-normal);
-  box-shadow: inset 0 0 0 1px var(--hp-white-10);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.9);
 }
 
 .honeypot-tab .honeypot-stat-icon::after {
@@ -733,7 +733,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all var(--hp-transition-normal);
-  box-shadow: var(--hp-shadow-sm);
+  box-shadow: 1px var(--hp-shadow-sm);
 }
 
 .honeypot-tab .honeypot-action-btn:hover {
