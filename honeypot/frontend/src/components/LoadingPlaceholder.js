@@ -1,7 +1,7 @@
 // src/components/LoadingPlaceholder.js
 import React from 'react';
 import { FaSpinner, FaCircleNotch, FaAtom } from 'react-icons/fa';
-import './LoadingPlaceholder.css';
+import '../static/css/LoadingPlaceholder.css';
 
 const LoadingPlaceholder = ({ 
   height = '100px', 

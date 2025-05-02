@@ -1,4 +1,8 @@
 /* src/static/css/login.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+
+
 :root {
   --honeypot-bg-dark: #080915;
   --honeypot-bg-card: #131630;
@@ -28,7 +32,6 @@
   min-height: 100vh;
   width: 100%;
   background-color: var(--honeypot-bg-dark);
-  font-family: 'Orbitron', 'Roboto', sans-serif;
   color: var(--honeypot-text);
   position: relative;
   overflow: hidden;
@@ -55,24 +58,23 @@
   width: 100%;
   height: 100%;
   background-image: 
-    linear-gradient(rgba(101, 67, 204, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(101, 67, 204, 0.1) 1px, transparent 1px);
+    linear-gradient(rgba(101, 67, 204, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(101, 67, 204, 0.12) 1px, transparent 1px);
   background-size: 40px 40px;
   z-index: -1;
   opacity: 0.4;
   animation: honeypot-grid-fade 4s ease-in-out infinite alternate;
   perspective: 1000px;
   transform-style: preserve-3d;
-  transform: rotateX(60deg);
 }
 
 @keyframes honeypot-grid-fade {
   0% {
-    opacity: 0.3;
+    opacity: 0.8;
     background-size: 40px 40px;
   }
   100% {
-    opacity: 0.6;
+    opacity: 0.9;
     background-size: 42px 42px;
   }
 }
@@ -178,7 +180,7 @@
 /* Content Card with Enhanced Styling */
 .honeypot-login-content {
   width: 100%;
-  max-width: 420px;
+  max-width: 485px;
   z-index: 2;
   padding: 20px;
   position: relative;
@@ -301,6 +303,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-shadow: 0 2px 10px rgba(101, 67, 204, 0.2);
+  font-family: 'Orbitron', 'Roboto', sans-serif;
 }
 
 .honeypot-login-subtitle {
@@ -482,6 +485,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .honeypot-login-button-icon {
@@ -527,6 +531,7 @@
 .honeypot-login-footer p {
   margin: 0 0 15px;
   opacity: 0.8;
+  font-style: italic;
 }
 
 .honeypot-login-security-badge {

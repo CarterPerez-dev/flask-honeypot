@@ -1,18 +1,53 @@
-// src/components/cracked/tabs/HtmlInteractionsTab.js
+// Enhanced HtmlInteractionsTab.js
 import React, { useState, useEffect, useCallback } from "react";
 import { 
   FaCode, FaSync, FaSpinner, FaExclamationTriangle, 
   FaFilter, FaSearch, FaTable, FaChartBar, FaDownload, 
   FaAngleRight, FaClock, FaLocationArrow, FaFingerprint, 
-  FaUser, FaKey, FaShieldAlt, FaSortUp, FaSortDown, FaSort
+  FaUser, FaKey, FaShieldAlt, FaSortUp, FaSortDown, FaSort,
+  FaEye, FaGlobe, FaLock, FaDatabase, FaBullseye, FaTimes,
+  FaArrowLeft, FaServer, FaNetworkWired, FaSignature, 
+  FaMagic, FaLaptopCode, FaBug
 } from "react-icons/fa";
 import { adminFetch } from '../../components/csrfHelper';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 
+  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, 
+  AreaChart, Area
 } from 'recharts';
 import { formatTimestamp } from '../../utils/dateUtils';
+import JsonSyntaxHighlighter from '../../components/JsonSyntaxHighlighter';
 
+// Custom tooltip component for charts
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="html-custom-tooltip">
+        <p className="html-tooltip-label">{label}</p>
+        <p className="html-tooltip-value">
+          <span className="html-tooltip-count">{payload[0].value}</span> interactions
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Component to display when data is loading
+const LoadingIndicator = ({ message = "Loading data..." }) => (
+  <div className="html-loading-container">
+    <FaSpinner className="html-spinner" />
+    <p>{message}</p>
+  </div>
+);
+
+// Component for empty states
+const EmptyState = ({ message = "No data available" }) => (
+  <div className="html-no-data">
+    <FaExclamationTriangle />
+    <p>{message}</p>
+  </div>
+);
 
 const HtmlInteractionsTab = () => {
   // State management
@@ -41,17 +76,42 @@ const HtmlInteractionsTab = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   
   // Custom colors for charts
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57'];
-
+  const CHART_COLORS = [
+    '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', 
+    '#50bffe', '#ff4c8b', '#b76cff', '#ff6b6b', '#50c3a5'
+  ];
+  
+  // Animation control
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
   useEffect(() => {
     console.log("HTML Interactions Tab mounted");
     
+    // Check user preference for animations
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setAnimationsEnabled(!prefersReducedMotion);
 
+    // Add event listener for focus
+    window.addEventListener('focus', handleWindowFocus);
+    
     return () => {
       console.log("HTML Interactions Tab unmounted");
+      window.removeEventListener('focus', handleWindowFocus);
     };
   }, []);
+  
+  // Refresh data when window gets focus (for auto-updates)
+  const handleWindowFocus = () => {
+    if (viewMode === "overview") {
+      // Only refresh data if it's been more than 5 minutes since last refresh
+      const lastRefresh = localStorage.getItem('htmlTabLastRefresh');
+      const now = Date.now();
+      if (!lastRefresh || now - parseInt(lastRefresh) > 5 * 60 * 1000) {
+        fetchStats();
+        localStorage.setItem('htmlTabLastRefresh', now.toString());
+      }
+    }
+  };
   
   useEffect(() => {
     console.log("viewMode changed to:", viewMode);
@@ -63,7 +123,6 @@ const HtmlInteractionsTab = () => {
     }
   }, [stats]);
 
-
   // Fetch interactions with filters and pagination
   const fetchInteractions = useCallback(async () => {
     setLoading(true);
@@ -73,6 +132,8 @@ const HtmlInteractionsTab = () => {
       const queryParams = new URLSearchParams({
         page,
         limit,
+        sort_field: sortField,
+        sort_order: sortOrder,
         page_type: pageType !== "all" ? pageType : "",
         interaction_type: interactionType !== "all" ? interactionType : "",
         search: searchTerm,
@@ -81,7 +142,7 @@ const HtmlInteractionsTab = () => {
       const response = await adminFetch(`/api/honeypot/html-interactions?${queryParams.toString()}`);
       
       if (!response.ok) {
-        throw new Error("Failed to fetch interactions");
+        throw new Error(`Failed to fetch interactions: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
@@ -97,7 +158,7 @@ const HtmlInteractionsTab = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, pageType, interactionType, searchTerm]);
+  }, [page, limit, sortField, sortOrder, pageType, interactionType, searchTerm]);
 
   // Fetch statistics
   const fetchStats = useCallback(async () => {
@@ -109,7 +170,7 @@ const HtmlInteractionsTab = () => {
       const response = await adminFetch("/api/honeypot/detailed-stats");
       
       if (!response.ok) {
-        throw new Error("Failed to fetch statistics");
+        throw new Error(`Failed to fetch statistics: ${response.status} ${response.statusText}`);
       }
       
       // Log the raw response for debugging
@@ -120,6 +181,20 @@ const HtmlInteractionsTab = () => {
         // Try to parse the JSON response
         const data = JSON.parse(text);
         console.log("Parsed stats data:", data);
+        
+        // Process time series data for better visualization
+        if (data.time_series && Array.isArray(data.time_series)) {
+          // Ensure dates are in the correct format and sorted
+          data.time_series = data.time_series
+            .map(item => ({
+              ...item,
+              // Ensure date is a string in YYYY-MM-DD format
+              date: typeof item.date === 'string' ? item.date : new Date(item.date).toISOString().split('T')[0],
+              count: Number(item.count) || 0
+            }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+        
         setStats(data);
       } catch (parseError) {
         console.error("Error parsing stats response:", parseError);
@@ -197,7 +272,6 @@ const HtmlInteractionsTab = () => {
     
     try {
       // Make sure we're using the correct API endpoint
-      // The error suggests we might be hitting a wrong endpoint that returns HTML
       console.log(`Fetching details for interaction ${id}`);
       
       // Make sure the URL is correct and doesn't redirect
@@ -265,7 +339,8 @@ const HtmlInteractionsTab = () => {
         console.error("Fallback approach also failed:", fallbackError);
       }
       
-      alert("Error loading details: " + (err.message || "Unknown error"));
+      // Use a styled notification instead of a basic alert
+      setError(`Error loading details: ${err.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }
@@ -281,7 +356,7 @@ const HtmlInteractionsTab = () => {
     if (viewMode === "interactions") {
       fetchInteractions();
     }
-  }, [fetchInteractions, viewMode, page, limit]);
+  }, [fetchInteractions, viewMode, page, limit, sortField, sortOrder]);
 
 
   const applyFilters = () => {
@@ -308,26 +383,25 @@ const HtmlInteractionsTab = () => {
   // Handle sort changes
   const handleSort = (field) => {
     if (sortField === field) {
-
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-
       setSortField(field);
       setSortOrder("desc");
     }
     
-
+    // Fetch interactions with new sort settings
     fetchInteractions();
   };
 
-
+  // Render sort indicator with animation
   const renderSortIndicator = (field) => {
     if (sortField !== field) return <FaSort className="html-sort-icon" />;
-    return sortOrder === "asc" ? <FaSortUp className="html-sort-icon" /> : <FaSortDown className="html-sort-icon" />;
+    return sortOrder === "asc" ? 
+      <FaSortUp className="html-sort-icon html-sort-active" /> : 
+      <FaSortDown className="html-sort-icon html-sort-active" />;
   };
 
-
-
+  // Export data as JSON file
   const exportData = () => {
     try {
       // Create a blob with the JSON data
@@ -335,10 +409,14 @@ const HtmlInteractionsTab = () => {
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       
+      // Create a download filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `html-interactions-export-${timestamp}.json`;
+      
       // Create a temporary link and trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.download = `html-interactions-${new Date().toISOString()}.json`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       
@@ -347,18 +425,43 @@ const HtmlInteractionsTab = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Error exporting data:", err);
+      setError("Failed to export data: " + err.message);
+    }
+  };
+
+  // Get a summarized version of interaction details
+  const getInteractionDetails = (interaction) => {
+    const additionalData = interaction.additional_data || {};
+    
+    switch (interaction.interaction_type) {
+      case "login_attempt":
+        return `Username: ${additionalData.username || "N/A"}, Password: ${additionalData.password || "N/A"}`;
+      case "form_submit":
+        return `Form data submitted: ${Object.keys(additionalData).length} fields`;
+      case "button_click":
+        return `Button: ${additionalData.button || additionalData.label || "Unknown"}`;
+      case "terminal_command":
+        return `Command: ${additionalData.command || "Unknown"}`;
+      case "chat_message":
+        return `Message: ${additionalData.message || "Unknown"}`;
+      case "captcha_attempt":
+        return `Captcha: ${additionalData.captcha_entered || "Unknown"}`;
+      case "download_attempt":
+        return `File: ${additionalData.filename || "Unknown"}`;
+      case "sql_injection_attempt":
+        return `SQL pattern detected in ${additionalData.input_field || "input"}`;
+      default:
+        if (additionalData.username && additionalData.password) {
+          return `Username: ${additionalData.username}, Password: ${additionalData.password}`;
+        }
+        return `Additional data: ${Object.keys(additionalData).length} fields`;
     }
   };
 
   // Render function for different views
   const renderContent = () => {
     if (loading && !interactions.length && !stats) {
-      return (
-        <div className="html-loading-container">
-          <FaSpinner className="html-spinner" />
-          <p>Loading data...</p>
-        </div>
-      );
+      return <LoadingIndicator message="Loading data..." />;
     }
 
     if (error) {
@@ -390,15 +493,10 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Render overview stats
-   const renderOverview = () => {
+  // Render overview stats and charts
+  const renderOverview = () => {
     if (statsLoading && !stats) {
-      return (
-        <div className="html-loading-container">
-          <FaSpinner className="html-spinner" />
-          <p>Loading statistics...</p>
-        </div>
-      );
+      return <LoadingIndicator message="Loading statistics..." />;
     }
   
     // Use empty data structure if stats is null
@@ -414,139 +512,208 @@ const HtmlInteractionsTab = () => {
       time_series: []
     };
   
-    // Display custom message when no data is available
+    // Component for visualizing empty charts
     const NoDataMessage = ({ message }) => (
       <div className="html-no-chart-data">
+        <FaExclamationTriangle />
         <p>{message || "No data available yet. Check back after your honeypot has captured some interactions."}</p>
       </div>
     );
 
-      return (
-        <div className="html-overview-container">
-          {/* Stats Cards */}
-          <div className="html-stats-cards">
-            <div className="html-stat-card">
-              <div className="html-stat-icon">
-                <FaCode />
-              </div>
-              <div className="html-stat-content">
-                <div className="html-stat-value">{statsData.total_interactions}</div>
-                <div className="html-stat-label">Total Interactions</div>
-              </div>
+    // Process and prepare chart data
+    const preparePageTypeData = () => {
+      // Use page_type_stats, page_types, or fallback to empty array
+      const sourceData = statsData.page_type_stats || statsData.page_types || [];
+      
+      return sourceData.map(item => ({
+        name: (item._id || "unknown").replace(/_/g, ' '),
+        value: item.count || 0,
+        fullName: item._id || "unknown"
+      })).sort((a, b) => b.value - a.value).slice(0, 8); // Top 8 for better visualization
+    };
+    
+    const prepareInteractionTypeData = () => {
+      // Use interaction_stats, interaction_types, or fallback to empty array
+      const sourceData = statsData.interaction_stats || statsData.interaction_types || [];
+      
+      return sourceData.map(item => ({
+        name: (item._id || "unknown").replace(/_/g, ' '),
+        value: item.count || 0,
+        fullName: item._id || "unknown"
+      })).sort((a, b) => b.value - a.value);
+    };
+    
+    const prepareTimeSeriesData = () => {
+      if (!statsData.time_series || !Array.isArray(statsData.time_series) || statsData.time_series.length === 0) {
+        // Generate placeholder data for better UI
+        const today = new Date();
+        const data = [];
+        for (let i = 30; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(date.getDate() - i);
+          data.push({
+            date: date.toISOString().split('T')[0],
+            count: 0
+          });
+        }
+        return data;
+      }
+      
+      return statsData.time_series.map(item => ({
+        date: item.date,
+        count: item.count || 0
+      }));
+    };
+    
+    // Prepare the data for charts
+    const pageTypeData = preparePageTypeData();
+    const interactionTypeData = prepareInteractionTypeData();
+    const timeSeriesData = prepareTimeSeriesData();
+
+    return (
+      <div className="html-overview-container">
+        {/* Stats Cards */}
+        <div className="html-stats-cards">
+          <div className="html-stat-card">
+            <div className="html-stat-icon">
+              <FaCode />
             </div>
-            
-            <div className="html-stat-card">
-              <div className="html-stat-icon">
-                <FaClock />
-              </div>
-              <div className="html-stat-content">
-                <div className="html-stat-value">{statsData.today_interactions}</div>
-                <div className="html-stat-label">Today's Interactions</div>
-              </div>
-            </div>
-            
-            <div className="html-stat-card">
-              <div className="html-stat-icon">
-                <FaUser />
-              </div>
-              <div className="html-stat-content">
-                <div className="html-stat-value">{statsData.week_interactions}</div>
-                <div className="html-stat-label">This Week</div>
-              </div>
-            </div>
-            
-            <div className="html-stat-card">
-              <div className="html-stat-icon">
-                <FaKey />
-              </div>
-              <div className="html-stat-content">
-                <div className="html-stat-value">
-                  {statsData.credential_attempts ? statsData.credential_attempts.length : 0}
-                </div>
-                <div className="html-stat-label">Credential Harvesting</div>
-              </div>
+            <div className="html-stat-content">
+              <div className="html-stat-value">{statsData.total_interactions.toLocaleString()}</div>
+              <div className="html-stat-label">Total Interactions</div>
             </div>
           </div>
           
-          {/* Charts */}
-          <div className="html-charts-container">
-            {/* Page Types Chart */}
-            <div className="html-chart-card">
-              <h3 className="html-chart-title">Most Active Pages</h3>
-              <div className="html-chart-content">
-                {statsData.page_types && statsData.page_types.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart 
-                      data={statsData.page_types.map(item => ({
-                        name: item._id || "Unknown",
-                        value: item.count || 0
-                      }))} 
-                      margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                      <XAxis 
-                        dataKey="name" 
-                        angle={-45} 
-                        textAnchor="end"
-                        tick={{fill: 'var(--admin-text-secondary)'}}
-                        height={70}
-                      />
-                      <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
-                      <Tooltip 
-                        formatter={(value) => [`${value} interactions`, 'Count']}
-                        contentStyle={{
-                          backgroundColor: 'var(--admin-bg-card)',
-                          border: '1px solid var(--admin-border)',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <NoDataMessage message="No page type data available yet. This will populate as your honeypot captures interactions." />
-                )}
-              </div>
+          <div className="html-stat-card">
+            <div className="html-stat-icon">
+              <FaClock />
             </div>
+            <div className="html-stat-content">
+              <div className="html-stat-value">{statsData.today_interactions.toLocaleString()}</div>
+              <div className="html-stat-label">Today's Interactions</div>
+            </div>
+          </div>
           
+          <div className="html-stat-card">
+            <div className="html-stat-icon">
+              <FaUser />
+            </div>
+            <div className="html-stat-content">
+              <div className="html-stat-value">
+                {statsData.week_interactions.toLocaleString()}
+              </div>
+              <div className="html-stat-label">This Week</div>
+            </div>
+          </div>
+          
+          <div className="html-stat-card">
+            <div className="html-stat-icon">
+              <FaKey />
+            </div>
+            <div className="html-stat-content">
+              <div className="html-stat-value">
+                {statsData.credential_attempts ? statsData.credential_attempts.length.toLocaleString() : 0}
+              </div>
+              <div className="html-stat-label">Credential Harvesting</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Charts */}
+        <div className="html-charts-container">
+          {/* Page Types Chart */}
+          <div className="html-chart-card">
+            <h3 className="html-chart-title">Most Active Pages</h3>
+            <div className="html-chart-content">
+              {pageTypeData && pageTypeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart 
+                    data={pageTypeData} 
+                    margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                    barSize={36}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis 
+                      dataKey="name" 
+                      angle={-45} 
+                      textAnchor="end"
+                      tick={{fill: 'var(--html-text-secondary)'}}
+                      height={70}
+                      tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 12)}...` : value}
+                    />
+                    <YAxis tick={{fill: 'var(--html-text-secondary)'}} />
+                    <Tooltip 
+                      content={<CustomTooltip />}
+                      cursor={{fill: 'rgba(255, 255, 255, 0.1)'}}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      name="Interactions" 
+                      fill="url(#pageTypeGradient)"
+                      radius={[4, 4, 0, 0]}
+                      animationDuration={animationsEnabled ? 1000 : 0}
+                    >
+                      {pageTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                    <defs>
+                      <linearGradient id="pageTypeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#8884d8" stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor="#8884d8" stopOpacity={0.4}/>
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <NoDataMessage message="No page type data available yet. This will populate as your honeypot captures interactions." />
+              )}
+            </div>
+          </div>
+        
           {/* Interaction Types Chart */}
           <div className="html-chart-card">
             <h3 className="html-chart-title">Interaction Types</h3>
             <div className="html-chart-content">
-              {statsData.interaction_types && statsData.interaction_types.length > 0 ? (
+              {interactionTypeData && interactionTypeData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={statsData.interaction_types.map(item => ({
-                        name: item._id || "Unknown",
-                        value: item.count || 0
-                      }))}
+                      data={interactionTypeData}
                       cx="50%"
                       cy="50%"
+                      innerRadius={60}
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
                       nameKey="name"
                       label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      labelLine={true}
+                      animationDuration={animationsEnabled ? 1000 : 0}
+                      animationBegin={animationsEnabled ? 200 : 0}
                     >
-                      {statsData.interaction_types.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      {interactionTypeData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                          stroke="rgba(0,0,0,0.2)"
+                          strokeWidth={1}
+                        />
                       ))}
                     </Pie>
                     <Tooltip 
                       formatter={(value) => [`${value} interactions`, 'Count']}
                       contentStyle={{
-                        backgroundColor: 'var(--admin-bg-card)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '8px'
+                        backgroundColor: 'var(--html-bg-card)',
+                        border: '1px solid var(--html-border-light)',
+                        borderRadius: '8px',
+                        color: 'var(--html-text-primary)'
                       }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="html-no-chart-data">
-                  <p>No interaction type data available</p>
-                </div>
+                <NoDataMessage message="No interaction type data available yet. This chart will populate as your honeypot gathers more data." />
               )}
             </div>
           </div>
@@ -555,30 +722,58 @@ const HtmlInteractionsTab = () => {
           <div className="html-chart-card html-full-width">
             <h3 className="html-chart-title">Interactions Over Time</h3>
             <div className="html-chart-content">
-              {statsData.time_series && statsData.time_series.length > 0 ? (
+              {timeSeriesData && timeSeriesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={statsData.time_series}
+                  <AreaChart
+                    data={timeSeriesData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis dataKey="date" tick={{fill: 'var(--admin-text-secondary)'}} />
-                    <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{fill: 'var(--html-text-secondary)'}}
+                      tickFormatter={(date) => {
+                        const d = new Date(date);
+                        return `${d.getMonth()+1}/${d.getDate()}`;
+                      }}
+                    />
+                    <YAxis tick={{fill: 'var(--html-text-secondary)'}} />
                     <Tooltip 
                       formatter={(value) => [`${value} interactions`, 'Count']}
                       contentStyle={{
-                        backgroundColor: 'var(--admin-bg-card)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: '8px'
+                        backgroundColor: 'var(--html-bg-card)',
+                        border: '1px solid var(--html-border-light)',
+                        borderRadius: '8px',
+                        color: 'var(--html-text-primary)'
+                      }}
+                      labelFormatter={(label) => {
+                        const date = new Date(label);
+                        return date.toLocaleDateString(undefined, {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        });
                       }}
                     />
-                    <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
-                  </LineChart>
+                    <Area 
+                      type="monotone" 
+                      dataKey="count" 
+                      stroke="#8884d8" 
+                      fill="url(#colorGradient)" 
+                      activeDot={{ r: 8 }}
+                      animationDuration={animationsEnabled ? 1500 : 0}
+                    />
+                    <defs>
+                      <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                  </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="html-no-chart-data">
-                  <p>No time series data available</p>
-                </div>
+                <NoDataMessage message="No time series data available yet. This chart will show interaction patterns over time as your honeypot collects more data." />
               )}
             </div>
           </div>
@@ -607,20 +802,26 @@ const HtmlInteractionsTab = () => {
                     
                     return (
                       <tr key={index}>
-                        <td>{formatTimestamp(attempt.timestamp)}</td>
-                        <td>
-                          <span className={`html-badge ${attempt.page_type}`}>
+                        <td data-label="Time">
+                          <div className="html-timestamp">
+                            <FaClock className="html-timestamp-icon" />
+                            {formatTimestamp(attempt.timestamp)}
+                          </div>
+                        </td>
+                        <td data-label="Page Type">
+                          <span className={`html-badge html-page-type-${attempt.page_type ? attempt.page_type.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`}>
                             {attempt.page_type || "unknown"}
                           </span>
                         </td>
-                        <td className="html-credential">{username}</td>
-                        <td className="html-credential">{password}</td>
-                        <td>
+                        <td data-label="Username" className="html-credential">{username}</td>
+                        <td data-label="Password" className="html-credential">{password}</td>
+                        <td data-label="Actions">
                           <button 
                             className="html-view-details-btn"
                             onClick={() => fetchInteractionDetails(attempt._id)}
+                            title="View full details of this interaction"
                           >
-                            View Details
+                            <FaEye /> View Details
                           </button>
                         </td>
                       </tr>
@@ -629,9 +830,7 @@ const HtmlInteractionsTab = () => {
                 </tbody>
               </table>
             ) : (
-              <div className="html-no-data">
-                <p>No credential harvesting attempts recorded</p>
-              </div>
+              <EmptyState message="No credential harvesting attempts recorded yet. This table will populate as attackers attempt to login to your honeypot." />
             )}
           </div>
           
@@ -664,12 +863,13 @@ const HtmlInteractionsTab = () => {
               className="html-back-btn" 
               onClick={() => setViewMode("overview")}
             >
-              Back to Overview
+              <FaArrowLeft /> Back to Overview
             </button>
             <button 
               className="html-export-btn" 
               onClick={exportData}
               disabled={interactions.length === 0}
+              title="Export interactions as JSON file"
             >
               <FaDownload /> Export Data
             </button>
@@ -715,7 +915,7 @@ const HtmlInteractionsTab = () => {
                   <input 
                     type="text" 
                     className="html-search-input" 
-                    placeholder="Search by keyword..." 
+                    placeholder="Search by IP, username, details..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={handleSearch}
@@ -741,17 +941,14 @@ const HtmlInteractionsTab = () => {
           </div>
           
           <div className="html-results-info">
-            Showing {interactions.length} of {total} interactions
+            Showing {interactions.length} of {total.toLocaleString()} interactions
           </div>
         </div>
         
         {/* Interactions Table */}
         <div className="html-table-container">
           {loading ? (
-            <div className="html-loading-container">
-              <FaSpinner className="html-spinner" />
-              <p>Loading interactions...</p>
-            </div>
+            <LoadingIndicator message="Loading interactions..." />
           ) : interactions.length > 0 ? (
             <>
               <table className="html-data-table">
@@ -788,35 +985,35 @@ const HtmlInteractionsTab = () => {
                 <tbody>
                   {interactions.map((interaction, index) => {
                     // Get key details from additional_data
-                    const additionalData = interaction.additional_data || {};
                     const detailsText = getInteractionDetails(interaction);
                     
                     return (
                       <tr key={index} className="html-interaction-row">
-                        <td>
+                        <td data-label="Time">
                           <div className="html-timestamp">
                             <FaClock className="html-timestamp-icon" />
                             {formatTimestamp(interaction.timestamp)}
                           </div>
                         </td>
-                        <td>
-                          <span className={`html-badge html-page-type-${interaction.page_type}`}>
+                        <td data-label="Page Type">
+                          <span className={`html-badge html-page-type-${interaction.page_type ? interaction.page_type.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`}>
                             {interaction.page_type || "unknown"}
                           </span>
                         </td>
-                        <td>
-                          <span className={`html-badge html-interaction-type-${interaction.interaction_type}`}>
+                        <td data-label="Interaction">
+                          <span className={`html-badge html-interaction-type-${interaction.interaction_type ? interaction.interaction_type.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`}>
                             {interaction.interaction_type || "unknown"}
                           </span>
                         </td>
-                        <td>{interaction.ip_address}</td>
-                        <td className="html-details-cell">{detailsText}</td>
-                        <td>
+                        <td data-label="IP Address">{interaction.ip_address}</td>
+                        <td data-label="Details" className="html-details-cell">{detailsText}</td>
+                        <td data-label="Actions">
                           <button 
                             className="html-view-details-btn"
                             onClick={() => fetchInteractionDetails(interaction._id)}
+                            title="View full details of this interaction"
                           >
-                            View Details
+                            <FaEye /> View
                           </button>
                         </td>
                       </tr>
@@ -874,42 +1071,11 @@ const HtmlInteractionsTab = () => {
               </div>
             </>
           ) : (
-            <div className="html-no-data">
-              <p>No interactions found matching your criteria</p>
-            </div>
+            <EmptyState message="No interactions found matching your criteria. Try adjusting your filters or check back after your honeypot has collected more data." />
           )}
         </div>
       </div>
     );
-  };
-
-  // Helper function to get a summary of interaction details
-  const getInteractionDetails = (interaction) => {
-    const additionalData = interaction.additional_data || {};
-    
-    switch (interaction.interaction_type) {
-      case "login_attempt":
-        return `Username: ${additionalData.username || "N/A"}, Password: ${additionalData.password || "N/A"}`;
-      case "form_submit":
-        return `Form data submitted: ${Object.keys(additionalData).length} fields`;
-      case "button_click":
-        return `Button: ${additionalData.button || additionalData.label || "Unknown"}`;
-      case "terminal_command":
-        return `Command: ${additionalData.command || "Unknown"}`;
-      case "chat_message":
-        return `Message: ${additionalData.message || "Unknown"}`;
-      case "captcha_attempt":
-        return `Captcha: ${additionalData.captcha_entered || "Unknown"}`;
-      case "download_attempt":
-        return `File: ${additionalData.filename || "Unknown"}`;
-      case "sql_injection_attempt":
-        return `SQL pattern detected in ${additionalData.input_field || "input"}`;
-      default:
-        if (additionalData.username && additionalData.password) {
-          return `Username: ${additionalData.username}, Password: ${additionalData.password}`;
-        }
-        return `Additional data: ${Object.keys(additionalData).length} fields`;
-    }
   };
 
   // Render detailed view of a single interaction
@@ -917,12 +1083,13 @@ const HtmlInteractionsTab = () => {
     if (!selectedInteraction) {
       return (
         <div className="html-no-selection">
+          <FaExclamationTriangle />
           <p>No interaction selected.</p>
           <button 
             className="html-back-btn"
             onClick={() => setViewMode("interactions")}
           >
-            Back to Interactions
+            <FaArrowLeft /> Back to Interactions
           </button>
         </div>
       );
@@ -942,7 +1109,7 @@ const HtmlInteractionsTab = () => {
               className="html-back-btn"
               onClick={() => setViewMode("interactions")}
             >
-              Back to Interactions
+              <FaArrowLeft /> Back to Interactions
             </button>
           </div>
         </div>
@@ -964,7 +1131,7 @@ const HtmlInteractionsTab = () => {
           <div className="html-meta-item">
             <span className="html-meta-label">Page Type:</span>
             <span className="html-meta-value">
-              <span className={`html-badge html-page-type-${selectedInteraction.page_type}`}>
+              <span className={`html-badge html-page-type-${selectedInteraction.page_type ? selectedInteraction.page_type.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`}>
                 {selectedInteraction.page_type || "unknown"}
               </span>
             </span>
@@ -972,7 +1139,7 @@ const HtmlInteractionsTab = () => {
           <div className="html-meta-item">
             <span className="html-meta-label">Interaction Type:</span>
             <span className="html-meta-value">
-              <span className={`html-badge html-interaction-type-${selectedInteraction.interaction_type}`}>
+              <span className={`html-badge html-interaction-type-${selectedInteraction.interaction_type ? selectedInteraction.interaction_type.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`}>
                 {selectedInteraction.interaction_type || "unknown"}
               </span>
             </span>
@@ -986,7 +1153,7 @@ const HtmlInteractionsTab = () => {
               </span>
             </div>
           )}
-          {explanations.risk_level && (
+          {explanations && explanations.risk_level && (
             <div className="html-meta-item">
               <span className="html-meta-label">Risk Level:</span>
               <span className={`html-meta-value html-risk-${explanations.risk_level.level.toLowerCase()}`}>
@@ -1086,7 +1253,7 @@ const HtmlInteractionsTab = () => {
         <div className="html-details-section">
           <h4 className="html-section-title">Raw JSON Data</h4>
           <div className="html-details-json">
-            <pre>{JSON.stringify(selectedInteraction, null, 2)}</pre>
+            <JsonSyntaxHighlighter json={selectedInteraction} maxHeight="500px" />
           </div>
         </div>
       </div>
@@ -1116,8 +1283,13 @@ const HtmlInteractionsTab = () => {
           <button 
             className="html-refresh-btn" 
             onClick={() => {
-              fetchStats();
-              if (viewMode === "interactions") fetchInteractions();
+              if (viewMode === "overview") {
+                fetchStats();
+              } else if (viewMode === "interactions") {
+                fetchInteractions();
+              } else if (viewMode === "details" && selectedInteraction) {
+                fetchInteractionDetails(selectedInteraction._id);
+              }
             }}
             disabled={loading || statsLoading}
           >

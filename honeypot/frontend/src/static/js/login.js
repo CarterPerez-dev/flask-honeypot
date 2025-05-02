@@ -154,8 +154,8 @@ const Login = () => {
             <div className="honeypot-login-logo-container">
               <FaSpider className="honeypot-login-logo" />
             </div>
-            <h1 className="honeypot-login-title">Honeypot Admin</h1>
-            <p className="honeypot-login-subtitle">Secure Access Portal</p>
+            <h1 className="honeypot-login-title">Honeypot Console</h1>
+            <p className="honeypot-login-subtitle">Access Gateway</p>
           </div>
 
           {error && (
@@ -175,7 +175,7 @@ const Login = () => {
                   id="adminKey"
                   value={adminKey}
                   onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="Enter secure admin key"
+                  placeholder="Authorize Admin"
                   required
                   disabled={loading} 
                   className="honeypot-login-input"
@@ -203,16 +203,16 @@ const Login = () => {
                 </span>
               ) : (
                 <span className="honeypot-login-button-text">
-                  <FaSignInAlt /> Access Dashboard
+                  <FaSignInAlt /> Initiate Console
                 </span>
               )}
             </button>
           </form>
 
           <div className="honeypot-login-footer">
-            <p>Advanced Honeypot Monitoring System</p>
+            <p>Advanced Honeypot Surveillance Grid</p>
             <div className="honeypot-login-security-badge">
-              <FaLock /> Secure Connection
+              <FaLock /> Secure Tunnel
             </div>
           </div>
         </div>

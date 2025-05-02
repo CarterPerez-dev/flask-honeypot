@@ -1,6 +1,6 @@
 // src/components/JsonSyntaxHighlighter.js
 import React, { useMemo } from 'react';
-import './JsonSyntaxHighlighter.css';
+import '../static/css/JsonSyntaxHighlighter.css';
 
 const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
   // Parse the JSON if it's a string, otherwise use as is
