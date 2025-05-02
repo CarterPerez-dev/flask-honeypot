@@ -1,22 +1,27 @@
-# 🍯 Flask-Honeypot
+# 🍯 Flask-Honeypot Framework
+
+```
+ ██████╗ ██████╗ ████████╗     ██╗  ██╗ ██████╗ ███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ████████╗██╗
+██╔════╝ ██╔═══██╗╚══██╔══╝     ██║  ██║██╔═══██╗████╗  ██║██╔════╝╚██╗ ██╔╝██╔══██╗██╔═══██╗╚══██╔══╝██║
+██║  ███╗██║   ██║   ██║        ███████║██║   ██║██╔██╗ ██║█████╗   ╚████╔╝ ██████╔╝██║   ██║   ██║   ██║
+██║   ██║██║   ██║   ██║        ██╔══██║██║   ██║██║╚██╗██║██╔══╝    ╚██╔╝  ██╔═══╝ ██║   ██║   ██║   ╚═╝
+╚██████╔╝╚██████╔╝   ██║        ██║  ██║╚██████╔╝██║ ╚████║███████╗   ██║   ██║     ╚██████╔╝   ██║   ██╗
+ ╚═════╝  ╚═════╝    ╚═╝        ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝      ╚═════╝    ╚═╝   ╚═╝
+ ```
 
 <p align="center">
-  <img src="docs/images/honeypot-logo.png" alt="Honeypot Framework Logo" width="200"/>
-</p>
-
-<p align="center">
-  <strong>A comprehensive honeypot system for detecting and analyzing unauthorized access attempts</strong>
+  <strong>A comprehensive honeypot system for detecting, trapping, and analyzing unauthorized access attempts</strong>
 </p>
 
 <p align="center">
   <a href="#-features">Features</a> •
-  <a href="#-installation">Installation</a> •
   <a href="#-quick-start">Quick Start</a> •
+  <a href="#-installation">Installation</a> •
   <a href="#-configuration">Configuration</a> •
   <a href="#-technical-overview">Technical Overview</a> •
-  <a href="#-honeypot-pages">Honeypot Pages</a> •
+  <a href="#-honeypot-traps">Honeypot Traps</a> •
+  <a href="#-admin-dashboard">Admin Dashboard</a> •
   <a href="#-integration">Integration</a> •
-  <a href="#-development">Development</a> •
   <a href="#-docker-deployment">Docker Deployment</a> •
   <a href="#-security-considerations">Security</a> •
   <a href="#-license">License</a>
@@ -24,45 +29,78 @@
 
 ## 🔍 Features
 
-Honeypot Framework is a fully-featured security monitoring tool designed to detect and analyze unauthorized access attempts through deliberately exposed decoy services.
+Flask-Honeypot is a security monitoring tool designed to detect and analyze unauthorized access attempts by creating convincing decoys that attract and trap potential attackers.
 
-- **Multiple honeypot types** (admin panels, WordPress, phpMyAdmin, etc.)
-- **Interactive admin dashboard** with real-time monitoring
-- **Enhanced threat detection** with Tor/proxy identification
-- **GeoIP tracking** for attacker location identification
-- **Detailed logging** of all interaction attempts
-- **Credential harvesting detection**
-- **Security visualizations** with multiple chart types
-- **Rate limiting** and IP blocking for attack mitigation
-- **Containerized deployment** via Docker
-- **Highly customizable** and extensible architecture
+- **Multiple honeypot trap types** - 20+ pre-built decoys including admin panels, WordPress, phpMyAdmin, file managers, and more
+- **Interactive deceptive elements** - Clickable buttons, forms, fake file downloads, and simulated errors to keep attackers engaged
+- **Rich attacker profiling** - Collect IPs, user agents, GeoIP data, ASN info, and behavioral patterns
+- **Real-time Tor/proxy detection** - Identify attackers attempting to hide their true location
+- **Advanced security analytics** - Visual dashboards showing attack patterns, geographic distribution, and threat levels
+- **Auto-blocking capabilities** - Rate limiting and IP blocking with configurable thresholds
+- **Detailed interaction logging** - Every click, form submission, and interaction attempt is recorded
+- **Containerized deployment** - Quick setup with Docker and docker-compose
+- **Scalable architecture** - MongoDB for storage and Redis for session management
+- **MaxMind GeoIP integration** - Optional geographic and ASN tracking
 
-## 🔧 Installation
+## 🚀 Quick Start
 
-### Using pip (Recommended)
+### The fastest way to deploy (Docker):
+
+```bash
+# Clone the repository
+git clone https://github.com/CarterPerez-dev/honeypot-framework.git
+cd honeypot-framework
+
+# Run the setup script
+./setup_honeypot.sh
+
+# Start the honeypot
+docker-compose up --build -d
+```
+
+That's it! Your honeypot is now running. Access the admin dashboard at:
+```
+http://your-server/honey/login
+```
+
+Use the admin password from your `.env` file (generated by the setup script).
+
+## 📦 Installation
+
+### Option 1: Docker Deployment (Recommended for Production)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/CarterPerez-dev/honeypot-framework.git
+cd honeypot-framework
+```
+
+2. Run the setup script:
+```bash
+./setup_honeypot.sh
+```
+
+This script will:
+- Check dependencies (Python, Docker, Docker Compose)
+- Create a Python virtual environment
+- Install Flask-Honeypot
+- Generate a secure configuration in `.env`
+- Prompt for optional MaxMind license key
+
+3. Start the honeypot:
+```bash
+docker-compose up -d
+```
+
+### Option 2: Python Package Installation
+
+If you want to integrate the honeypot into an existing Flask application:
 
 ```bash
 pip install flask-honeypot
 ```
 
-### From Source
-
-```bash
-git clone https://github.com/username/honeypot-framework.git
-cd honeypot-framework
-pip install -e .
-```
-
-### Requirements
-
-- Python 3.8+
-- MongoDB
-- Redis (for session management)
-- (Optional) MaxMind GeoIP database
-
-## 🚀 Quick Start
-
-### Basic Setup
+Then in your Python code:
 
 ```python
 from honeypot import create_honeypot_app
@@ -70,144 +108,260 @@ from honeypot import create_honeypot_app
 app = create_honeypot_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
 ```
 
-### Docker Deployment
+### Requirements
 
-For production deployments, use the included Docker configuration:
-
-```bash
-# Generate deployment files
-python -m honeypot.cli init
-
-# Configure environment variables
-cp .env.example .env
-nano .env  # Edit configuration values
-
-# Start the honeypot
-docker-compose up -d
-```
-
-### Accessing the Admin Dashboard
-
-Once running, access the admin dashboard at:
-
-```
-http://your-server/honey/login
-```
-
-Use the admin password defined in your `.env` file.
+- Python 3.8+
+- MongoDB 4.0+
+- Redis 5.0+ (for session management)
+- Docker & Docker Compose (for containerized deployment)
+- (Optional) MaxMind GeoIP database license key
 
 ## ⚙️ Configuration
 
-Configuration can be provided through environment variables, a `.env` file, or directly in code:
-
-```python
-from honeypot import create_honeypot_app
-
-app = create_honeypot_app({
-    "SECRET_KEY": "your-secure-key",
-    "MONGO_URI": "mongodb://localhost:27017/honeypot",
-    "REDIS_HOST": "localhost",
-    "REDIS_PORT": 6379,
-    "REDIS_PASSWORD": "your-redis-password",
-    "HONEYPOT_RATE_LIMIT": 5,
-    "HONEYPOT_RATE_PERIOD": 60,
-    "HONEYPOT_ADMIN_PASSWORD": "your-secure-admin-password",
-    "MAXMIND_LICENSE_KEY": "your-maxmind-license-key"  # Optional, for GeoIP
-})
-```
+Configuration options can be set via:
+1. Environment variables
+2. The `.env` file
+3. Direct parameters to `create_honeypot_app()`
 
 ### Key Configuration Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SECRET_KEY` | Flask secret key for sessions | Randomly generated |
+| `SECRET_KEY` | Secret key for sessions | Randomly generated |
 | `MONGO_URI` | MongoDB connection URI | `mongodb://localhost:27017/honeypot` |
-| `REDIS_HOST` | Redis host for session storage | `localhost` |
+| `REDIS_HOST` | Redis host | `localhost` |
 | `REDIS_PORT` | Redis port | `6379` |
 | `REDIS_PASSWORD` | Redis password | `None` |
+| `HONEYPOT_ADMIN_PASSWORD` | Admin dashboard password | Required |
 | `HONEYPOT_RATE_LIMIT` | Max requests per period | `15` |
 | `HONEYPOT_RATE_PERIOD` | Rate limit period in seconds | `60` |
-| `HONEYPOT_ADMIN_PASSWORD` | Admin dashboard password | Required |
-| `FLASK_ENV` | Environment (`development` or `production`) | `production` |
-| `LOG_LEVEL` | Logging level | `INFO` |
-| `MAXMIND_LICENSE_KEY` | MaxMind GeoIP database license key | `None` |
+| `MAXMIND_LICENSE_KEY` | MaxMind GeoIP license key | `None` |
+| `HONEYPOT_DATA_DIRECTORY` | Directory for data storage | `/app/data` |
+| `FLASK_ENV` | Environment (`development`/`production`) | `production` |
+
+Example `.env` file:
+```
+SECRET_KEY="f926dfdd9fffdafedd195ab8b30e60aa8157736475be9646c41b9b1994e47089"
+MONGO_USER="supersecretstrongpassword123!"
+MONGO_PASSWORD="Bigstrongpasswordyea112"
+REDIS_PASSWORD="Ih9zfuUrgoxnir5qz"
+HONEYPOT_ADMIN_PASSWORD="2WW6TUhgfdu3BkuApLA"
+HONEYPOT_RATE_LIMIT=5
+HONEYPOT_RATE_PERIOD=60
+FLASK_ENV=production
+HONEYPOT_DATA_DIRECTORY=/app/data
+```
 
 ## 🔬 Technical Overview
 
-Honeypot Framework integrates Flask (backend) and React (frontend) to create a sophisticated honeypot system capable of detecting and analyzing unauthorized access attempts.
+Flask-Honeypot uses a Flask backend to serve deceptive content that appears legitimate to attackers while logging all interactions for security analysis.
 
-![Architecture Diagram](docs/images/architecture.png)
+### Structure
+
+```bash
+.
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── examples
+│   ├── App-js.py
+│   ├── enhanced_admin_security.py
+│   └── example_flask_integration.py
+├── honeypot
+│   ├── __init__.py
+│   ├── _version.py
+│   ├── backend
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── helpers
+│   │   │   ├── __init__.py
+│   │   │   ├── db_utils.py
+│   │   │   ├── geoip_manager.py
+│   │   │   ├── proxy_detector.py
+│   │   │   └── unhackable.py
+│   │   ├── middleware
+│   │   │   ├── __init__.py
+│   │   │   └── csrf_protection.py
+│   │   ├── routes
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── honeypot.py
+│   │   │   ├── honeypot_pages.py
+│   │   │   └── honeypot_routes.py
+│   │   └── templates
+│   │       ├── honeypot
+│   │       │   ├── admin-dashboard.html
+│   │       │   ├── admin-login.html
+│   │       │   ├── cloud-dashboard.html
+│   │       │   ├── cms-dashboard.html
+│   │       │   ├── cpanel-dashboard.html
+│   │       │   ├── database-dashboard.html
+│   │       │   ├── debug-console.html
+│   │       │   ├── devops-dashboard.html
+│   │       │   ├── ecommerce-dashboard.html
+│   │       │   ├── filesharing-dashboard.html
+│   │       │   ├── forum-dashboard.html
+│   │       │   ├── framework-dashboard.html
+│   │       │   ├── generic-login.html
+│   │       │   ├── generic-page.html
+│   │       │   ├── iot-dashboard.html
+│   │       │   ├── mail-dashboard.html
+│   │       │   ├── mobile-api.html
+│   │       │   ├── monitoring-dashboard.html
+│   │       │   ├── phpmyadmin-dashboard.html
+│   │       │   ├── remote-access-dashboard.html
+│   │       │   ├── shell.html
+│   │       │   └── wp-dashboard.html
+│   │       └── redirection
+│   │           ├── step1.html
+│   │           ├── step10.html
+│   │           ├── step11.html
+│   │           ├── step12.html
+│   │           ├── step13.html
+│   │           ├── step14.html
+│   │           ├── step15.html
+│   │           ├── step2.html
+│   │           ├── step3.html
+│   │           ├── step4.html
+│   │           ├── step5.html
+│   │           ├── step6.html
+│   │           ├── step7.html
+│   │           ├── step8.html
+│   │           └── step9.html
+│   ├── cli.py
+│   ├── config
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   ├── database
+│   │   ├── models.py
+│   │   ├── mongo-init.js
+│   │   └── mongodb.py
+│   ├── deploy_templates
+│   │   ├── Dockerfile.backend.template
+│   │   ├── Dockerfile.nginx.template
+│   │   ├── __init__.py
+│   │   ├── dev-nginx.conf.template
+│   │   ├── docker-compose.dev.yml.template
+│   │   ├── docker-compose.yml.template
+│   │   ├── dot_env.example
+│   │   └── nginx
+│   │       ├── nginx.conf.template
+│   │       └── sites-enabled
+│   │           └── proxy.conf.template
+│   ├── frontend
+│   │   ├── README.md
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   └── src
+│   │       ├── App.js
+│   │       ├── components
+│   │       │   ├── JsonSyntaxHighlighter.js
+│   │       │   ├── LoadingPlaceholder.js
+│   │       │   └── csrfHelper.js
+│   │       ├── index.css
+│   │       ├── index.js
+│   │       ├── reportWebVitals.js
+│   │       ├── static
+│   │       │   ├── css
+│   │       │   │   ├── HoneypotTab.css
+│   │       │   │   ├── HtmlInteractionsTab.css
+│   │       │   │   ├── JsonSyntaxHighlighter.css
+│   │       │   │   ├── LoadingPlaceholder.css
+│   │       │   │   ├── admin.css
+│   │       │   │   └── login.css
+│   │       │   ├── js
+│   │       │   │   ├── admin.js
+│   │       │   │   └── login.js
+│   │       │   └── tabs
+│   │       │       ├── HoneypotTab.js
+│   │       │       ├── HtmlInteractionsTab.js
+│   │       │       └── OverviewTab.js
+│   │       └── utils
+│   │           └── dateUtils.js
+│   └── utils
+│       └── generate_config.py
+├── mongo-init.js
+├── pyproject.toml
+└── setup_honeypot.sh
+```
 
 ### Core Components
 
-- **Flask Backend**: Handles requests, logs interactions, and provides API endpoints for the admin dashboard
-- **MongoDB**: Stores interaction logs, scan attempts, and security analytics
+- **Flask Backend**: Serves honeypot pages and logs interactions
+- **MongoDB**: Stores interaction data, attacker profiles, and logs
 - **Redis**: Manages secure sessions for the admin interface
-- **React Frontend**: Provides an interactive admin dashboard for monitoring and analysis
-- **GeoIP Detection**: Identifies attacker geographical locations and ASN information
-- **Proxy Detection**: Identifies Tor exit nodes and proxy services
+- **GeoIP Detection**: Identifies attacker locations (requires MaxMind)
+- **Proxy Detector**: Identifies Tor exit nodes and known proxies
 
-### Data Flow
+### How It Works
 
-1. An attacker targets a honeypot endpoint
-2. The request is intercepted and logged with extensive metadata
-3. The attacker is redirected to a fake html page with variuous (trolls, fake stuff ect ect hwo shoudl i say this?)
-4. Interaction details are stored in MongoDB
-5. Real-time analytics are updated
-6. Security staff can monitor activities via the admin dashboard
+1. When an attacker visits a honeypot URL (like `/admin` or `/wp-login.php`), they see a realistic-looking page
+2. The system logs detailed information about the visitor
+3. As they interact with the page (clicking buttons, submitting forms), each action is recorded
+4. Security staff can monitor these interactions through the admin dashboard
+5. Repeated suspicious behavior can trigger automatic blocking
+
+## 🕸️ Honeypot Traps
+
+The framework includes many deceptive pages designed to look like common targets:
+
+### Admin Panels
+
+- **Generic Admin Dashboards**: Look like typical login portals
+- **WordPress Admin**: Fake WP-Admin login and dashboard
+- **phpMyAdmin**: Simulated database administration panel
+- **cPanel**: Fake hosting control panel
+
+### Example: Admin Dashboard Trap
+
+The admin dashboard honeypot includes:
+- Fake login forms that collect credentials
+- Simulated database management interfaces
+- Interactive elements that appear to provide system access
+- Deceptive file upload/download capabilities
+- Fake terminal access that records command attempts
+-more details
+Here's what attackers might see:
+
+```
+pictures here
+```
+
+Each interaction is timestamped, geolocated, and stored for analysis.
+
+### Additional Trap Types
+
+- **Database Admin**: MySQL, MongoDB, Redis interfaces
+- **File Managers**: Cloud storage and file sharing
+- **Email Systems**: Webmail interfaces
+- **CMS Systems**: Joomla, Drupal, and other CMS platforms
+- **E-commerce**: Shopify, WooCommerce admin panels
+- **Network Devices**: Router configuration panels
+- **Remote Access**: SSH, RDP, VNC interfaces
+- **Development Tools**: Jenkins, GitLab, etc.
+- **API Endpoints**: Simulated REST APIs
 
 ## 📊 Admin Dashboard
 
-The admin dashboard provides a comprehensive view of honeypot activities:
+The admin dashboard provides security staff with detailed insights:
 
-- **Overview**: High-level statistics and system status
-- **Honeypot Tab**: Detailed analysis of scan attempts and interactions
-- **HTML Interactions Tab**: Focuses on client-side interactions with deceptive pages
-
-![Dashboard Screenshot](docs/images/dashboard.png)
-
-## 🕸️ Honeypot Pages
-
-The framework includes a wide variety of deceptive pages designed to attract and track different types of unauthorized access attempts:
-
-### Administrative Interfaces
-
-- **WordPress Admin**: Fake WordPress login and admin panels
-- **phpMyAdmin**: Database administration honeypot
-- **cPanel**: Hosting control panel simulation
-- **General Admin Panels**: Generic admin login forms and dashboards
-
-### CMS and E-commerce
-
-- **Additional CMS Platforms**: Joomla, Drupal, etc.
-- **E-commerce Admin**: Shopify, WooCommerce, etc.
-- **Forums**: phpBB, vBulletin, etc.
-
-### Technical Services
-
-- **Database Endpoints**: MySQL, MongoDB, Redis, etc.
-- **Mail Services**: Webmail, SMTP, etc.
-- **Remote Access**: SSH, VNC, RDP honeypots
-- **IoT Devices**: Camera systems, routers, etc.
-- **DevOps Tools**: Jenkins, GitLab, etc.
-
-### Development and Debug
-
-- **Web Frameworks**: Django, Rails, Laravel, etc.
-- **Debug Consoles**: Log viewers, debug panels, etc.
-- **Backdoors and Shells**: Simulated backdoors for detecting intrusion attempts
-
-Each honeypot type is carefully crafted to appear legitimate while logging interactions for security analysis.
+- **Overview**: Summary of recent activity
+- **Detailed Stats**: In-depth analysis of attack patterns
+- **Geographic View**: Map showing attack origins
+- **Threat Analysis**: Categorization of attack types
+- **Raw Logs**: Complete interaction records
+- **System Health**: Monitoring of honeypot operation
+-more here
 
 ## 🔄 Integration
 
-### Integration with Existing Flask Application
+### Integration with Existing Flask Applications
 
 ```python
-from flask import Flask, render_template
+from flask import Flask
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from honeypot import create_honeypot_app
 
@@ -216,195 +370,91 @@ main_app = Flask(__name__)
 
 @main_app.route('/')
 def index():
-    return render_template('index.html', title="My Secure Application")
+    return "My secure application"
 
 # Create the honeypot application
 honeypot_app = create_honeypot_app()
 
 # Mount the honeypot at a specific URL prefix
 application = DispatcherMiddleware(main_app, {
-    '/security': honeypot_app  # Map to /security/* URLs
+    '/security': honeypot_app  # Maps to /security/* URLs
 })
 
 # For direct Flask execution
 if __name__ == "__main__":
-    # Create a WSGI app that wraps the DispatcherMiddleware
+    # Create a WSGI app wrapper
     from werkzeug.serving import run_simple
     run_simple('localhost', 5000, application, use_reloader=True)
 ```
 
-### Integration with Existing React Application
+### Advanced Integration
 
-```jsx
-// In your App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-// Import your existing components
-import HomePage from './components/HomePage';
-import ProductsPage from './components/ProductsPage';
-
-// Import the honeypot components
-import HoneypotLogin from './honeypot/Login';
-import HoneypotDashboard from './honeypot/Dashboard';
-
-const App = () => {
-  return (
-    <Router>
-      <Routes>
-        {/* Your main application routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/products" element={<ProductsPage />} />
-        
-        {/* Honeypot admin routes */}
-        <Route path="/security/login" element={<HoneypotLogin />} />
-        <Route path="/security/dashboard/*" element={<HoneypotDashboard />} />
-      </Routes>
-    </Router>
-  );
-};
-
-export default App;
-```
-
-See the `examples/` directory for complete integration examples.
-
-## 🛠️ Development
-
-### Local Development Setup
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/username/honeypot-framework.git
-cd honeypot-framework
-```
-
-2. Set up a virtual environment:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install development dependencies:
-
-```bash
-pip install -e ".[dev]"
-```
-
-4. Run the development server:
-
-```bash
-python -m honeypot.cli run
-```
-
-### Using Docker for Development
-
-The project includes a development docker-compose file:
-
-```bash
-docker-compose -f docker-compose.dev.yml up
-```
-
-This will start:
-- The Flask backend with hot reloading
-- The React frontend with hot reloading
-- MongoDB
-- Redis
-
-### Project Structure
-
-```
-honeypot/
-├── backend/           # Flask backend
-│   ├── app.py         # Main application factory
-│   ├── helpers/       # Utility functions
-│   ├── middleware/    # CSRF and other middleware
-│   └── routes/        # API and honeypot routes
-├── config/            # Configuration management
-├── database/          # Database models and connections
-├── deploy_templates/  # Docker and deployment templates
-├── frontend/          # React frontend
-│   ├── public/        # Static assets
-│   └── src/           # React source code
-└── utils/             # Utility scripts
-```
+For more advanced integration options (such as selective blueprint registration or frontend integration), see the `examples/` directory.
 
 ## 🐳 Docker Deployment
 
-For production deployments, the framework includes complete Docker configuration.
-
-### Standard Deployment
+For production deployments, use the Docker configuration:
 
 ```bash
-# Generate deployment files
+# Generate deployment files (if you haven't run setup_honeypot.sh)
 python -m honeypot.cli init
 
-# Configure environment variables
-cp .env.example .env
-nano .env  # Edit configuration values
+# Start in production mode
+docker-compose up --build -d
 
-# Start the honeypot
-docker-compose up -d
+# For development mode with hot reloading
+docker-compose -f docker-compose.dev.yml up --build -d
 ```
 
-This will start:
-- Nginx for serving the frontend and proxying API requests
-- The honeypot backend
-- MongoDB for data storage
+The Docker deployment includes:
+- Nginx web server
+- Flask backend
+- MongoDB database
 - Redis for session management
-
-### Custom Deployment
-
-For advanced customization, you can modify the generated Dockerfiles and docker-compose.yml files.
 
 ## 🔐 Security Considerations
 
-### Admin Dashboard Security
+### Admin Security
 
-- Access to the admin dashboard should be restricted to trusted IPs
-- Use strong passwords for the admin interface
-- Consider placing the admin interface behind a VPN
-- Regularly rotate admin credentials
-- Enable HTTPS for all connections
+- **Access Restriction**: Limit admin dashboard access to trusted IPs
+- **Strong Authentication**: Use complex passwords for the admin interface
+- **HTTPS**: Always use SSL/TLS in production, refer to documentation for HTTPS
+- **Regular Rotation**: Change admin credentials frequently
+- **VPN Access**: Consider placing the admin interface behind a VPN
 
-### Honeypot Data Handling
+### Honeypot Placement
 
-- The honeypot may collect potentially sensitive information
-- Review and handle logs according to your privacy policy
-- Consider legal implications before deploying in production
-- Do not use the honeypot to engage in entrapment
+- **Segregation**: Run honeypots on separate infrastructure from production systems
+- **Firewall Rules**: Implement strict firewall rules for honeypot traffic
+- **Resource Limits**: Prevent honeypots from being used for further attacks
+- **Legal Compliance**: Ensure your honeypot deployment complies with local laws
 
 ### Enhanced Security Module
 
-The framework includes an optional enhanced security module that adds:
-- IP whitelisting
-- Multi-factor authentication
-- Advanced session protection
-- Brute force protection
-- Enhanced audit logging
-
-To enable:
+For additional security, consider using the enhanced security module (refer to examples documentation):
 
 ```python
 from honeypot import create_honeypot_app
-from honeypot.security import setup_enhanced_security
+from examples.enhanced_admin_security import setup_enhanced_security
 
 app = create_honeypot_app()
 app = setup_enhanced_security(app)
 ```
 
+This provides:
+- IP whitelisting
+- Enhanced brute force protection
+- Security headers
+- Advanced session protection
+
 ## 📖 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgements
+```
+ ╭─────────────────────────────────────────────────────────────────╮
+ │       🐝   Flask-Honeypot Framework - Catch attackers red-handed!   🐝       │
+ ╰─────────────────────────────────────────────────────────────────╯
+```
 
-- MaxMind for GeoIP data
-- Flask and React communities
-- All contributors to this project
-
-## 📧 Contact
-
-For questions, issues, or contributions, please open an issue on GitHub or contact the maintainers at support@example.com.
+For questions, contributions, or support, please open an issue on GitHub.
