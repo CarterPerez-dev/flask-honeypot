@@ -47,7 +47,7 @@ const ProtectedRoute = ({ children }) => {
     };
 
     verifySession();
-  }, [location.pathname]); // Re-verify when path changes
+  }, [location.pathname]); 
 
   if (isLoading) {
     return (
@@ -76,14 +76,14 @@ function App() {
         'red': 'theme-blood-red'
       };
       
-      // Clear existing theme classes
+
       document.body.classList.remove(
         'theme-cyberpunk', 
         'theme-dark-ocean', 
         'theme-blood-red'
       );
       
-      // Apply theme class if it's not the default
+
       const themeClass = themeMap[savedTheme];
       if (themeClass) {
         document.body.classList.add(themeClass);

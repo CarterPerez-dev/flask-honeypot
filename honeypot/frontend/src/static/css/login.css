@@ -1,8 +1,4 @@
 /* src/static/css/login.css */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
-
-
 :root {
   --honeypot-bg-dark: #080915;
   --honeypot-bg-card: #131630;
@@ -24,7 +20,7 @@
   --honeypot-glow: 0 0 20px rgba(134, 88, 252, 0.6);
 }
 
-/* Container and Advanced Background */
+
 .honeypot-login-container {
   display: flex;
   justify-content: center;
@@ -124,7 +120,7 @@
   }
 }
 
-/* Enhanced particles system */
+
 .honeypot-login-particles {
   position: absolute;
   top: 0;
@@ -177,7 +173,7 @@
   }
 }
 
-/* Content Card with Enhanced Styling */
+
 .honeypot-login-content {
   width: 100%;
   max-width: 485px;
@@ -236,7 +232,7 @@
   }
 }
 
-/* Header with Enhanced Visual Elements */
+
 .honeypot-login-header {
   text-align: center;
   margin-bottom: 30px;
@@ -320,7 +316,7 @@
   font-weight: 500;
 }
 
-/* Error Message with Enhanced Styling */
+
 .honeypot-login-error {
   background: rgba(231, 76, 60, 0.1);
   border-left: 4px solid var(--honeypot-error);
@@ -341,7 +337,7 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Form with Enhanced Input Styling */
+
 .honeypot-login-form {
   display: flex;
   flex-direction: column;
@@ -421,7 +417,7 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
-/* Enhanced Button Styling */
+
 .honeypot-login-button {
   width: 100%;
   background: var(--honeypot-gradient-primary);
@@ -526,7 +522,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Footer with Security Badge */
+
 .honeypot-login-footer {
   margin-top: 25px;
   text-align: center;
@@ -553,7 +549,7 @@
   color: #2ecc71;
 }
 
-/* Animation Classes */
+
 .login-success-animation {
   animation: success-pulse 0.8s forwards;
 }
@@ -583,7 +579,7 @@
   40%, 60% { transform: translateX(6px); }
 }
 
-/* Responsive Styles */
+
 @media (max-width: 576px) {
   .honeypot-login-content {
     padding: 15px;
@@ -621,7 +617,7 @@
   }
 }
 
-/* iPhone SE / Small Screen Optimizations */
+
 @media (max-width: 375px) {
   .honeypot-login-card {
     padding: 20px 15px;
@@ -661,7 +657,7 @@
   }
 }
 
-/* High contrast mode support */
+
 @media (prefers-contrast: high) {
   .honeypot-login-card {
     border: 2px solid white;

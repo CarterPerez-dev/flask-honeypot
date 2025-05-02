@@ -593,7 +593,7 @@ body {
   background-color: var(--admin-bg-darkest);
 }
 
-/* Sidebar Styling - FIXED POSITIONING ADDED */
+
 .honeypot-admin-sidebar {
   width: var(--admin-sidebar-width);
   height: 100vh;
@@ -601,7 +601,7 @@ body {
   border-right: 1px solid var(--admin-border-light);
   display: flex;
   flex-direction: column;
-  position: fixed; /* Changed from sticky to fixed */
+  position: fixed;
   top: 0;
   left: 0;
   transition: width var(--admin-transition-normal),
@@ -1049,12 +1049,12 @@ body {
   color: var(--admin-danger) !important;
 }
 
-/* Main Content Area - ADJUSTED FOR FIXED SIDEBAR */
+/* Main Content Area */
 .honeypot-admin-main-content {
   flex: 1;
   padding: var(--admin-spacing-lg);
-  margin-left: var(--admin-sidebar-width); /* Added margin to offset fixed sidebar */
-  width: calc(100% - var(--admin-sidebar-width)); /* Set width to fill remaining space */
+  margin-left: var(--admin-sidebar-width); 
+  width: calc(100% - var(--admin-sidebar-width)); 
   transition: margin-left var(--admin-transition-normal),
               width var(--admin-transition-normal);
   overflow-x: hidden;
@@ -1078,8 +1078,8 @@ body {
 }
 
 .nav-collapsed .honeypot-admin-main-content {
-  margin-left: var(--admin-sidebar-collapsed-width); /* Adjust margin for collapsed sidebar */
-  width: calc(100% - var(--admin-sidebar-collapsed-width)); /* Adjust width for collapsed sidebar */
+  margin-left: var(--admin-sidebar-collapsed-width); 
+  width: calc(100% - var(--admin-sidebar-collapsed-width)); 
 }
 
 /* Content Header */
@@ -1694,8 +1694,8 @@ body {
   
   .honeypot-admin-main-content {
     padding-top: calc(var(--admin-spacing-lg) + 60px);
-    margin-left: 0 !important; /* Remove margin on mobile */
-    width: 100% !important; /* Full width on mobile */
+    margin-left: 0 !important; 
+    width: 100% !important; 
   }
   
   .honeypot-admin-content-header {

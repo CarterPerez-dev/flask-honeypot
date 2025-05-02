@@ -15,14 +15,13 @@ const Login = () => {
 
   // Particle effect
   useEffect(() => {
-    // Create particles
     const particlesContainer = document.querySelector('.honeypot-login-particles');
     if (particlesContainer) {
       for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.classList.add('honeypot-login-particle');
         
-        // Random position, size and animation delay
+
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100}%`;
         particle.style.width = `${2 + Math.random() * 4}px`;
@@ -100,7 +99,7 @@ const Login = () => {
         if (response.ok) {
           console.log("Login successful!");
           
-          // Show success animation
+
           const loginCard = document.querySelector('.honeypot-login-card');
           if (loginCard) {
             loginCard.classList.add('login-success-animation');
@@ -113,7 +112,7 @@ const Login = () => {
           console.error("Login failed:", data);
           setError(data.error || 'Invalid login credentials');
           
-          // Shake animation for error
+
           const loginCard = document.querySelector('.honeypot-login-card');
           if (loginCard) {
             loginCard.classList.add('login-error-animation');

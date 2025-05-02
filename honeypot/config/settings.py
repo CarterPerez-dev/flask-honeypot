@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import secrets
 
-# Load .env file if exists
+
 load_dotenv()
 
 
@@ -78,7 +78,6 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     """Production configuration"""
-    # Ensure these settings are properly set in production
     def __init__(self):
         if not self.SECRET_KEY or self.SECRET_KEY == 'dev_secure_key_change_me':
             import warnings

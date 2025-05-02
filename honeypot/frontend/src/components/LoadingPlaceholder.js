@@ -12,7 +12,7 @@ const LoadingPlaceholder = ({
 }) => {
     const combinedClassName = `honeypot-loading-placeholder ${className} ${type}-loader`.trim();
     
-    // Different spinner types for variety
+
     const renderSpinner = () => {
         if (!showSpinner) return null;
         

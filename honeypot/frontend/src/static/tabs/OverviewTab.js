@@ -1,4 +1,4 @@
-// src/static/tabs/OverviewTab.js - Enhanced version with theme switcher
+// src/static/tabs/OverviewTab.js 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FaChartLine, FaSync, FaSpinner, FaExclamationTriangle, 
@@ -12,7 +12,7 @@ import {
 import { adminFetch } from '../../components/csrfHelper';
 import { formatTimestamp } from '../../utils/dateUtils';
 
-// Custom time formatter for "time ago" style
+
 const formatTimeAgo = (timestamp) => {
   if (!timestamp) return "Unknown";
   
@@ -37,38 +37,36 @@ const THEMES = [
 ];
 
 const OverviewTab = () => {
-  // State management
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const [activeTheme, setActiveTheme] = useState(() => {
-    // Get theme from localStorage or default to 'default'
+
     return localStorage.getItem('honeypotTheme') || 'default';
   });
 
-  // Apply theme class to body
+
   useEffect(() => {
-    // First remove all theme classes
     document.body.classList.remove(...THEMES.map(theme => theme.class).filter(Boolean));
     
-    // Then add the active theme class if it's not the default
+
     const theme = THEMES.find(t => t.id === activeTheme);
     if (theme && theme.class) {
       document.body.classList.add(theme.class);
     }
     
-    // Store theme preference
+
     localStorage.setItem('honeypotTheme', activeTheme);
     
-    // Also store theme name for display
+
     const themeName = THEMES.find(t => t.id === activeTheme)?.name || 'Cyber Purple';
     localStorage.setItem('honeypotThemeName', themeName);
     
   }, [activeTheme]);
 
-  // Fetch honeypot stats
+
   const fetchStats = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -87,36 +85,36 @@ const OverviewTab = () => {
       console.log("Overview data:", data);
       setStats(data);
       
-      // Set last refresh time
+
       setLastRefreshTime(new Date());
     } catch (err) {
       console.error("Error fetching overview data:", err);
       setError(err.message || "Failed to fetch overview data");
       
-      // If this is a server error (500), retry up to 3 times
+
       if (retryCount < 3) {
         console.log(`Retry attempt ${retryCount + 1}...`);
         setTimeout(() => {
           setRetryCount(prevCount => prevCount + 1);
           fetchStats();
-        }, 3000); // Retry after 3 seconds
+        }, 3000); 
       }
     } finally {
       setLoading(false);
     }
   }, [retryCount]);
 
-  // Handle theme change
+
   const handleThemeChange = (themeId) => {
     setActiveTheme(themeId);
   };
 
-  // Copy theme CSS variables for debugging
+
   const copyThemeVariables = () => {
     const styles = getComputedStyle(document.documentElement);
     const variables = {};
     
-    // Get all CSS variables related to admin themes
+
     for (let i = 0; i < styles.length; i++) {
       const prop = styles[i];
       if (prop.startsWith('--admin-')) {
@@ -124,7 +122,7 @@ const OverviewTab = () => {
       }
     }
     
-    // Copy to clipboard
+
     navigator.clipboard.writeText(JSON.stringify(variables, null, 2))
       .then(() => {
         alert('Theme variables copied to clipboard!');
@@ -134,17 +132,17 @@ const OverviewTab = () => {
       });
   };
 
-  // Initial data load
+
   useEffect(() => {
     fetchStats();
     
-    // Cleanup function to reset retry count when component unmounts
+
     return () => {
       setRetryCount(0);
     };
   }, [fetchStats]);
 
-  // Create loading placeholders
+
   const StatCardSkeleton = () => (
     <div className="honeypot-admin-stat-card" style={{ opacity: 0.7 }}>
       <div className="honeypot-admin-stat-icon honeypot-admin-total-icon" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
@@ -173,7 +171,7 @@ const OverviewTab = () => {
         <button 
           className="honeypot-admin-retry-btn" 
           onClick={() => {
-            setRetryCount(0); // Reset retry count on manual retry
+            setRetryCount(0); 
             fetchStats();
           }}
         >
@@ -284,7 +282,6 @@ const OverviewTab = () => {
             title="Blood Red"
           ></div>
           
-          {/* This is just a developer helper, you might want to remove this in production */}
           <button 
             onClick={copyThemeVariables} 
             className="honeypot-admin-dev-btn"
@@ -305,7 +302,7 @@ const OverviewTab = () => {
         </div>
       </div>
       
-      {/* Honeypot Monitoring Status - REPLACED WITH REAL METRICS */}
+      {/* Honeypot Monitoring Status  */}
       <div className="honeypot-admin-system-status">
         <h3><FaShieldAlt /> Honeypot Monitoring Status</h3>
         <div className="honeypot-admin-status-grid">
@@ -354,41 +351,49 @@ const OverviewTab = () => {
       <div className="honeypot-admin-overview-description">
         <h3>About Honeypot Dashboard</h3>
         <p>
-          Welcome to the Honeypot Administration Dashboard. This advanced security monitoring system is designed to track, analyze, and visualize 
-          potentially malicious interactions with your decoy services. Our honeypot technology deliberately exposes vulnerable-looking endpoints to attract 
-          attackers, allowing you to study their techniques while keeping your actual systems safe.
+          Welcome to the Honeypot Administration Dashboard. This security monitoring system tracks and analyzes 
+          interactions with deliberately exposed decoy services, including fake admin panels, login forms, and 
+          system dashboards designed to both gather intelligence on attackers and cleverly waste their time with 
+          deceptive interfaces.
         </p>
         
         <p>
-          The dashboard provides comprehensive analytics on attack patterns, credential harvesting attempts, and other security events captured by your 
-          honeypot deployment. All data is collected ethically and used solely for defensive security analysis.
+          The dashboard provides comprehensive analytics on attack patterns, credential harvesting attempts, and other 
+          security events captured by your honeypot deployment. All interaction data is stored in MongoDB and can be 
+          searched, filtered, and exported for further analysis.
         </p>
         
         <ul>
-          <li><strong>Overview Tab:</strong> Provides high-level statistics on total interactions, unique threat actors, and system health monitoring.</li>
+          <li><strong>Overview Tab:</strong> Provides high-level statistics on total interactions, unique IPs, client 
+          identifiers, and threat indicators detected across your honeypot system.</li>
           
-          <li><strong>Honeypot Tab:</strong> Offers detailed analysis of attack vectors, including geographic origins, attack methods, and a timeline of 
-          activity. Review and export comprehensive data on all honeypot interactions for further analysis.</li>
+          <li><strong>Honeypot Tab:</strong> Offers detailed analysis of scanning attempts and server interactions, 
+          including geographic origins, ASN information, and a timeline of activity. Review commonly targeted paths, 
+          Tor/proxy usage, and potential threat actors.</li>
           
-          <li><strong>HTML Interactions Tab:</strong> Focuses specifically on web-based threats, including login attempts, form submissions, and other 
-          client-side attacks. This section reveals credential harvesting attempts and other sensitive data collection tactics.</li>
+          <li><strong>HTML Interactions Tab:</strong> Focuses specifically on client-side interactions with deceptive 
+          pages like fake admin dashboards, WordPress panels, and login forms. Tracks credential harvesting, form 
+          submissions, button clicks, and other detailed behavioral data.</li>
         </ul>
         
         <p>
-          <strong>Understanding the Data:</strong> The metrics shown here represent actual attempted intrusions detected by your honeypot system. Higher 
-          numbers indicate increased targeting of your infrastructure. Geographic data helps identify threat origins, while interaction patterns can reveal
-          organized campaigns versus opportunistic scans. Use this information to strengthen your actual defensive posture.
+          <strong>Understanding the Data:</strong> The metrics shown here represent actual attempted intrusions detected 
+          by your honeypot system. Each interaction is analyzed for threat indicators like suspicious query parameters, 
+          known vulnerability scanning patterns, and abnormal request behavior. IP addresses are cross-referenced against 
+          known proxy/Tor exit node lists, and GeoIP data provides location context.
         </p>
         
         <p>
-          <strong>Best Practices:</strong> Review the dashboard regularly to identify new attack patterns. Export suspicious activity logs for deeper forensic 
-          analysis. Consider updating your actual system defenses based on the techniques observed. The threat intelligence gathered here can be invaluable for
-          your overall security strategy.
+          <strong>Implementation Details:</strong> This honeypot framework runs on Flask with Redis session management, 
+          featuring dynamically generated tempting targets for common attack vectors. Special features include deliberately 
+          frustrating CAPTCHAs, bogus file downloads, fake terminals, and other interactive elements designed to keep 
+          attackers engaged while revealing their techniques and possibly harvesting their tools.
         </p>
         
         <p>
-          For further customization, you can modify the dashboard theme using the selector above, and export any data for integration with your other security 
-          tools. All logs are time-stamped and include detailed metadata to aid in threat correlation.
+          Review the dashboard regularly to identify new attack patterns and export suspicious activity logs for deeper 
+          forensic analysis. The interactive charts provide visual insights into attack trends, while the detailed tables 
+          allow for investigation of specific incidents.
         </p>
       </div>
     </div>

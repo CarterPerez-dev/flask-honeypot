@@ -5,12 +5,12 @@ import '../css/admin.css';
 import '../css/HoneypotTab.css';
 import '../css/HtmlInteractionsTab.css';
 
-// Import tab components
+
 import HoneypotTab from '../tabs/HoneypotTab';
 import HtmlInteractionsTab from '../tabs/HtmlInteractionsTab';
 import OverviewTab from '../tabs/OverviewTab';
 
-// Import icons
+
 import { 
   FaChessKnight, FaChessRook, FaChessKing, FaChess, FaSignOutAlt, 
   FaBars, FaTimes, FaChevronRight, FaChevronDown 
@@ -21,19 +21,19 @@ function AdminDashboard() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Get active tab from localStorage or default to overview
+
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('honeypotAdminActiveTab') || "overview";
   });
   
-  // Save active tab to localStorage when it changes
+
   const switchTab = (tabName) => {
     localStorage.setItem('honeypotAdminActiveTab', tabName);
     setActiveTab(tabName);
     setMobileNavOpen(false);
   };
   
-  // Handle logout
+
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/honeypot/angela/logout", {
@@ -49,7 +49,7 @@ function AdminDashboard() {
     }
   };
 
-  // Render the appropriate tab content
+
   const renderTabContent = () => {
     switch(activeTab) {
       case 'overview': return <OverviewTab />;

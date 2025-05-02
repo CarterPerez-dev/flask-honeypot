@@ -209,7 +209,7 @@ def system_trap(component):
     # Render the appropriate template
     return render_template(f'redirection/step{current_step}.html', next_component=next_component)
 
-# Your existing specific routes
+
 @honeypot_pages_bp.route('/wp-admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/wp-login.php', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/wordpress/wp-admin', methods=['GET', 'POST'])
@@ -219,7 +219,7 @@ def wordpress_honeypot():
     log_honeypot_interaction('wordpress', 'page_view')
     return render_template('honeypot/wp-dashboard.html')
 
-# Add specific routes for other categories here...
+
 @honeypot_pages_bp.route('/admin', methods=['GET', 'POST'])
 @honeypot_pages_bp.route('/administrator', methods=['GET', 'POST'])
 @with_db_recovery

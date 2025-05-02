@@ -42,14 +42,14 @@ def create_app(config=None):
     )
     logger = logging.getLogger(__name__)
     
-    # Ensure the secret key is set properly
+
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
     
     # Session configuration
     app.config.update(
         SESSION_TYPE='redis',
         SESSION_PERMANENT=True,
-        SESSION_USE_SIGNER=True,  # This requires SECRET_KEY to be set
+        SESSION_USE_SIGNER=True, 
         SESSION_KEY_PREFIX='honeypot_session:',
         SESSION_REDIS=redis.StrictRedis(
             host=app_config.REDIS_HOST,
@@ -58,7 +58,7 @@ def create_app(config=None):
             password=app_config.REDIS_PASSWORD
         ),
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SECURE=False,  # Set to False for http development
+        SESSION_COOKIE_SECURE=False,  # CHANEG THISSSS
         SESSION_COOKIE_SAMESITE='Lax',
         PERMANENT_SESSION_LIFETIME=timedelta(hours=24),
     )
@@ -72,7 +72,7 @@ def create_app(config=None):
         logger.error(traceback.format_exc())
 
 
-# Apply custom configuration 
+    # custom config
     if config:
         app.config.update(config)
         

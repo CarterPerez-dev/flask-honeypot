@@ -1,4 +1,4 @@
-const CSRF_TOKEN_KEY = 'csrfToken'; // Define a key for storage
+const CSRF_TOKEN_KEY = 'csrfToken'; 
 
 /**
  * Retrieves the CSRF token from sessionStorage.
@@ -34,23 +34,23 @@ export const adminFetch = async (url, options = {}) => {
   const method = options.method || 'GET';
   let headers = { ...options.headers || {} };
   
-  // Always add Content-Type for JSON requests if not specified
+
   if (!headers['Content-Type'] && 
       (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PUT')) {
     headers['Content-Type'] = 'application/json';
   }
   
-  // Add Accept header to prefer JSON responses
+
   if (!headers['Accept']) {
     headers['Accept'] = 'application/json';
   }
   
-  // Add CSRF token header for all modifying requests
+
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
     const token = getCsrfToken();
     console.log("Using CSRF token for request:", token ? (token.substring(0, 5) + "...") : "none");
     
-    // Add CSRF header
+
     headers['X-CSRF-TOKEN'] = token;
   }
   
@@ -59,23 +59,20 @@ export const adminFetch = async (url, options = {}) => {
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
   
   try {
-    // Make the fetch request with credentials and timeout
     const response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include',
       signal: controller.signal,
-      // Don't follow redirects automatically
       redirect: 'manual'
     });
     
-    // Clear the timeout
+
     clearTimeout(timeoutId);
     
-    // Handle redirects manually
+
     if (response.status === 302 || response.status === 301) {
       console.warn(`Redirect detected from ${url} to ${response.headers.get('Location')}`);
-      // Instead of following the redirect, we'll return an error
       return {
         ok: false, 
         status: response.status,
@@ -89,7 +86,7 @@ export const adminFetch = async (url, options = {}) => {
     if (response.status === 401) {
       console.error("Authentication error - session may have expired");
       
-      // If we're not already on the login page, we might want to redirect
+
       if (!window.location.pathname.includes('/login')) {
         console.log("Session expired, redirecting to login");
         window.location.href = '/honey/login';

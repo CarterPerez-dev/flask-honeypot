@@ -1,4 +1,4 @@
-// Enhanced HoneypotTab.js with improved UI/UX and visual details
+// HoneypotTab.js
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   FaSpider, FaSync, FaSpinner, FaExclamationTriangle, FaFilter, 
@@ -20,7 +20,7 @@ import LoadingPlaceholder from '../../components/LoadingPlaceholder';
 import JsonSyntaxHighlighter from '../../components/JsonSyntaxHighlighter';
 import { formatTimestamp } from '../../utils/dateUtils';
 
-// Custom tooltip component for charts
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-// Empty state component with animation
+
 const EmptyState = ({ message, icon: Icon = FaExclamationCircle }) => (
   <div className="honeypot-empty-state">
     <div className="honeypot-empty-state-icon">
@@ -46,7 +46,6 @@ const EmptyState = ({ message, icon: Icon = FaExclamationCircle }) => (
 );
 
 const HoneypotTab = () => {
-  // State management
   const [honeypotData, setHoneypotData] = useState(null);
   const [detailedStats, setDetailedStats] = useState(null);
   const [interactions, setInteractions] = useState([]);
@@ -68,26 +67,26 @@ const HoneypotTab = () => {
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   
-  // Chart colors with vibrant palette
+
   const CHART_COLORS = [
     '#291efc', '#02d63b', '#e89a02', '#ff6114', '#f20202', 
     '#0fa7fc', '#fa1b6a', '#972ffa', '#f7d111', '#3dfcca'
   ];
 
-  // Check for reduced motion preference
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setAnimationsEnabled(!prefersReducedMotion);
   }, []);
 
-  // Fetch main honeypot data
+
   const fetchHoneypotData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       console.log("Fetching honeypot analytics data...");
       
-      // Show last refresh time
+
       setLastRefreshTime(new Date());
       
       const response = await adminFetch("/api/honeypot/combined-analytics");
@@ -123,7 +122,7 @@ const HoneypotTab = () => {
     }
   }, [retryCount]);
 
-  // Fetch detailed statistics
+
   const fetchDetailedStats = useCallback(async () => {
     setStatsLoading(true);
     try {
@@ -139,7 +138,7 @@ const HoneypotTab = () => {
       const data = await response.json();
       console.log("Detailed stats data:", data);
       
-      // Process time series data for visualization
+
       if (data.time_series && Array.isArray(data.time_series)) {
         data.time_series = data.time_series
           .map(item => ({
@@ -158,7 +157,7 @@ const HoneypotTab = () => {
     }
   }, []);
 
-  // Fetch honeypot interactions with filtering, pagination and sorting
+
   const fetchInteractions = useCallback(async () => {
     setInteractionsLoading(true);
     try {
@@ -188,12 +187,11 @@ const HoneypotTab = () => {
       const data = await response.json();
       console.log("Interactions data:", data);
       
-      // Handle different API response structures
+
       if (data.interactions) {
         setInteractions(data.interactions);
         setTotalInteractions(data.total || data.interactions.length);
       } else if (Array.isArray(data)) {
-        // If the API directly returns an array
         setInteractions(data);
         setTotalInteractions(data.length);
       } else {
@@ -207,7 +205,7 @@ const HoneypotTab = () => {
     }
   }, [page, limit, sortField, sortOrder, filter, filterCategory]);
 
-  // Get detailed interaction info
+
   const fetchInteractionDetails = useCallback(async (id) => {
     try {
       setLoading(true);
@@ -222,20 +220,19 @@ const HoneypotTab = () => {
       const data = await response.json();
       console.log("Interaction details:", data);
       
-      // Explicitly switch to details view BEFORE setting the data
+
       setViewMode("details");
       setSelectedInteraction(data);
     } catch (err) {
       console.error("Error fetching interaction details:", err);
-      
-      // Use a styled notification instead of a basic alert
+
       setError(`Error loading details: ${err.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Auto-refresh every 5 minutes if in overview mode
+
   useEffect(() => {
     let refreshInterval;
     
@@ -244,7 +241,7 @@ const HoneypotTab = () => {
         console.log("Auto-refreshing honeypot data...");
         fetchHoneypotData();
         fetchDetailedStats();
-      }, 5 * 60 * 1000); // 5 minutes
+      }, 5 * 60 * 1000); 
     }
     
     return () => {
@@ -252,21 +249,21 @@ const HoneypotTab = () => {
     };
   }, [viewMode, fetchHoneypotData, fetchDetailedStats]);
 
-  // Reset retry count when component unmounts
+
   useEffect(() => {
     return () => {
       setRetryCount(0);
     };
   }, []);
 
-  // Initial data load
+
   useEffect(() => {
     console.log("Component mounted - fetching initial data");
     fetchHoneypotData();
     fetchDetailedStats();
   }, [fetchHoneypotData, fetchDetailedStats]);
 
-  // Fetch interactions when filter, sort, or pagination changes
+
   useEffect(() => {
     if (viewMode === "interactions") {
       console.log("Fetching interactions - mode is 'interactions'");
@@ -274,18 +271,18 @@ const HoneypotTab = () => {
     }
   }, [fetchInteractions, viewMode, page, limit, sortField, sortOrder, filter, filterCategory]);
 
-  // Handle filter changes
+
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
   };
 
-  // Apply filter
+
   const applyFilter = () => {
-    setPage(1); // Reset to first page
+    setPage(1); 
     fetchInteractions();
   };
 
-  // Clear filter
+
   const clearFilter = () => {
     setFilter("");
     setFilterCategory("all");
@@ -293,37 +290,33 @@ const HoneypotTab = () => {
     fetchInteractions();
   };
 
-  // Handle sort changes
   const handleSort = (field) => {
     if (sortField === field) {
-      // Toggle order if same field
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      // New field, default to desc
       setSortField(field);
       setSortOrder("desc");
     }
   };
 
-  // Export data as JSON
+
   const exportData = () => {
     try {
-      // Create a blob with the JSON data
       const jsonData = JSON.stringify(interactions, null, 2);
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       
-      // Create a timestamp for the filename
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       
-      // Create a temporary link and trigger download
+
       const link = document.createElement("a");
       link.href = url;
       link.download = `honeypot-interactions-${timestamp}.json`;
       document.body.appendChild(link);
       link.click();
       
-      // Clean up
+
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -332,7 +325,7 @@ const HoneypotTab = () => {
     }
   };
 
-  // Render sort indicator
+
   const renderSortIndicator = (field) => {
     if (sortField !== field) return <FaSort className="honeypot-sort-icon" />;
     return sortOrder === "asc" ? 
@@ -340,12 +333,12 @@ const HoneypotTab = () => {
       <FaSortDown className="honeypot-sort-icon honeypot-sort-active" />;
   };
 
-  // Handle pagination
+
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  // Format relative time
+
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return 'Unknown';
     
@@ -362,12 +355,11 @@ const HoneypotTab = () => {
     return formatTimestamp(timestamp);
   };
 
-  // Calculate threat level
+
   const getThreatLevel = (interaction) => {
-    // Base level starts at low
     let level = 'low';
     
-    // Check for indicators of elevated threat
+
     if (interaction.is_tor_or_proxy) level = 'medium';
     if (interaction.is_scanner || interaction.is_port_scan) level = 'high';
     if (interaction.suspicious_params) level = 'high';
@@ -375,15 +367,15 @@ const HoneypotTab = () => {
     if (interaction.interaction_type === 'login_attempt') level = 'medium';
     if (interaction.interaction_type === 'sql_injection_attempt') level = 'high';
     
-    // Additional conditions based on specific threats
+
     if (interaction.notes && Array.isArray(interaction.notes) && interaction.notes.length > 0) {
-      level = 'high'; // Any security notes are concerning
+      level = 'high'; 
     }
     
     return level;
   };
   
-  // Get appropriate threat icon
+
   const getThreatIcon = (level) => {
     switch(level) {
       case 'high': return <FaExclamationTriangle className="honeypot-threat-icon honeypot-threat-high" />;
@@ -393,14 +385,13 @@ const HoneypotTab = () => {
     }
   };
 
-  // Process chart data from honeypotData
+
   const prepareChartData = useCallback(() => {
-    // Return defaults if no data yet
     if (!honeypotData) return { pathData: [], ipData: [] };
 
     console.log("Preparing chart data from:", honeypotData);
 
-    // Calculate pathData
+
     let pathData = [];
     if (honeypotData.top_paths && Array.isArray(honeypotData.top_paths)) {
       pathData = honeypotData.top_paths.map(item => ({
@@ -410,7 +401,7 @@ const HoneypotTab = () => {
       }));
     }
 
-    // Calculate ipData
+
     let ipData = [];
     if (honeypotData.top_ips && Array.isArray(honeypotData.top_ips)) {
       ipData = honeypotData.top_ips.map(item => ({
@@ -422,10 +413,10 @@ const HoneypotTab = () => {
     return { pathData, ipData };
   }, [honeypotData]);
 
-  // Memoize chart data for performance
+
   const { pathData, ipData } = useMemo(() => prepareChartData(), [prepareChartData]);
 
-  // Prepare time series data
+
   const timeSeriesData = useMemo(() => {
     if (!detailedStats?.time_series || !Array.isArray(detailedStats.time_series)) {
       return [];
@@ -433,13 +424,13 @@ const HoneypotTab = () => {
     return detailedStats.time_series;
   }, [detailedStats]);
 
-  // Helper for summarizing interaction details
+
   const getInteractionSummary = (interaction) => {
     if (!interaction) return "No details available";
     
     const additionalData = interaction.additional_data || {};
     
-    // Create a summary based on interaction type
+
     switch(interaction.interaction_type) {
       case "login_attempt":
         return `Login attempt with username: ${additionalData.username || "unknown"}, password: ${additionalData.password || "unknown"}`;
@@ -460,7 +451,7 @@ const HoneypotTab = () => {
     }
   };
 
-  // Render function for different views
+
   const renderContent = () => {
     if (loading && !honeypotData) {
       return (
@@ -493,7 +484,7 @@ const HoneypotTab = () => {
       );
     }
 
-    // Different views based on viewMode
+
     switch (viewMode) {
       case "overview":
         return renderOverviewContent();
@@ -506,7 +497,7 @@ const HoneypotTab = () => {
     }
   };
 
-  // Render overview dashboard
+
   const renderOverviewContent = () => {
     const dataToUse = honeypotData || {
       total_attempts: 0,
@@ -527,7 +518,6 @@ const HoneypotTab = () => {
     
     return (
       <div className="honeypot-overview-container">
-        {/* Stats summary cards */}
         <div className="honeypot-stats-cards">
           <div className="honeypot-stat-card">
             <div className="honeypot-stat-icon">
@@ -806,7 +796,7 @@ const HoneypotTab = () => {
                 </thead>
                 <tbody>
                   {dataToUse.recent_activity.slice(0, 10).map((activity, index) => {
-                    // Determine threat level
+
                     const threatLevel = getThreatLevel(activity);
                     const threatIcon = getThreatIcon(threatLevel);
                     
@@ -1191,7 +1181,6 @@ const HoneypotTab = () => {
               onClick={() => {
                 const jsonStr = JSON.stringify(selectedInteraction, null, 2);
                 navigator.clipboard.writeText(jsonStr);
-                // A small visual feedback could be added here
               }}
               title="Copy full interaction data as JSON"
             >

@@ -50,7 +50,6 @@ const EmptyState = ({ message = "No data available" }) => (
 );
 
 const HtmlInteractionsTab = () => {
-  // State management
   const [interactions, setInteractions] = useState([]);
   const [stats, setStats] = useState(null);
   const [selectedInteraction, setSelectedInteraction] = useState(null);
@@ -59,39 +58,39 @@ const HtmlInteractionsTab = () => {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("overview"); 
   
-  // Filter states
+
   const [pageType, setPageType] = useState("all");
   const [interactionType, setInteractionType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [pageTypes, setPageTypes] = useState([]);
   const [interactionTypes, setInteractionTypes] = useState([]);
   
-  // Pagination states
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
   
-  // Sorting states
+
   const [sortField, setSortField] = useState("timestamp");
   const [sortOrder, setSortOrder] = useState("desc");
   
-  // Chart colors with vibrant palette
+
   const CHART_COLORS = [
     '#291efc', '#02d63b', '#e89a02', '#ff6114', '#f20202', 
     '#0fa7fc', '#fa1b6a', '#972ffa', '#f7d111', '#3dfcca'
   ];
   
-  // Animation control
+
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
   useEffect(() => {
     console.log("HTML Interactions Tab mounted");
     
-    // Check user preference for animations
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setAnimationsEnabled(!prefersReducedMotion);
 
-    // Add event listener for focus
+
     window.addEventListener('focus', handleWindowFocus);
     
     return () => {
@@ -100,10 +99,9 @@ const HtmlInteractionsTab = () => {
     };
   }, []);
   
-  // Refresh data when window gets focus (for auto-updates)
+
   const handleWindowFocus = () => {
     if (viewMode === "overview") {
-      // Only refresh data if it's been more than 5 minutes since last refresh
       const lastRefresh = localStorage.getItem('htmlTabLastRefresh');
       const now = Date.now();
       if (!lastRefresh || now - parseInt(lastRefresh) > 5 * 60 * 1000) {
@@ -123,7 +121,6 @@ const HtmlInteractionsTab = () => {
     }
   }, [stats]);
 
-  // Fetch interactions with filters and pagination
   const fetchInteractions = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -160,35 +157,33 @@ const HtmlInteractionsTab = () => {
     }
   }, [page, limit, sortField, sortOrder, pageType, interactionType, searchTerm]);
 
-  // Fetch statistics
+
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     
     try {
       console.log("Fetching HTML interaction stats...");
-      // First try the specific HTML interactions stats endpoint
+
       const response = await adminFetch("/api/honeypot/detailed-stats");
       
       if (!response.ok) {
         throw new Error(`Failed to fetch statistics: ${response.status} ${response.statusText}`);
       }
       
-      // Log the raw response for debugging
+
       const text = await response.text();
       console.log("Raw stats response:", text);
       
       try {
-        // Try to parse the JSON response
         const data = JSON.parse(text);
         console.log("Parsed stats data:", data);
         
-        // Process time series data for better visualization
+
         if (data.time_series && Array.isArray(data.time_series)) {
-          // Ensure dates are in the correct format and sorted
+
           data.time_series = data.time_series
             .map(item => ({
               ...item,
-              // Ensure date is a string in YYYY-MM-DD format
               date: typeof item.date === 'string' ? item.date : new Date(item.date).toISOString().split('T')[0],
               count: Number(item.count) || 0
             }))
@@ -217,7 +212,7 @@ const HtmlInteractionsTab = () => {
     } catch (err) {
       console.error("Error fetching statistics:", err);
       
-      // As a backup, try to get data from the regular interactions endpoint
+
       try {
         console.log("Trying to fetch from regular interactions endpoint as fallback...");
         const fallbackResponse = await adminFetch("/api/honeypot/html-interactions?page=1&limit=100");
@@ -227,7 +222,6 @@ const HtmlInteractionsTab = () => {
           console.log("Fallback data:", fallbackData);
           
           if (fallbackData.interactions && fallbackData.interactions.length > 0) {
-            // Construct a minimal stats object from interactions data
             const improvStats = {
               total_interactions: fallbackData.total || fallbackData.interactions.length,
               today_interactions: fallbackData.interactions.filter(i => 
@@ -238,14 +232,12 @@ const HtmlInteractionsTab = () => {
               credential_attempts: fallbackData.interactions.filter(i => 
                 i.interaction_type === "login_attempt"
               ),
-              // Create basic page_types stats
               page_types: Array.from(
                 new Set(fallbackData.interactions.map(i => i.page_type))
               ).map(type => ({
                 _id: type,
                 count: fallbackData.interactions.filter(i => i.page_type === type).length
               })),
-              // Create basic interaction_types stats
               interaction_types: Array.from(
                 new Set(fallbackData.interactions.map(i => i.interaction_type))
               ).map(type => ({
@@ -272,20 +264,18 @@ const HtmlInteractionsTab = () => {
     setLoading(true);
     
     try {
-      // Make sure we're using the correct API endpoint
       console.log(`Fetching details for interaction ${id}`);
       
-      // Make sure the URL is correct and doesn't redirect
       const url = `/api/honeypot/html-interactions/${id}`;
+      
       console.log("Request URL:", url);
       
       const response = await adminFetch(url);
       
-      // Log the response status and type
       console.log(`Response status: ${response.status} ${response.statusText}`);
       console.log(`Response content type: ${response.headers.get('Content-Type')}`);
       
-      // Check if we're getting HTML instead of JSON
+
       const contentType = response.headers.get('Content-Type') || '';
       if (contentType.includes('text/html')) {
         console.error("Received HTML response instead of JSON");
@@ -298,7 +288,7 @@ const HtmlInteractionsTab = () => {
         throw new Error(`Failed to fetch interaction details: ${response.status} ${response.statusText}`);
       }
       
-      // Try to safely parse the JSON
+
       const text = await response.text();
       console.log("Raw response text:", text.substring(0, 100) + "...");
       
@@ -306,7 +296,7 @@ const HtmlInteractionsTab = () => {
         const data = JSON.parse(text);
         console.log("Interaction details:", data);
         
-        // Explicitly switch to details view BEFORE setting the data
+
         setViewMode("details");
         setSelectedInteraction(data);
       } catch (parseError) {
@@ -317,7 +307,7 @@ const HtmlInteractionsTab = () => {
     } catch (err) {
       console.error("Error fetching interaction details:", err);
       
-      // Try an alternative approach - get all interactions and filter by ID
+      // Fallback
       try {
         console.log("Trying fallback approach to get interaction details");
         const allInteractionsResponse = await adminFetch("/api/honeypot/html-interactions?limit=100");
@@ -331,7 +321,7 @@ const HtmlInteractionsTab = () => {
             console.log("Found interaction in all interactions:", foundInteraction);
             setViewMode("details");
             setSelectedInteraction(foundInteraction);
-            return; // Exit early since we succeeded
+            return; 
           } else {
             console.error("Could not find interaction with ID:", id);
           }
@@ -340,7 +330,7 @@ const HtmlInteractionsTab = () => {
         console.error("Fallback approach also failed:", fallbackError);
       }
       
-      // Use a styled notification instead of a basic alert
+
       setError(`Error loading details: ${err.message || "Unknown error"}`);
     } finally {
       setLoading(false);
@@ -372,7 +362,7 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Reset filters
+
   const resetFilters = () => {
     setPageType("all");
     setInteractionType("all");
@@ -381,7 +371,7 @@ const HtmlInteractionsTab = () => {
     fetchInteractions();
   };
 
-  // Handle sort changes
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -390,11 +380,11 @@ const HtmlInteractionsTab = () => {
       setSortOrder("desc");
     }
     
-    // Fetch interactions with new sort settings
+
     fetchInteractions();
   };
 
-  // Render sort indicator with animation
+
   const renderSortIndicator = (field) => {
     if (sortField !== field) return <FaSort className="html-sort-icon" />;
     return sortOrder === "asc" ? 
@@ -402,26 +392,25 @@ const HtmlInteractionsTab = () => {
       <FaSortDown className="html-sort-icon html-sort-active" />;
   };
 
-  // Export data as JSON file
+
   const exportData = () => {
     try {
-      // Create a blob with the JSON data
       const jsonData = JSON.stringify(interactions, null, 2);
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       
-      // Create a download filename with timestamp
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `html-interactions-export-${timestamp}.json`;
       
-      // Create a temporary link and trigger download
+
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       
-      // Clean up
+
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -430,7 +419,7 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Get a summarized version of interaction details
+
   const getInteractionDetails = (interaction) => {
     const additionalData = interaction.additional_data || {};
     
@@ -459,7 +448,7 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Render function for different views
+
   const renderContent = () => {
     if (loading && !interactions.length && !stats) {
       return <LoadingIndicator message="Loading data..." />;
@@ -494,7 +483,7 @@ const HtmlInteractionsTab = () => {
     }
   };
 
-  // Render overview stats and charts
+
   const renderOverview = () => {
     if (statsLoading && !stats) {
       return <LoadingIndicator message="Loading statistics..." />;
@@ -513,7 +502,7 @@ const HtmlInteractionsTab = () => {
       time_series: []
     };
   
-    // Component for visualizing empty charts
+
     const NoDataMessage = ({ message }) => (
       <div className="html-no-chart-data">
         <FaExclamationTriangle />
@@ -521,20 +510,18 @@ const HtmlInteractionsTab = () => {
       </div>
     );
 
-    // Process and prepare chart data
+
     const preparePageTypeData = () => {
-      // Use page_type_stats, page_types, or fallback to empty array
       const sourceData = statsData.page_type_stats || statsData.page_types || [];
       
       return sourceData.map(item => ({
         name: (item._id || "unknown").replace(/_/g, ' '),
         value: item.count || 0,
         fullName: item._id || "unknown"
-      })).sort((a, b) => b.value - a.value).slice(0, 8); // Top 8 for better visualization
+      })).sort((a, b) => b.value - a.value).slice(0, 8);
     };
     
     const prepareInteractionTypeData = () => {
-      // Use interaction_stats, interaction_types, or fallback to empty array
       const sourceData = statsData.interaction_stats || statsData.interaction_types || [];
       
       return sourceData.map(item => ({
@@ -565,7 +552,7 @@ const HtmlInteractionsTab = () => {
       }));
     };
     
-    // Prepare the data for charts
+
     const pageTypeData = preparePageTypeData();
     const interactionTypeData = prepareInteractionTypeData();
     const timeSeriesData = prepareTimeSeriesData();

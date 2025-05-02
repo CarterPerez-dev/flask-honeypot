@@ -150,7 +150,7 @@ def admin_login():
                     })
                 except Exception as e:
                     logger.error(f"Error updating failed login attempts: {e}")
-            else: # db is None
+            else: 
                 logger.warning(f"DB connection unavailable, cannot log failed login attempt for IP: {client_ip}")
 
             return jsonify({"error": "Invalid admin credentials"}), 403
@@ -203,7 +203,7 @@ def admin_logout():
         session.pop('admin_ip', None)
         # Also clear the CSRF token from the session on logout
         session.pop('csrf_token', None)
-        session.modified = True # Ensure session changes are saved
+        session.modified = True 
 
         return jsonify({"message": "Logged out successfully"}), 200
     except Exception as e:
@@ -228,15 +228,14 @@ def require_admin():
         last_active_str = session.get('admin_last_active')
         if last_active_str:
             try:
-                # Use timezone-aware parsing if possible, otherwise handle naive datetime
                 if 'Z' in last_active_str:
                     last_active_time = datetime.fromisoformat(last_active_str.replace('Z', '+00:00'))
                 elif '+' in last_active_str or '-' in last_active_str[10:]: # check for timezone offset
                      last_active_time = datetime.fromisoformat(last_active_str)
-                else: # Assume UTC if no timezone info
+                else: 
                      last_active_time = datetime.fromisoformat(last_active_str).replace(tzinfo=timezone.utc)
 
-                # Ensure current time is also timezone-aware (UTC)
+
                 now_utc = datetime.now(timezone.utc)
                 inactivity_limit = timedelta(hours=1) # Edit this number if you want to stay logged in longer or shorter
 

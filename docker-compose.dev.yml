@@ -1,7 +1,7 @@
-version: '3.8'
+
+# For Development frontend with hot reloading
 
 services:
-  # Development frontend with hot reloading
   frontend-dev:
     image: node:18-alpine
     container_name: honeypot_frontend_dev
@@ -22,15 +22,14 @@ services:
       - honeypot_network
     depends_on:
       - backend
-    # Overcome React's slow start in Docker
     stdin_open: true
     tty: true
 
-  # Backend service
+
   nginx-dev:
     image: nginx:alpine
     ports:
-      - "8080:80"  # Access your app via port 8080 instead
+      - "8080:80"  # Access via port 8080 when dev
     volumes:
       - ./dev-nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
@@ -39,7 +38,7 @@ services:
     networks:
       - honeypot_network
 
-  # Backend service (unchanged)
+
   backend:
     build:
       context: . 
@@ -109,4 +108,4 @@ volumes:
   honeypot_logs: 
   redis_data: 
   mongodb_data:
-  node_modules:  # Volume for node_modules to improve performance
+  node_modules:  

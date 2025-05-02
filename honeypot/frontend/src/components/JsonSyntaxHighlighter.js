@@ -3,9 +3,9 @@ import React, { useState, useMemo } from 'react';
 import '../static/css/JsonSyntaxHighlighter.css';
 
 const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
-  const [copyStatus, setCopyStatus] = useState('idle'); // idle, copying, success
+  const [copyStatus, setCopyStatus] = useState('idle'); 
   
-  // Parse the JSON if it's a string, otherwise use as is
+
   const parsedJson = useMemo(() => {
     if (typeof json === 'string') {
       try {
@@ -18,7 +18,7 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
     return json;
   }, [json]);
 
-  // Format the JSON with proper indentation
+
   const formattedJson = useMemo(() => {
     if (!parsedJson) return '';
     try {
@@ -29,7 +29,7 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
     }
   }, [parsedJson]);
 
-  // Apply syntax highlighting
+  // Syntax highlighting
   const highlightSyntax = (text) => {
     if (!text) return '';
     
@@ -51,11 +51,11 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
       .replace(/,/g, '<span class="json-comma">,</span>');
   };
 
-  // Safe copy to clipboard with fallback for HTTP
+
   const copyToClipboard = (text) => {
     setCopyStatus('copying');
     
-    // Try the modern Clipboard API first
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text)
         .then(() => {
@@ -67,7 +67,7 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
           fallbackCopyToClipboard(text);
         });
     } else {
-      // Fall back to the older execCommand method
+      // Fall back 
       fallbackCopyToClipboard(text);
     }
   };
@@ -75,11 +75,9 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
   // Fallback copy method for browsers without Clipboard API
   const fallbackCopyToClipboard = (text) => {
     try {
-      // Create a temporary textarea element
       const textArea = document.createElement('textarea');
       textArea.value = text;
       
-      // Make the textarea non-visible but present in the DOM
       textArea.style.position = 'fixed';
       textArea.style.left = '-9999px';
       textArea.style.top = '0';
@@ -89,10 +87,10 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
       textArea.focus();
       textArea.select();
       
-      // Execute the copy command
+
       const success = document.execCommand('copy');
       
-      // Clean up
+
       document.body.removeChild(textArea);
       
       if (!success) {
@@ -108,7 +106,7 @@ const JsonSyntaxHighlighter = ({ json, maxHeight = '400px' }) => {
     }
   };
 
-  // Handle errors
+
   if (!formattedJson) {
     return (
       <div className="json-syntax-error">
