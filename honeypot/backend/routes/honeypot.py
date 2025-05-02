@@ -17,7 +17,7 @@ import traceback
 from honeypot.backend.helpers.proxy_detector import get_proxy_detector, ProxyCache
 from honeypot.database.models import HoneypotInteraction, ScanAttempt, WatchlistEntry, BlocklistEntry
 from honeypot.backend.routes.admin import require_admin  
-
+from honeypot.database.mongodb import get_db, get_mongo_client
 # Create logger
 logger = logging.getLogger(__name__)
 
@@ -1312,8 +1312,8 @@ def combined_honeypot_analytics():
         return jsonify({"error": "Not authorized"}), 401
     
     try:
-        # Get database connection
-        db = current_app.extensions.get('mongodb', {}).get('db')
+        # Get database connection - use the get_db function directly
+        db = get_db()
         
         if db is None:
             logger.error("Database connection not available")
@@ -1339,12 +1339,38 @@ def combined_honeypot_analytics():
             stats["total_attempts"] = scan_attempts_count + interactions_count
         except Exception as e:
             logger.error(f"Error counting documents: {str(e)}")
-            return jsonify({
-                "error": "Database operation failed",
-                "details": str(e)
-            }), 500
+            
+            # Try to recover from MongoDB connection errors
+            if "Cannot use MongoClient after close" in str(e):
+                try:
+                    logger.info("Trying to recover MongoDB connection...")
+                    get_mongo_client()  
+                    db = get_db()  
+                    
+                    if db:
+                        # Retry the operation
+                        scan_attempts_count = db.scanAttempts.count_documents({})
+                        interactions_count = db.honeypot_interactions.count_documents({})
+                        stats["total_attempts"] = scan_attempts_count + interactions_count
+                        logger.info("Successfully recovered MongoDB connection")
+                    else:
+                        return jsonify({
+                            "error": "Database reconnection failed",
+                            "details": "Could not reestablish database connection"
+                        }), 500
+                except Exception as recover_e:
+                    logger.error(f"Failed to recover MongoDB connection: {str(recover_e)}")
+                    return jsonify({
+                        "error": "Database operation failed",
+                        "details": "Connection recovery failed: " + str(recover_e)
+                    }), 500
+            else:
+                return jsonify({
+                    "error": "Database operation failed",
+                    "details": str(e)
+                }), 500
         
-        # Error handling for each database operation
+
         try:
             # Combine unique IPs from both collections
             scan_ips = set(db.scanAttempts.distinct("ip") or [])

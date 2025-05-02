@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import geoip2.database
 import traceback
 from honeypot.config.settings import get_config
-from honeypot.database.mongodb import init_app as init_db, get_db, initialize_collections
+from honeypot.database.mongodb import init_app as init_db, get_db, get_mongo_client, initialize_collections
 from honeypot.backend.helpers.geoip_manager import GeoIPManager
 from honeypot.backend.helpers.proxy_detector import ProxyCache, get_proxy_detector
 
@@ -216,7 +216,7 @@ def create_app(config=None):
             logger.error(traceback.format_exc())
             app.extensions.setdefault('mongodb', {'db': None})
             app.config.setdefault('COMMON_SCAN_PATHS', [])
-            app.config.setdefault('PROXY_DETECTOR', None) 
+            app.config.setdefault('PROXY_DETECTOR', None)
 
     # Configure for proxy headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
