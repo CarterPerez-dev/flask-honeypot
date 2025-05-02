@@ -70,8 +70,8 @@ const HoneypotTab = () => {
   
   // Chart colors with vibrant palette
   const CHART_COLORS = [
-    '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', 
-    '#50bffe', '#ff4c8b', '#b76cff', '#ff6b6b', '#50c3a5'
+    '#291efc', '#02d63b', '#e89a02', '#ff6114', '#f20202', 
+    '#0fa7fc', '#fa1b6a', '#972ffa', '#f7d111', '#3dfcca'
   ];
 
   // Check for reduced motion preference
@@ -673,7 +673,7 @@ const HoneypotTab = () => {
                       cy="50%"
                       innerRadius={60}
                       outerRadius={100}
-                      fill="#8884d8"
+                      fill="#FFFFFF"
                       dataKey="value"
                       nameKey="name"
                       label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -693,10 +693,10 @@ const HoneypotTab = () => {
                     <Tooltip 
                       formatter={(value) => [`${value} interactions`, 'Count']}
                       contentStyle={{
-                        backgroundColor: 'var(--hp-bg-card)',
+                        backgroundColor: '#FFF',
                         border: '1px solid var(--hp-border-light)',
                         borderRadius: '8px',
-                        color: 'var(--hp-text-primary)'
+                        color: '#FFFFFF',
                       }}
                     />
                   </PieChart>

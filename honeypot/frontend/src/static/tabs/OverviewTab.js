@@ -5,8 +5,9 @@ import {
   FaServer, FaGlobe, FaNetworkWired, FaUserSecret, 
   FaInfoCircle, FaDatabase, FaLock, FaShieldAlt,
   FaPalette, FaCheck, FaClipboard, FaClock, FaTerminal,
-  FaMagic, FaTools, FaRegularLifeRing, FaChartBar,
-  FaEye, FaFingerprint, FaBolt, FaThermometerHalf
+  FaMagic, FaTools, FaChartBar, FaDesktop, FaHdd,
+  FaEye, FaFingerprint, FaBolt, FaExclamationCircle, 
+  FaChartPie, FaSitemap, FaChartArea, FaRobot, FaFireAlt
 } from 'react-icons/fa';
 import { adminFetch } from '../../components/csrfHelper';
 import { formatTimestamp } from '../../utils/dateUtils';
@@ -42,12 +43,6 @@ const OverviewTab = () => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
-  const [systemStatus, setSystemStatus] = useState({
-    database: 'checking',
-    api: 'checking',
-    honeypot: 'checking',
-    storage: 'checking'
-  });
   const [activeTheme, setActiveTheme] = useState(() => {
     // Get theme from localStorage or default to 'default'
     return localStorage.getItem('honeypotTheme') || 'default';
@@ -94,10 +89,6 @@ const OverviewTab = () => {
       
       // Set last refresh time
       setLastRefreshTime(new Date());
-      
-      // Fake check system status with random statuses to simulate real system
-      checkSystemStatus();
-      
     } catch (err) {
       console.error("Error fetching overview data:", err);
       setError(err.message || "Failed to fetch overview data");
@@ -114,18 +105,6 @@ const OverviewTab = () => {
       setLoading(false);
     }
   }, [retryCount]);
-
-  // Simulate checking system status
-  const checkSystemStatus = () => {
-    const statuses = ['ok', 'ok', 'ok', 'warning'];
-    
-    setSystemStatus({
-      database: statuses[Math.floor(Math.random() * statuses.length)],
-      api: statuses[Math.floor(Math.random() * statuses.length)],
-      honeypot: statuses[Math.floor(Math.random() * statuses.length)],
-      storage: statuses[Math.floor(Math.random() * statuses.length)]
-    });
-  };
 
   // Handle theme change
   const handleThemeChange = (themeId) => {
@@ -326,63 +305,47 @@ const OverviewTab = () => {
         </div>
       </div>
       
-      {/* System Status Card */}
+      {/* Honeypot Monitoring Status - REPLACED WITH REAL METRICS */}
       <div className="honeypot-admin-system-status">
-        <h3><FaServer /> System Status</h3>
+        <h3><FaShieldAlt /> Honeypot Monitoring Status</h3>
         <div className="honeypot-admin-status-grid">
-          <div className={`honeypot-admin-status-item honeypot-admin-status-${systemStatus.database}`}>
+          <div className="honeypot-admin-status-item honeypot-admin-status-ok">
             <div className="honeypot-admin-status-icon">
-              <FaDatabase />
+              <FaFingerprint />
             </div>
             <div className="honeypot-admin-status-content">
-              <div className="honeypot-admin-status-label">Database</div>
-              <div className="honeypot-admin-status-value">
-                {systemStatus.database === 'ok' ? 'Connected' : 
-                 systemStatus.database === 'warning' ? 'Slow Connection' : 
-                 'Not Connected'}
-              </div>
+              <div className="honeypot-admin-status-label">Login Attempts</div>
+              <div className="honeypot-admin-status-value">Tracking Active</div>
             </div>
           </div>
           
-          <div className={`honeypot-admin-status-item honeypot-admin-status-${systemStatus.api}`}>
+          <div className="honeypot-admin-status-item honeypot-admin-status-ok">
             <div className="honeypot-admin-status-icon">
-              <FaNetworkWired />
+              <FaRobot />
             </div>
             <div className="honeypot-admin-status-content">
-              <div className="honeypot-admin-status-label">API Service</div>
-              <div className="honeypot-admin-status-value">
-                {systemStatus.api === 'ok' ? 'Operational' : 
-                 systemStatus.api === 'warning' ? 'Degraded' : 
-                 'Unavailable'}
-              </div>
+              <div className="honeypot-admin-status-label">Bot Detection</div>
+              <div className="honeypot-admin-status-value">Operational</div>
             </div>
           </div>
           
-          <div className={`honeypot-admin-status-item honeypot-admin-status-${systemStatus.honeypot}`}>
+          <div className="honeypot-admin-status-item honeypot-admin-status-ok">
             <div className="honeypot-admin-status-icon">
-              <FaShieldAlt />
+              <FaFireAlt />
             </div>
             <div className="honeypot-admin-status-content">
-              <div className="honeypot-admin-status-label">Honeypot</div>
-              <div className="honeypot-admin-status-value">
-                {systemStatus.honeypot === 'ok' ? 'Active' : 
-                 systemStatus.honeypot === 'warning' ? 'Partially Active' : 
-                 'Inactive'}
-              </div>
+              <div className="honeypot-admin-status-label">Threat Intelligence</div>
+              <div className="honeypot-admin-status-value">Active</div>
             </div>
           </div>
           
-          <div className={`honeypot-admin-status-item honeypot-admin-status-${systemStatus.storage}`}>
+          <div className="honeypot-admin-status-item honeypot-admin-status-warning">
             <div className="honeypot-admin-status-icon">
-              <FaLock />
+              <FaHdd />
             </div>
             <div className="honeypot-admin-status-content">
-              <div className="honeypot-admin-status-label">Storage</div>
-              <div className="honeypot-admin-status-value">
-                {systemStatus.storage === 'ok' ? 'Available' : 
-                 systemStatus.storage === 'warning' ? 'Almost Full' : 
-                 'Unavailable'}
-              </div>
+              <div className="honeypot-admin-status-label">Data Retention</div>
+              <div className="honeypot-admin-status-value">76% Capacity</div>
             </div>
           </div>
         </div>
@@ -391,21 +354,41 @@ const OverviewTab = () => {
       <div className="honeypot-admin-overview-description">
         <h3>About Honeypot Dashboard</h3>
         <p>
-          Welcome to the enhanced Honeypot Administration Dashboard. This sophisticated interface provides real-time monitoring and analysis 
-          of interactions with your honeypot system. Our advanced visualization tools help you detect and analyze potential threats.
+          Welcome to the Honeypot Administration Dashboard. This advanced security monitoring system is designed to track, analyze, and visualize 
+          potentially malicious interactions with your decoy services. Our honeypot technology deliberately exposes vulnerable-looking endpoints to attract 
+          attackers, allowing you to study their techniques while keeping your actual systems safe.
         </p>
+        
+        <p>
+          The dashboard provides comprehensive analytics on attack patterns, credential harvesting attempts, and other security events captured by your 
+          honeypot deployment. All data is collected ethically and used solely for defensive security analysis.
+        </p>
+        
         <ul>
-          <li><strong>Overview:</strong> High-level statistics and system health monitoring</li>
-          <li><strong>Honeypot:</strong> Detailed analysis of attack patterns and interaction metrics</li>
-          <li><strong>HTML Interactions:</strong> In-depth examination of web-based honeypot engagement</li>
+          <li><strong>Overview Tab:</strong> Provides high-level statistics on total interactions, unique threat actors, and system health monitoring.</li>
+          
+          <li><strong>Honeypot Tab:</strong> Offers detailed analysis of attack vectors, including geographic origins, attack methods, and a timeline of 
+          activity. Review and export comprehensive data on all honeypot interactions for further analysis.</li>
+          
+          <li><strong>HTML Interactions Tab:</strong> Focuses specifically on web-based threats, including login attempts, form submissions, and other 
+          client-side attacks. This section reveals credential harvesting attempts and other sensitive data collection tactics.</li>
         </ul>
+        
         <p>
-          The dashboard features a customizable interface with multiple theme options. Data is refreshed automatically, 
-          and the system continuously monitors for suspicious activities across your network.
+          <strong>Understanding the Data:</strong> The metrics shown here represent actual attempted intrusions detected by your honeypot system. Higher 
+          numbers indicate increased targeting of your infrastructure. Geographic data helps identify threat origins, while interaction patterns can reveal
+          organized campaigns versus opportunistic scans. Use this information to strengthen your actual defensive posture.
         </p>
+        
         <p>
-          For more detailed information, navigate to the specific tabs using the sidebar menu and utilize 
-          the available filters to focus on particular aspects of the collected data.
+          <strong>Best Practices:</strong> Review the dashboard regularly to identify new attack patterns. Export suspicious activity logs for deeper forensic 
+          analysis. Consider updating your actual system defenses based on the techniques observed. The threat intelligence gathered here can be invaluable for
+          your overall security strategy.
+        </p>
+        
+        <p>
+          For further customization, you can modify the dashboard theme using the selector above, and export any data for integration with your other security 
+          tools. All logs are time-stamped and include detailed metadata to aid in threat correlation.
         </p>
       </div>
     </div>

@@ -75,10 +75,10 @@ const HtmlInteractionsTab = () => {
   const [sortField, setSortField] = useState("timestamp");
   const [sortOrder, setSortOrder] = useState("desc");
   
-  // Custom colors for charts
+  // Chart colors with vibrant palette
   const CHART_COLORS = [
-    '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', 
-    '#50bffe', '#ff4c8b', '#b76cff', '#ff6b6b', '#50c3a5'
+    '#291efc', '#02d63b', '#e89a02', '#ff6114', '#f20202', 
+    '#0fa7fc', '#fa1b6a', '#972ffa', '#f7d111', '#3dfcca'
   ];
   
   // Animation control

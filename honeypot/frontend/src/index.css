@@ -7,7 +7,7 @@
   --honeypot-accent-glow: #8a58fc;
   --honeypot-secondary: #ff4c8b;
   --honeypot-secondary-hover: #ff6ba1;
-  --honeypot-text: #e2e2e2;
+  --honeypot-text: #f2f2f2;
   --honeypot-text-secondary: #9da8b9;
   --honeypot-border: #252a3c;
   --honeypot-input-bg: rgba(0, 0, 0, 0.2);
@@ -39,8 +39,6 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-/* Global Utility Classes */
 .honeypot-flex {
   display: flex;
 }

@@ -130,6 +130,70 @@
   --admin-breakpoint-md: 768px;
   --admin-breakpoint-lg: 992px;
   --admin-breakpoint-xl: 1200px;
+  
+  /* Map admin theme variables to other component variables */
+  /* HoneypotTab Variables */
+  --hp-bg-dark: var(--admin-bg-darkest);
+  --hp-bg-medium: var(--admin-bg-dark);
+  --hp-bg-card: var(--admin-bg-card);
+  --hp-accent-primary: var(--admin-primary);
+  --hp-accent-secondary: var(--admin-secondary);
+  --hp-accent-tertiary: var(--admin-tertiary);
+  --hp-accent-quaternary: var(--admin-quaternary);
+  --hp-accent-warning: var(--admin-warning);
+  --hp-accent-danger: var(--admin-danger);
+  --hp-text-primary: var(--admin-text-primary);
+  --hp-text-secondary: var(--admin-text-secondary);
+  --hp-text-tertiary: var(--admin-text-tertiary);
+  --hp-border-light: var(--admin-border-light);
+  --hp-border-medium: var(--admin-border-medium);
+  --hp-border-heavy: var(--admin-border-heavy);
+  --hp-input-bg: rgba(10, 12, 28, 0.5);
+  --hp-card-bg: var(--admin-bg-card);
+  --hp-card-bg-hover: var(--admin-bg-card-hover);
+  --hp-gradient-purple: var(--admin-gradient-primary);
+  --hp-gradient-pink: var(--admin-gradient-secondary);
+  --hp-gradient-blue: var(--admin-gradient-tertiary);
+  --hp-gradient-green: var(--admin-gradient-quaternary);
+  --hp-shadow-sm: var(--admin-shadow-sm);
+  --hp-shadow-md: var(--admin-shadow-md);
+  --hp-shadow-lg: var(--admin-shadow-lg);
+  --hp-glow-purple: var(--admin-shadow-primary);
+  --hp-glow-pink: var(--admin-shadow-secondary);
+  --hp-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
+  
+  /* HTML Interactions Tab Variables */
+  --html-bg-dark: var(--admin-bg-darkest);
+  --html-bg-medium: var(--admin-bg-dark);
+  --html-bg-card: var(--admin-bg-card);
+  --html-accent-primary: var(--admin-primary);
+  --html-accent-secondary: var(--admin-secondary);
+  --html-accent-tertiary: var(--admin-tertiary);
+  --html-accent-quaternary: var(--admin-quaternary);
+  --html-accent-warning: var(--admin-warning);
+  --html-accent-danger: var(--admin-danger);
+  --html-text-primary: var(--admin-text-primary);
+  --html-text-secondary: var(--admin-text-secondary);
+  --html-text-tertiary: var(--admin-text-tertiary);
+  --html-border-light: var(--admin-border-light);
+  --html-border-medium: var(--admin-border-medium);
+  --html-border-heavy: var(--admin-border-heavy);
+  --html-card-bg: var(--admin-bg-card);
+  --html-card-bg-hover: var(--admin-bg-card-hover);
+  --html-gradient-purple: var(--admin-gradient-primary);
+  --html-gradient-pink: var(--admin-gradient-secondary);
+  --html-gradient-blue: var(--admin-gradient-tertiary);
+  --html-gradient-green: var(--admin-gradient-quaternary);
+  --html-shadow-sm: var(--admin-shadow-sm);
+  --html-shadow-md: var(--admin-shadow-md);
+  --html-shadow-lg: var(--admin-shadow-lg);
+  --html-glow-purple: var(--admin-shadow-primary);
+  --html-glow-pink: var(--admin-shadow-secondary);
+  --html-glow-blue: 0 0 15px rgba(0, 198, 255, 0.5);
+  --html-status-success: var(--admin-success);
+  --html-status-warning: var(--admin-warning);
+  --html-status-danger: var(--admin-danger);
+  --html-status-info: var(--admin-info);
 }
 
 /* Cyberpunk Theme */
@@ -308,7 +372,7 @@ body {
   background-color: var(--admin-bg-darkest);
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - FIXED POSITIONING ADDED */
 .honeypot-admin-sidebar {
   width: var(--admin-sidebar-width);
   height: 100vh;
@@ -316,7 +380,7 @@ body {
   border-right: 1px solid var(--admin-border-light);
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed; /* Changed from sticky to fixed */
   top: 0;
   left: 0;
   transition: width var(--admin-transition-normal),
@@ -763,12 +827,14 @@ body {
   color: var(--admin-danger) !important;
 }
 
-/* Main Content Area */
+/* Main Content Area - ADJUSTED FOR FIXED SIDEBAR */
 .honeypot-admin-main-content {
   flex: 1;
   padding: var(--admin-spacing-lg);
-  max-width: calc(100% - var(--admin-sidebar-width));
-  transition: max-width var(--admin-transition-normal);
+  margin-left: var(--admin-sidebar-width); /* Added margin to offset fixed sidebar */
+  width: calc(100% - var(--admin-sidebar-width)); /* Set width to fill remaining space */
+  transition: margin-left var(--admin-transition-normal),
+              width var(--admin-transition-normal);
   overflow-x: hidden;
   background-color: var(--admin-bg-darkest);
   position: relative;
@@ -790,7 +856,8 @@ body {
 }
 
 .nav-collapsed .honeypot-admin-main-content {
-  max-width: calc(100% - var(--admin-sidebar-collapsed-width));
+  margin-left: var(--admin-sidebar-collapsed-width); /* Adjust margin for collapsed sidebar */
+  width: calc(100% - var(--admin-sidebar-collapsed-width)); /* Adjust width for collapsed sidebar */
 }
 
 /* Content Header */
@@ -1341,6 +1408,23 @@ body {
   transform: rotate(90deg);
 }
 
+.honeypot-admin-last-refresh {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  margin-bottom: 16px;
+  background-color: var(--admin-bg-card);
+  border-radius: 8px;
+  color: var(--admin-text-secondary);
+  font-size: 0.9rem;
+  border: 1px solid var(--admin-border-light);
+}
+
+.honeypot-admin-refresh-icon {
+  margin-right: 8px;
+  color: var(--admin-tertiary);
+}
+
 /* Media Queries */
 @media (max-width: 1200px) {
   .honeypot-admin-stats-grid {
@@ -1388,7 +1472,8 @@ body {
   
   .honeypot-admin-main-content {
     padding-top: calc(var(--admin-spacing-lg) + 60px);
-    max-width: 100% !important;
+    margin-left: 0 !important; /* Remove margin on mobile */
+    width: 100% !important; /* Full width on mobile */
   }
   
   .honeypot-admin-content-header {
@@ -1443,4 +1528,3 @@ body {
     scroll-behavior: auto !important;
   }
 }
-
