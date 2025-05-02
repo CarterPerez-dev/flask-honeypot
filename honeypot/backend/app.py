@@ -15,6 +15,7 @@ from honeypot.backend.helpers.geoip_manager import GeoIPManager
 from honeypot.backend.helpers.proxy_detector import ProxyCache, get_proxy_detector
 
 
+
 # GeoIP readers
 asn_reader = None
 country_reader = None
@@ -58,7 +59,6 @@ def create_app(config=None):
             password=app_config.REDIS_PASSWORD
         ),
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SECURE=False,  # CHANEG THISSSS
         SESSION_COOKIE_SAMESITE='Lax',
         PERMANENT_SESSION_LIFETIME=timedelta(hours=24),
     )

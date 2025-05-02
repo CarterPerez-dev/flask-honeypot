@@ -49,6 +49,12 @@ def load_common_scan_paths():
     COMMON_SCAN_PATHS = DEFAULT_SCAN_PATHS.copy()
     
     try:
+        # Check if we're in an application context
+        from flask import has_app_context
+        if not has_app_context():
+            logger.info("Not in application context, using default scan paths only")
+            return
+            
         # Get database connection directly
         db = get_db()
         
@@ -68,9 +74,7 @@ def load_common_scan_paths():
             logger.info(f"Loaded {len(COMMON_SCAN_PATHS)} common scan paths from database")
     except Exception as e:
         logger.error(f"Error loading common scan paths: {str(e)}")
-
-# Try to load common scan paths if available
-load_common_scan_paths()
+        
 
 
 def get_client_identifier():

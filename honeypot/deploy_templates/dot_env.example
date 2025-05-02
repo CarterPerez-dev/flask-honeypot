@@ -8,21 +8,24 @@
 SECRET_KEY="f926dfdd9fffdafedd195ab8b30e60aa8157736475be9646c41b9b1994e47089" 
 
 # MongoDB credentials
-MONGO_USER="usermantestlol23"  
-MONGO_PASSWORD="Bigstrongpasswordyea112"  
+MONGO_USER="4ru4gruiighde73j4khfuoieh39845fdf4553uh8"  
+MONGO_PASSWORD="nej4h3jn44j5fjk4btjf9uj3knrj4rh4uefds"  
 
 # Redis password
-REDIS_PASSWORD="Ih9zfuUrgoxnir5qz" 
+REDIS_PASSWORD="Ih9zfuUrgoxnir5qzf445454G4bbahs3&3ejik4j=rsi8A6" 
 
 # Admin dashboard password
-HONEYPOT_ADMIN_PASSWORD="2WW6TUhgfdu3BkuApLA" 
+HONEYPOT_ADMIN_PASSWORD="2WW6TUhgfdu3BkuApLAdwdede3dj3i" 
 
 # RATE LIMITING FOR ENPOINTS
-HONEYPOT_RATE_LIMIT=5
+HONEYPOT_RATE_LIMIT=15
 HONEYPOT_RATE_PERIOD=60
 
 # Flask environment ('development' or 'production')
 FLASK_ENV=production
 
-
+# Data Directory
 HONEYPOT_DATA_DIRECTORY=/app/data
+
+# (OPTIONAL) MAXMIND KEY
+MAXMIND_LICENSE_KEY=xyzyxyzyxyzxyzxyz

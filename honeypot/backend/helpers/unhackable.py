@@ -425,55 +425,6 @@ def sanitize_admin_key(admin_key: str) -> Tuple[str, bool, List[str]]:
 
 
 # =========================================================================
-# Password Generation
-# =========================================================================
-
-def generate_secure_password(length: int = 16, special_chars: bool = True) -> str:
-    """
-    Generate a cryptographically secure password
-    
-    Args:
-        length: Length of password to generate
-        special_chars: Whether to include special characters
-        
-    Returns:
-        str: Generated password
-    """
-    if length < 12:
-        length = 12
-        
-    if length > 128:
-        length = 128  # Cap maximum length
-    
-    # Define character sets
-    lowercase = string.ascii_lowercase
-    uppercase = string.ascii_uppercase
-    digits = string.digits
-    special = '!@#$%^&*()_-+=[]{}|:;<>,.?~' if special_chars else ''
-    
-    # Ensure at least one character from each set
-    password = [
-        secrets.choice(lowercase),
-        secrets.choice(uppercase),
-        secrets.choice(digits)
-    ]
-    
-    if special_chars:
-        password.append(secrets.choice(special))
-    
-    # Fill remaining length with random characters from all sets
-    all_chars = lowercase + uppercase + digits + special
-    password.extend(secrets.choice(all_chars) for _ in range(length - len(password)))
-    
-    # Shuffle the password
-    secrets.SystemRandom().shuffle(password)
-    
-    return ''.join(password)
-
-
-
-
-# =========================================================================
 # URL and Path Sanitization
 # =========================================================================
 
@@ -503,24 +454,3 @@ def sanitize_url_path(path: str) -> str:
     return path
 
 
-def sanitize_filename(filename: str) -> str:
-    """
-    Sanitize a filename to prevent path traversal and shell injection
-    
-    Args:
-        filename: Filename to sanitize
-        
-    Returns:
-        str: Sanitized filename
-    """
-    # Strip directory components
-    filename = os.path.basename(filename)
-    
-    # Replace potentially dangerous characters
-    filename = re.sub(r'[/\\:*?"<>|]', '_', filename)
-    
-    # Ensure filename isn't empty
-    if not filename:
-        filename = 'unnamed_file'
-        
-    return filename

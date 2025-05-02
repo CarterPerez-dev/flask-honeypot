@@ -88,8 +88,12 @@ def init(force):
         "docker-compose.yml.template": "docker-compose.yml",
         "Dockerfile.nginx.template": "Dockerfile.nginx",
         "Dockerfile.backend.template": "Dockerfile.backend",
+        "docker-compose.dev.yml.template": "docker-compose.dev.yml",
+        "dev-nginx.conf.template": "dev-nginx.conf",
         "dot_env.example": ".env.example",
-        "nginx": "nginx", 
+        "nginx": "nginx",
+        "setup_honeypot.sh.template": "setup_honeypot.sh" ,
+        "mongo-init.js.template": "mongo-init.js",
     }
 
     all_successful = True
@@ -107,34 +111,27 @@ def init(force):
             all_successful = False
 
     if all_successful:
+        try:
+            setup_script_path = os.path.join(cwd, "setup_honeypot.sh")
+            if os.path.exists(setup_script_path):
+                os.chmod(setup_script_path, os.stat(setup_script_path).st_mode | stat.S_IEXEC)
+        except Exception as e:
+            click.secho(f"Warning: Could not set executable permissions on setup script: {e}", fg='yellow')
+        
         click.secho("\nDeployment files created successfully!", fg='green')
         click.echo("----------------------------------------")
-        click.secho("IMPORTANT NEXT STEPS:", bold=True)
-        click.echo("1. Review the generated files (docker-compose.yml, Dockerfile.*, nginx/*).")
-        click.echo("2. Copy '.env.example' to '.env'.")
-        click.echo("3. Generate SECURE, RANDOM secrets and fill in the '.env' file.")
-        click.echo("   (Do NOT use default or easily guessable passwords!)")
-        click.echo("4. Ensure Docker and Docker Compose are installed.")
-
-        click.secho("\n--- Setting up HTTPS (Recommended for Production) ---", bold=True, fg='yellow')
-        click.echo("5. Obtain an SSL certificate for your domain (e.g., using Certbot).")
-        click.echo("   - A common method involves running Certbot on your host machine or using a Certbot Docker container.")
-        click.echo("   - See Certbot documentation: https://certbot.eff.org/")
-        click.echo("6. Edit the generated 'nginx/sites-enabled/proxy.conf':")
-        click.echo("   - Uncomment the 'server {...}' block listening on port 443.")
-        click.echo("   - Update 'server_name' with your actual domain(s).")
-        click.echo("   - Update 'ssl_certificate' and 'ssl_certificate_key' paths to point to your generated certificate files.")
-        click.echo("   - Review and uncomment desired SSL settings (protocols, ciphers).")
-        click.echo("   - Optionally, uncomment the HTTP-to-HTTPS redirect in the port 80 server block.")
-        click.echo("7. Edit the generated 'docker-compose.yml':")
-        click.echo("   - Uncomment the '443:443' port mapping for the 'nginx' service.")
-        click.echo("   - Uncomment and adjust the 'volumes:' section for the 'nginx' service to mount your certificate directory (e.g., Let's Encrypt's '/etc/letsencrypt') into '/etc/nginx/certs' (read-only).")
-        click.secho("8. Configure your firewall to allow traffic on port 443.", fg='yellow')
-
-        click.secho("\n--- Running the Application ---", bold=True)
-        click.echo("9. Run 'docker-compose up --build' to build images and start services.")
-        click.secho("\nNOTE: The generated Dockerfiles expect to be run from the root of the source code repository containing the 'honeypot/frontend' directory.", fg='cyan')
-
+        click.secho("NEXT STEPS:", bold=True)
+        click.echo("1. Run the setup script: ./setup_honeypot.sh")
+        click.echo("   This will set up your environment and generate secure configurations")
+        click.echo("2. Start the honeypot: docker-compose up --build -d")
+        
+        click.secho("\nOPTIONAL: For production HTTPS setup:", fg='yellow')
+        click.echo("- Edit nginx/sites-enabled/proxy.conf and enable the HTTPS section")
+        click.echo("- Configure your SSL certificates")
+        click.echo("- See full instructions in the documentation")
+        
+        click.secho("\nFor development:", fg='cyan')
+        click.echo("- Use docker-compose-dev.yml: docker-compose -f docker-compose-dev.yml up")
     else:
         click.secho("\nSome deployment files could not be created. Please check errors above.", fg='red')
 

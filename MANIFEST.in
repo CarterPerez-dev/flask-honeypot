@@ -10,3 +10,5 @@ recursive-include honeypot/deploy_templates *
 global-exclude *.py[cod] __pycache__ *.so *.dylib *.egg-info .*ignore .*rc .git* .pytest_cache .mypy_cache build dist venv
 
 prune */__pycache__
+
+recursive-include honeypot/deploy_templates *.sh

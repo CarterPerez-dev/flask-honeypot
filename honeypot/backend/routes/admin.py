@@ -11,29 +11,25 @@ import logging
 import traceback
 from honeypot.database.mongodb import get_db
 from honeypot.backend.helpers.db_utils import with_db_recovery
+from honeypot.backend.helpers.unhackable import (
+    sanitize_admin_key, 
+    validate_admin_credentials, 
+    constant_time_compare
+)
+
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Create logger
+
 logger = logging.getLogger(__name__)
 
-# Create blueprint
+# Create blueprint, random to ensure no interference with honeypot routes
 angela_bp = Blueprint('angela', __name__)
 
-# Get admin password from environment variable
-ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD', 'admin_key')
 
-@angela_bp.route('/csrf-token', methods=['GET'])
-def get_csrf_token():
-    """Generate and return a CSRF token"""
-    token = generate_csrf_token()
-    # Force content type to be JSON and ensure no caching
-    response = jsonify({"csrf_token": token})
-    response.headers['Content-Type'] = 'application/json'
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    return response
+ADMIN_PASS = os.environ.get('HONEYPOT_ADMIN_PASSWORD')
 
 @angela_bp.route('/login', methods=['POST'])
 @with_db_recovery
@@ -43,40 +39,41 @@ def admin_login():
         data = request.json or {}
         raw_admin_key = data.get('adminKey', '')
 
-        # Get client identifier for rate limiting
+
         client_ip = request.remote_addr
 
-        # Get database connection
+
         db = get_db()
 
-        # Debug session state - convert to dict for logging
+
         session_dict = {key: session.get(key) for key in list(session.keys())}
         current_app.logger.info(f"Session before login: {session_dict}")
 
-        # Sanitize inputs - simple sanitization
-        sanitized_key = raw_admin_key.strip() if raw_admin_key else ""
 
-        # Get CSRF token from header
+        sanitized_key, is_valid, validation_errors = sanitize_admin_key(raw_admin_key)
+        
+        if validation_errors:
+            current_app.logger.warning(f"Admin key validation errors: {validation_errors}")
+        
+
         csrf_token = request.headers.get('X-CSRF-TOKEN')
         if csrf_token:
             session['csrf_token'] = csrf_token
             session.modified = True
 
-        # Check if credentials are valid
-        if sanitized_key and sanitized_key == ADMIN_PASS:
-            # Set session values
+
+        if sanitized_key and constant_time_compare(sanitized_key, ADMIN_PASS):
             session['honeypot_admin_logged_in'] = True
             session['admin_last_active'] = datetime.utcnow().isoformat()
             session['admin_ip'] = client_ip
 
-            # Force session save
             session.modified = True
 
-            # Log successful login for debugging
+
             current_app.logger.info(f"Login successful for IP: {client_ip}")
             current_app.logger.info(f"Session after login: {dict(session)}")
 
-            # Log to database if available
+
             if db is not None:
                 try:
                     db.admin_login_attempts.delete_many({"ip": client_ip})
@@ -94,7 +91,6 @@ def admin_login():
                 "session_id": request.cookies.get('session', 'unknown')
             }), 200
         else:
-            # Handle failed login
             if db is not None:
                 try:
                     failed_attempts = db.admin_login_attempts.find_one({"ip": client_ip})
@@ -141,13 +137,20 @@ def admin_login():
                             "lastAttempt": datetime.utcnow()
                         })
 
-                    db.auditLogs.insert_one({
+
+                    audit_entry = {
                         "timestamp": datetime.utcnow(),
                         "ip": client_ip,
                         "success": False,
                         "reason": "Invalid admin credentials",
                         "adminLogin": True
-                    })
+                    }
+                    
+
+                    if validation_errors:
+                        audit_entry["validation_errors"] = validation_errors
+                        
+                    db.auditLogs.insert_one(audit_entry)
                 except Exception as e:
                     logger.error(f"Error updating failed login attempts: {e}")
             else: 
@@ -166,7 +169,6 @@ def check_auth_status():
     Accessible via GET request.
     """
     try:
-        # Log session contents for debugging
         session_dict = {key: session.get(key) for key in list(session.keys())}
         current_app.logger.info(f"Auth check - Session: {session_dict}")
         current_app.logger.info(f"Auth check - Cookies: {request.cookies}")
@@ -174,7 +176,6 @@ def check_auth_status():
         is_authenticated = session.get('honeypot_admin_logged_in', False)
 
         if is_authenticated:
-            # Update last active time
             session['admin_last_active'] = datetime.utcnow().isoformat()
             session.modified = True
 
@@ -201,7 +202,6 @@ def admin_logout():
         session.pop('honeypot_admin_logged_in', None)
         session.pop('admin_last_active', None)
         session.pop('admin_ip', None)
-        # Also clear the CSRF token from the session on logout
         session.pop('csrf_token', None)
         session.modified = True 
 
@@ -224,13 +224,13 @@ def require_admin():
             logger.debug("require_admin check failed: not authenticated.")
             return False
 
-        # Check last activity time
+
         last_active_str = session.get('admin_last_active')
         if last_active_str:
             try:
                 if 'Z' in last_active_str:
                     last_active_time = datetime.fromisoformat(last_active_str.replace('Z', '+00:00'))
-                elif '+' in last_active_str or '-' in last_active_str[10:]: # check for timezone offset
+                elif '+' in last_active_str or '-' in last_active_str[10:]: 
                      last_active_time = datetime.fromisoformat(last_active_str)
                 else: 
                      last_active_time = datetime.fromisoformat(last_active_str).replace(tzinfo=timezone.utc)
@@ -248,18 +248,16 @@ def require_admin():
                     return False
             except Exception as e:
                 logger.error(f"Error parsing last_active time '{last_active_str}': {e}")
-                # Invalidate session if time parsing fails
                 session.pop('honeypot_admin_logged_in', None)
                 session.modified = True
                 return False
         else:
-            # If last_active is somehow missing but user is logged in, invalidate
             logger.warning("Admin session missing 'admin_last_active'. Invalidating session.")
             session.pop('honeypot_admin_logged_in', None)
             session.modified = True
             return False
 
-        # Update last active time only if checks pass
+
         session['admin_last_active'] = datetime.now(timezone.utc).isoformat()
         session.modified = True
         logger.debug("require_admin check passed.")

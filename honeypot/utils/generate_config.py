@@ -37,11 +37,14 @@ REDIS_PASSWORD="{generate_password(20)}"
 HONEYPOT_ADMIN_PASSWORD="{generate_password(16)}"
 
 # Other settings
-HONEYPOT_RATE_LIMIT=5
+HONEYPOT_RATE_LIMIT=15
 HONEYPOT_RATE_PERIOD=60
+
+HONEYPOT_DATA_DIRECTORY=/app/data
+
 """
 
-    # Write to file
+
     with open(output_path, 'w') as f:
         f.write(env_content)
     
