@@ -484,5 +484,5 @@ def catch_all_honeypot(path):
     elif 'admin' in path:
         return redirect(url_for('honeypot_pages.admin_honeypot'))
     
-    # Default fallback - you need to define this function
-    return render_template('honeypot/generic-login.html')  # Changed to direct template rendering
+
+    return render_template('honeypot/generic-login.html')  

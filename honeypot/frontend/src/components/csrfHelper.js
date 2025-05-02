@@ -67,8 +67,7 @@ export const adminFetch = async (url, options = {}) => {
       // If we're not already on the login page, we might want to redirect
       if (!window.location.pathname.includes('/login')) {
         console.log("Session expired, redirecting to login");
-        // Optional: Redirect to login page
-        // window.location.href = '/honey/login';
+        window.location.href = '/honey/login';
       }
     }
     

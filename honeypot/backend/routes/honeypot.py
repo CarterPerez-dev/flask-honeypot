@@ -404,7 +404,7 @@ def log_scan_attempt(path, method, params=None, data=None):
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if db:
+        if db is not None:
             try:
                 # Insert into database
                 db.scanAttempts.insert_one(scan_log)
@@ -473,7 +473,7 @@ def is_rate_limited(client_id):
     # Get database connection
     db = current_app.extensions.get('mongodb', {}).get('db')
     
-    if not db:
+    if db is None:
         logger.warning("MongoDB connection not available, rate limit check failed")
         return False
     
@@ -504,7 +504,7 @@ def get_threat_score(client_id):
     # Get database connection
     db = current_app.extensions.get('mongodb', {}).get('db')
     
-    if not db:
+    if db is None:
         logger.warning("MongoDB connection not available, threat score check failed")
         return 0
     
@@ -551,7 +551,7 @@ def handle_high_threat(client_id, threat_score):
     # Get database connection
     db = current_app.extensions.get('mongodb', {}).get('db')
     
-    if not db:
+    if db is None:
         logger.warning("MongoDB connection not available, high threat handling failed")
         return
     
@@ -654,7 +654,7 @@ def log_honeypot_interaction(page_type, interaction_type, additional_data=None):
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if db:
+        if db is not None:
             try:
                 # Store in database
                 db.honeypot_interactions.insert_one(log_entry)
@@ -797,7 +797,7 @@ def honeypot_analytics():
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
         total_attempts = db.scanAttempts.count_documents({})
@@ -861,7 +861,7 @@ def honeypot_detailed_stats():
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             logger.error("Database connection not available")
             return jsonify({"error": "Database connection not available"}), 500
         
@@ -1000,7 +1000,7 @@ def view_honeypot_interactions():
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
         # Get interactions with pagination
@@ -1065,7 +1065,7 @@ def get_honeypot_interaction(interaction_id):
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
         # Find the interaction by ID
@@ -1211,7 +1211,7 @@ def get_html_interactions():
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             return jsonify({"error": "Database connection not available"}), 500
         
         # Get pagination params
@@ -1315,7 +1315,7 @@ def combined_honeypot_analytics():
         # Get database connection
         db = current_app.extensions.get('mongodb', {}).get('db')
         
-        if not db:
+        if db is None:
             logger.error("Database connection not available")
             return jsonify({"error": "Database connection not available"}), 500
         
