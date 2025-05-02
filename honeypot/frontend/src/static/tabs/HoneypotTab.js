@@ -5,13 +5,11 @@ import {
   FaSortUp, FaSortDown, FaUserSecret, FaAngleRight, FaClock,
   FaLocationArrow, FaFingerprint, FaUser, FaBug, FaShieldAlt
 } from "react-icons/fa";
+import { adminFetch } from './csrfHelper';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 
 } from 'recharts';
-import { adminFetch } from '../../components/csrfHelper';
-import LoadingPlaceholder from '../../components/common/LoadingPlaceholder';
-import { formatTimestamp } from '../../utils/dateUtils';
 
 const HoneypotTab = () => {
   const [honeypotData, setHoneypotData] = useState(null);
@@ -225,6 +223,16 @@ const HoneypotTab = () => {
     }
   };
 
+  // Format timestamp
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Unknown";
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleString();
+    } catch (e) {
+      return timestamp;
+    }
+  };
 
   // Export data as JSON
   const exportData = () => {
@@ -400,107 +408,101 @@ const HoneypotTab = () => {
             </div>
           </div>
           
-          <div className="honeypot-stat-card">
-              <div className="honeypot-stat-icon"><FaBug /></div>
-              <div className="honeypot-stat-content">
-                  {statsLoading ? (
-                      <LoadingPlaceholder height="40px" message="" />
-                  ) : detailedStats ? (
-                      <>
-                          <div className="honeypot-stat-value">{detailedStats.threats_detected ?? 0}</div>
-                          <div className="honeypot-stat-label">Threat Indicators</div>
-                      </>
-                   ) : (
-                      <>
-                           <div className="honeypot-stat-value">-</div>
-                           <div className="honeypot-stat-label">Threat Indicators</div>
-                      </>
-                   )}
+          {detailedStats && (
+            <div className="honeypot-stat-card">
+              <div className="honeypot-stat-icon">
+                <FaNetworkWired />
               </div>
-          </div>
+              <div className="honeypot-stat-content">
+                <div className="honeypot-stat-value">
+                  {detailedStats.threats_detected || 0}
+                </div>
+                <div className="honeypot-stat-label">Threats Detected</div>
+              </div>
+            </div>
+          )}
+        </div>
         
         {/* Charts section */}
         <div className="honeypot-charts-container">
           {/* Top Paths Chart */}
-           <div className="honeypot-chart-card">
-              <h3 className="honeypot-chart-title">Most Targeted Paths</h3>
-              <div className="honeypot-chart-content">
-                  {loading ? ( // Check 'loading' for combined data
-                       <LoadingPlaceholder height="300px" />
-                  ) : pathData && pathData.length > 0 ? (
-                       <ResponsiveContainer width="100%" height={300}>
-                           <BarChart data={pathData} /* ... other props ... */ >
-                              {/* Keep your existing BarChart structure here */}
-                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                              <XAxis dataKey="name" angle={-45} textAnchor="end" tick={{fill: 'var(--admin-text-secondary)'}} height={70}/>
-                              <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
-                              <Tooltip formatter={(value, name, props) => [value, 'Hits']} labelFormatter={(label, props) => props[0]?.payload?.fullPath || label} contentStyle={{ backgroundColor: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)', borderRadius: '8px' }}/>
-                              <Bar dataKey="value" fill="#8884d8" />
-                           </BarChart>
-                       </ResponsiveContainer>
-                  ) : (
-                       // Simple text fallback instead of NoDataMessage component
-                       <div className="honeypot-no-chart-data-simple">
-                           <p>No path data available.</p>
-                       </div>
-                  )}
-              </div>
+          <div className="honeypot-chart-card">
+            <h3 className="honeypot-chart-title">Most Targeted Paths</h3>
+            <div className="honeypot-chart-content">
+              {pathData && pathData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart 
+                    data={pathData} 
+                    margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis 
+                      dataKey="name" 
+                      angle={-45} 
+                      textAnchor="end"
+                      tick={{fill: 'var(--admin-text-secondary)'}}
+                      height={70}
+                    />
+                    <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
+                    <Tooltip 
+                      formatter={(value, name, props) => [value, 'Hits']}
+                      labelFormatter={(label, props) => props[0]?.payload?.fullPath || label}
+                      contentStyle={{
+                        backgroundColor: 'var(--admin-bg-card)',
+                        border: '1px solid var(--admin-border)',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar dataKey="value" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="honeypot-no-chart-data">
+                  <p>No path data available</p>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Top IPs Chart */}
           <div className="honeypot-chart-card">
-              <h3 className="honeypot-chart-title">Top Source IPs</h3>
-              <div className="honeypot-chart-content">
-                  {loading ? ( // Check 'loading' for combined data
-                       <LoadingPlaceholder height="300px" />
-                  ) : ipData && ipData.length > 0 ? (
-                       <ResponsiveContainer width="100%" height={300}>
-                           <PieChart>
-                               <Pie data={ipData} cx="50%" cy="50%" outerRadius={100} fill="#8884d8" dataKey="value" nameKey="name" label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}>
-                                   {ipData.map((entry, index) => (
-                                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                   ))}
-                               </Pie>
-                               <Tooltip formatter={(value) => [`${value} hits`, 'Count']} contentStyle={{ backgroundColor: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)', borderRadius: '8px' }}/>
-                               {/* Optional: <Legend /> */}
-                           </PieChart>
-                       </ResponsiveContainer>
-                  ) : (
-                       // Simple text fallback
-                       <div className="honeypot-no-chart-data-simple">
-                           <p>No IP data available.</p>
-                       </div>
-                  )}
-              </div>
+            <h3 className="honeypot-chart-title">Source IPs</h3>
+            <div className="honeypot-chart-content">
+              {ipData && ipData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={ipData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                      nameKey="name"
+                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {ipData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => [`${value} hits`, 'Count']}
+                      contentStyle={{
+                        backgroundColor: 'var(--admin-bg-card)',
+                        border: '1px solid var(--admin-border)',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="honeypot-no-chart-data">
+                  <p>No IP data available</p>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Chart: Interactions Over Time (from detailed stats) */}
-          <div className="honeypot-chart-card honeypot-full-width">
-              <h3 className="honeypot-chart-title">Interactions Over Time (Last 30 Days)</h3>
-              <div className="honeypot-chart-content">
-                  {statsLoading ? ( // Check 'statsLoading' for detailed data
-                      <LoadingPlaceholder height="300px" />
-                   ) : timeData && timeData.length > 0 ? (
-                       <ResponsiveContainer width="100%" height={300}>
-                          <LineChart data={timeData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }} >
-                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                              <XAxis dataKey="date" tick={{fill: 'var(--admin-text-secondary)'}} angle={-30} textAnchor="end" height={50}/>
-                              <YAxis tick={{fill: 'var(--admin-text-secondary)'}} />
-                              <Tooltip formatter={(value) => [`${value} interactions`, 'Count']} contentStyle={{ backgroundColor: 'var(--admin-bg-card)', border: '1px solid var(--admin-border)', borderRadius: '8px' }} />
-                              <Legend />
-                              <Line type="monotone" dataKey="count" stroke="#82ca9d" activeDot={{ r: 8 }} name="Daily Interactions" dot={false} />
-                          </LineChart>
-                      </ResponsiveContainer>
-                   ) : (
-                       // Simple text fallback
-                       <div className="honeypot-no-chart-data-simple">
-                           <p>No time series data available yet.</p>
-                       </div>
-                   )}
-              </div>
-          </div>
-          
-
+        </div>
         
         {/* Recent Activity Table */}
         <div className="honeypot-recent-activity">
@@ -784,7 +786,7 @@ const HoneypotTab = () => {
     );
   };
 
-
+  // Render detailed view of a single interaction
   const renderDetailsContent = () => {
     console.log("Rendering details view, selected interaction:", selectedInteraction);
     
@@ -1134,7 +1136,7 @@ const HoneypotTab = () => {
             className="honeypot-refresh-btn" 
             onClick={() => {
               console.log("Refresh button clicked");
-              setRetryCount(0); 
+              setRetryCount(0); // Reset retry count
               fetchHoneypotData();
               fetchDetailedStats();
               if (viewMode === "interactions") {

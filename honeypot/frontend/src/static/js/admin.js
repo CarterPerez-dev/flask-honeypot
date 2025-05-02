@@ -6,9 +6,9 @@ import '../css/HoneypotTab.css';
 import '../css/HtmlInteractionsTab.css';
 
 // Import tab components
-import HoneypotTab from '../../components/HoneypotTab';
-import HtmlInteractionsTab from '../../components/HtmlInteractionsTab';
-import OverviewTab from '../../components/OverviewTab';
+import HoneypotTab from '../tabs/HoneypotTab';
+import HtmlInteractionsTab from '../tabs/HtmlInteractionsTab';
+import OverviewTab from '../tabs/OverviewTab';
 
 // Import icons
 import { 

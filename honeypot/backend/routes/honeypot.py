@@ -1,7 +1,7 @@
 # honeypot/backend/routes/honeypot.py
 from flask import Blueprint, request, render_template, jsonify, make_response, current_app, g
 from bson.objectid import ObjectId
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import re
 import hashlib
@@ -526,11 +526,11 @@ def get_threat_score(client_id):
         # Number of scan attempts
         count = client.get("count", 0)
         if count > 1:
-            score += min(count * 5, 50)  # Max 50 points from count
+            score += min(count * 5, 30)  
         
         # Severity from past scans
         severity = client.get("severity", 0)
-        score += min(severity * 2, 30)  # Max 30 points from severity
+        score += min(severity * 2, 50)  
         
         # Recent activity (within last hour)
         cutoff = datetime.utcnow() - timedelta(hours=1)
@@ -538,9 +538,9 @@ def get_threat_score(client_id):
             "clientId": client_id,
             "timestamp": {"$gte": cutoff}
         })
-        score += min(recent_count * 2, 20)  # Max 20 points from recent activity
+        score += min(recent_count * 2, 20)  
         
-        return min(score, 100)  # Cap at 100
+        return min(score, 100)  
     except Exception as e:
         logger.error(f"Error calculating threat score: {str(e)}")
         return 0
@@ -853,7 +853,8 @@ def honeypot_analytics():
 @with_db_recovery
 def honeypot_detailed_stats():
     """
-    Return detailed statistics about honeypot activity
+    Return detailed statistics about honeypot interactions, keeping original field names
+    and adding total_interactions, credential_attempts, and time_series.
     
     Returns:
         dict: Detailed honeypot statistics
@@ -866,16 +867,20 @@ def honeypot_detailed_stats():
         db = get_db()
         
         if db is None:
-            logger.error("Database connection not available")
+            logger.error("Database connection not available for detailed stats")
             return jsonify({"error": "Database connection not available"}), 500
         
-        # Get time frames for stats
-        now = datetime.utcnow()
-        yesterday = now - timedelta(days=1)
-        last_week = now - timedelta(days=7)
-        last_month = now - timedelta(days=30)
-        
-        # Initialize stats with default values
+        # --- Define Time Frames (More Precise) ---
+        now = datetime.now(timezone.utc) # Use timezone-aware UTC now
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Calculate week start (assuming Monday is 0, Sunday is 6)
+        week_start = today_start - timedelta(days=now.weekday()) 
+        # Calculate month start
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # For time_series chart
+        thirty_days_ago = now - timedelta(days=30)
+
+
         stats = {
             "threats_detected": 0,
             "unique_page_types": 0,
@@ -888,69 +893,104 @@ def honeypot_detailed_stats():
             "top_interactors": [],
             "payload_downloads": [],
             "geographic_stats": [],
-            "timestamp": now.isoformat()
+            "timestamp": now.isoformat(),         
+            "total_interactions": 0,
+            "credential_attempts": [],
+            "time_series": [] 
         }
         
-        # Wrap each database operation in its own try/except
+
+
+
         try:
-            # Get threats detected (interactions with certain patterns)
-            stats["threats_detected"] = db.honeypot_interactions.count_documents({
-                "$or": [
-                    {"suspicious_params": True},
-                    {"is_scanner": True},
-                    {"is_port_scan": True}
-                ]
-            })
+            stats["total_interactions"] = db.honeypot_interactions.count_documents({})
+        except Exception as e:
+            logger.error(f"Error counting total interactions: {str(e)}")
+
+
+        try:
+            threat_conditions = {
+                 "$or": [
+
+                    {"is_tor_or_proxy": True},
+
+
+                    {"interaction_type": "user_database_download_attempted"},
+                    {"interaction_type": "bitcoin_mining_started"},
+                    {"interaction_type": "bitcoin_withdrawal_attempted"},
+                    {"interaction_type": "encryption_started"},
+                    {"interaction_type": "bsod_triggered"},
+                    {"interaction_type": "password_view_attempted"},
+                    {"interaction_type": "password_decrypt_attempted"},
+                    {"interaction_type": "api_keys_viewed"},
+                    {"interaction_type": "api_key_copied"},
+                    {"interaction_type": "terminal_glitch_opened"},
+                    {"interaction_type": "vanishing_button_clicked"},
+                    {"interaction_type": "sql_injection_attempt"},
+                    {"interaction_type": "account_lockout"},
+                    {"interaction_type": "login_attempt"},
+
+                 ]
+             }
+
+            stats["threats_detected"] = db.honeypot_interactions.count_documents(threat_conditions)
         except Exception as e:
             logger.error(f"Error counting threats: {str(e)}")
         
+
         try:
-            # Get unique page types and counts
-            page_types = db.honeypot_interactions.aggregate([
+            page_types = list(db.honeypot_interactions.aggregate([
+                {"$match": {"page_type": {"$ne": None, "$ne": ""}}},
                 {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}}
-            ])
-            stats["page_type_stats"] = list(page_types)
-            stats["unique_page_types"] = len(stats["page_type_stats"])
+                {"$sort": {"count": -1}},
+                {"$limit": 1000} 
+            ]))
+            stats["page_type_stats"] = page_types
+            stats["unique_page_types"] = db.honeypot_interactions.distinct("page_type", {"page_type": {"$ne": None, "$ne": ""}}) 
+            stats["unique_page_types"] = len(stats["unique_page_types"])
         except Exception as e:
             logger.error(f"Error getting page types: {str(e)}")
         
+
         try:
-            # Get interaction types
-            interaction_types = db.honeypot_interactions.aggregate([
+            interaction_types = list(db.honeypot_interactions.aggregate([
+                {"$match": {"interaction_type": {"$ne": None, "$ne": ""}}},
                 {"$group": {"_id": "$interaction_type", "count": {"$sum": 1}}},
-                {"$sort": {"count": -1}}
-            ])
-            stats["interaction_stats"] = list(interaction_types)
-            stats["unique_interaction_types"] = len(stats["interaction_stats"])
+                {"$sort": {"count": -1}},
+                {"$limit": 1000} 
+            ]))
+            stats["interaction_stats"] = interaction_types
+            stats["unique_interaction_types"] = db.honeypot_interactions.distinct("interaction_type", {"interaction_type": {"$ne": None, "$ne": ""}}) 
+            stats["unique_interaction_types"] = len(stats["unique_interaction_types"])
         except Exception as e:
             logger.error(f"Error getting interaction types: {str(e)}")
         
+
         try:
-            # Get time-based stats
             stats["today_interactions"] = db.honeypot_interactions.count_documents({
-                "timestamp": {"$gte": yesterday}
+                "timestamp": {"$gte": today_start}
             })
         except Exception as e:
             logger.error(f"Error counting today's interactions: {str(e)}")
         
         try:
             stats["week_interactions"] = db.honeypot_interactions.count_documents({
-                "timestamp": {"$gte": last_week}
+                "timestamp": {"$gte": week_start}
             })
         except Exception as e:
             logger.error(f"Error counting week's interactions: {str(e)}")
         
         try:
             stats["month_interactions"] = db.honeypot_interactions.count_documents({
-                "timestamp": {"$gte": last_month}
+                "timestamp": {"$gte": month_start}
             })
         except Exception as e:
             logger.error(f"Error counting month's interactions: {str(e)}")
         
+
         try:
-            # Get top interactors (IPs with most interactions)
             stats["top_interactors"] = list(db.honeypot_interactions.aggregate([
+                {"$match": {"ip_address": {"$ne": None, "$ne": ""}}},
                 {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 10}
@@ -958,33 +998,82 @@ def honeypot_detailed_stats():
         except Exception as e:
             logger.error(f"Error getting top interactors: {str(e)}")
         
+
         try:
-            # Get most downloaded payloads
             stats["payload_downloads"] = list(db.honeypot_interactions.aggregate([
                 {"$match": {"interaction_type": "download_attempt"}},
-                {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
+                {"$group": {"_id": "$additional_data.filename", "count": {"$sum": 1}}}, 
                 {"$sort": {"count": -1}},
                 {"$limit": 5}
             ]))
+            if not stats["payload_downloads"] or stats["payload_downloads"][0].get("_id") is None:
+                 stats["payload_downloads"] = list(db.honeypot_interactions.aggregate([
+                    {"$match": {"interaction_type": "download_attempt"}},
+                    {"$group": {"_id": "$page_type", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                    {"$limit": 5}
+                 ]))
+
         except Exception as e:
             logger.error(f"Error getting payload downloads: {str(e)}")
         
         try:
-            # Get geographical distribution
             stats["geographic_stats"] = list(db.honeypot_interactions.aggregate([
-                {"$match": {"geoInfo.country": {"$exists": True}}},
+                {"$match": {"geoInfo.country": {"$exists": True, "$ne": None, "$ne": "", "$ne": "Unknown", "$ne": "Private"}}},
                 {"$group": {"_id": "$geoInfo.country", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 10}
             ]))
         except Exception as e:
             logger.error(f"Error getting geographic stats: {str(e)}")
-        
+
+
+        try:
+            credential_attempts_list = list(db.honeypot_interactions.find(
+                {"interaction_type": "login_attempt"}
+            ).sort("timestamp", -1).limit(10)) 
+            
+
+            formatted_attempts = []
+            for attempt in credential_attempts_list:
+                attempt['_id'] = str(attempt['_id']) 
+                if isinstance(attempt.get('timestamp'), datetime):
+                    attempt['timestamp'] = attempt['timestamp'].isoformat()
+                formatted_attempts.append(attempt) 
+            stats["credential_attempts"] = formatted_attempts
+        except Exception as e:
+            logger.error(f"Error getting credential attempts: {str(e)}")
+
+
+        try:
+            time_series_agg = list(db.honeypot_interactions.aggregate([
+                {"$match": {"timestamp": {"$gte": thirty_days_ago}}},
+                {"$group": {
+                    "_id": { 
+                        "$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp", "timezone": "UTC"}
+                    },
+                    "count": {"$sum": 1}
+                }},
+                {"$sort": {"_id": 1}},
+                {"$project": { 
+                    "_id": 0,
+                    "date": "$_id",
+                    "count": "$count"
+                }}
+            ]))
+            stats["time_series"] = time_series_agg
+        except Exception as e:
+            logger.error(f"Error getting time series data: {str(e)}")
+
+
+        logger.info(f"Returning detailed stats with original names + additions.")
         return jsonify(stats), 200
+    
     except Exception as e:
-        logger.error(f"Error getting honeypot stats: {str(e)}")
+        logger.error(f"Critical error in /detailed-stats endpoint: {str(e)}")
+        logger.error(traceback.format_exc()) 
         return jsonify({
-            "error": "Failed to retrieve honeypot statistics",
+            "error": "Failed to retrieve detailed honeypot statistics",
             "details": str(e)
         }), 500
 

@@ -1,0 +1,48 @@
+.honeypot-loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--admin-bg-card-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    color: var(--admin-text-secondary);
+    width: 100%;
+    box-sizing: border-box; 
+    text-align: center;
+}
+
+.honeypot-loading-placeholder span {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.honeypot-spinner {
+    font-size: 1.5em;
+    color: var(--admin-accent);
+    animation: honeypot-spin 1.5s linear infinite;
+}
+
+@keyframes honeypot-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+.honeypot-stat-card .honeypot-loading-placeholder {
+    padding: 5px; 
+    min-height: 40px;
+    background-color: transparent; 
+}
+
+.honeypot-stat-card .honeypot-loading-placeholder .honeypot-spinner {
+     font-size: 1.2em;
+}
+.honeypot-stat-card .honeypot-loading-placeholder span {
+     font-size: 0.8em;
+}
+
+
+.honeypot-chart-content .honeypot-loading-placeholder {
+     height: 100%; /* Fill the chart content area */
+}

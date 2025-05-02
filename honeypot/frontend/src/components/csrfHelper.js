@@ -1,30 +1,3 @@
-// frontend/my-react-app/src/components/csrfHelper.js
-
-/**
- * Helper to manage CSRF tokens for admin requests
- */
-export const getCsrfToken = () => {
-  // First try to get from meta tag
-  const metaTag = document.querySelector('meta[name="csrf-token"]');
-  if (metaTag) {
-    return metaTag.getAttribute('content');
-  }
-  
-  // Then try localStorage
-  return localStorage.getItem('csrf_token');
-};
-
-export const setCsrfToken = (token) => {
-  if (token) {
-    localStorage.setItem('csrf_token', token);
-    console.log("CSRF token set in localStorage:", token.substring(0, 5) + "...");
-  }
-};
-
-/**
- * Fetch wrapper that automatically adds CSRF token headers for admin routes
- * and handles common error scenarios
- */
 export const adminFetch = async (url, options = {}) => {
   const method = options.method || 'GET';
   let headers = { ...options.headers || {} };
@@ -33,6 +6,11 @@ export const adminFetch = async (url, options = {}) => {
   if (!headers['Content-Type'] && 
       (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PUT')) {
     headers['Content-Type'] = 'application/json';
+  }
+  
+  // Add Accept header to prefer JSON responses
+  if (!headers['Accept']) {
+    headers['Accept'] = 'application/json';
   }
   
   // Add CSRF token header for all modifying requests
@@ -54,11 +32,26 @@ export const adminFetch = async (url, options = {}) => {
       ...options,
       headers,
       credentials: 'include',
-      signal: controller.signal
+      signal: controller.signal,
+      // Don't follow redirects automatically
+      redirect: 'manual'
     });
     
     // Clear the timeout
     clearTimeout(timeoutId);
+    
+    // Handle redirects manually
+    if (response.status === 302 || response.status === 301) {
+      console.warn(`Redirect detected from ${url} to ${response.headers.get('Location')}`);
+      // Instead of following the redirect, we'll return an error
+      return {
+        ok: false, 
+        status: response.status,
+        statusText: `Redirect detected. API endpoints should not redirect.`,
+        text: async () => `Redirect to ${response.headers.get('Location')} detected`,
+        json: async () => ({ error: 'Redirect detected' })
+      };
+    }
     
     // Handle 401 Unauthorized - session may have expired
     if (response.status === 401) {

@@ -968,3 +968,41 @@
   padding-left: 5px;
   border-left: 3px solid var(--admin-accent);
 }
+
+
+.honeypot-chart-card.honeypot-full-width {
+    /* This makes it span across columns if its parent is a grid */
+    /* Adjust based on your actual grid layout if needed */
+     grid-column: 1 / -1;
+}
+
+/* Styles specific to elements inside the time chart */
+.honeypot-full-width .recharts-tooltip-wrapper {
+    outline: none; /* Example */
+}
+.honeypot-full-width .recharts-legend-wrapper {
+     padding-top: 10px;
+     font-size: 12px;
+}
+.honeypot-full-width .recharts-cartesian-axis-tick-value {
+    font-size: 11px;
+    fill: var(--admin-text-secondary, #6c757d);
+}
+
+/* Simple styling for the "No data" text fallback */
+.honeypot-no-chart-data-simple {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 200px; /* Give it some height */
+    width: 100%;
+    background-color: var(--admin-bg-card-secondary, #f9f9f9);
+    color: var(--admin-text-secondary, #6c757d);
+    font-style: italic;
+    border-radius: 8px; /* Match card rounding */
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+
+

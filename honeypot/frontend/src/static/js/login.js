@@ -52,11 +52,10 @@ const Login = () => {
     setError(null);
   
     try {
-      // Get the current CSRF token
       const token = localStorage.getItem('csrf_token');
       console.log("Using CSRF token:", token ? token.substring(0, 5) + "..." : "none");
       
-      // Use direct fetch with debug logging
+
       const response = await fetch('/api/honeypot/angela/login', {
         method: 'POST',
         headers: {
