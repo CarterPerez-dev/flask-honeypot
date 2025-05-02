@@ -22,13 +22,11 @@ def with_db_recovery(f):
             if "MongoClient" in str(e) and "close" in str(e):
                 logger.warning(f"MongoDB connection issue, attempting recovery: {str(e)}")
                 try:
-                    # Function will call get_db() again, which should get a fresh connection
                     return f(*args, **kwargs)
                 except Exception as recover_e:
                     logger.error(f"MongoDB recovery failed: {str(recover_e)}")
                     raise recover_e
             else:
-                # Not a connection issue, re-raise
                 raise e
     
     return wrapper

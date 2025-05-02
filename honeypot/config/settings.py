@@ -37,7 +37,7 @@ class Config:
     PROXY_CACHE_UPDATE_INTERVAL = int(os.environ.get('PROXY_CACHE_UPDATE_INTERVAL', 24))  
     
     # Honeypot settings
-    HONEYPOT_RATE_LIMIT = int(os.environ.get('HONEYPOT_RATE_LIMIT', 5))
+    HONEYPOT_RATE_LIMIT = int(os.environ.get('HONEYPOT_RATE_LIMIT', 15))
     HONEYPOT_RATE_PERIOD = int(os.environ.get('HONEYPOT_RATE_PERIOD', 60))
     HONEYPOT_TEMPLATES_PATH = os.environ.get('HONEYPOT_TEMPLATES_PATH', None)
     

@@ -271,7 +271,7 @@ def admin_honeypot():
 def ecommerce_honeypot():
     """E-commerce admin honeypot"""
     log_honeypot_interaction('ecommerce', 'page_view')
-    return render_template('honeypot/generic-login.html')
+    return render_template('honeypot/ecommerce-dashboard.html')
 
 # Additional CMS routes
 @honeypot_pages_bp.route('/typo3', methods=['GET', 'POST'])
@@ -506,4 +506,4 @@ def catch_all_honeypot(path):
     elif 'admin' in path:
         return redirect(url_for('honeypot_pages.admin_honeypot'))
     
-    return render_template('honeypot/ecommerce-dashboard.html')
+    return render_template('honeypot/generic-login.html')
