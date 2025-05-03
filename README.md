@@ -78,7 +78,7 @@ Flask-Honeypot is a security monitoring tool designed to detect and analyze unau
 ---
 ### Option 1: Docker Deployment (Recommended for Production)
 
-```bash
+
 ### Clone the repository
 ```bash
 git clone https://github.com/CarterPerez-dev/honeypot-framework.git
