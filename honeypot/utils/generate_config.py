@@ -1,3 +1,9 @@
+# honeypot/utils/generate_config.py
+
+import secrets
+import string
+import os
+
 def generate_password(length=16):
     """Generate a secure random password (letters and digits only)"""
     # Remove special characters from the alphabet
