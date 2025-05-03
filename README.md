@@ -79,7 +79,7 @@ Flask-Honeypot is a security monitoring tool designed to detect and analyze unau
 
 ### Clone the repository
 ```bash
-git clone https://github.com/CarterPerez-dev/honeypot-framework.git
+git clone https://github.com/CarterPerez-dev/flask-honeypot.git
 cd honeypot-framework
 ```
 ### Set executable permissions for setup_honeypot.sh 
