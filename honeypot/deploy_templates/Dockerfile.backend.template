@@ -27,15 +27,7 @@ RUN python -m venv /venv
 
 RUN pip install --no-cache-dir --upgrade pip
 
-# Copy dependency definition files first for caching
-
-COPY dist/flask_honeypot-*.tar.gz /tmp/
-
-# Install Python dependencies into the virtual environment
-
-RUN pip install --no-cache-dir /tmp/flask_honeypot-*.tar.gz
-
-RUN rm /tmp/flask_honeypot-*.tar.gz
+RUN pip install --no-cache-dir flask-honeypot==0.1.1
 
 RUN mkdir -p /app/data/geoip_db /app/data/proxy_cache /app/logs
 

@@ -25,47 +25,45 @@ def _copy_resource(resource_path, target_path):
             raise FileNotFoundError(f"Resource '{resource_path}' not found in package.")
 
         if source_resource.is_dir():
-
-            if os.path.exists(target_path) and not os.path.isdir(target_path):
-                raise FileExistsError(f"Target path '{target_path}' exists but is not a directory.")
+            # Make sure target directory exists
             os.makedirs(target_path, exist_ok=True)
-
-
-            is_top_level_dir_copy = target_path.endswith(os.path.sep + os.path.basename(resource_path)) \
-                                  or target_path == os.path.basename(resource_path)
-            if is_top_level_dir_copy:
+            
+            # Log directory creation for top-level directories
+            if target_path.endswith(os.path.basename(resource_path)) or \
+               target_path == os.path.basename(resource_path):
                 click.echo(f"  Created Directory {target_path}/")
 
+            # Recursively copy all contents
             for item in source_resource.iterdir():
-                recursive_source_path = os.path.join(resource_path, item.name)
-                recursive_target_path = os.path.join(target_path, item.name)
-                _copy_resource(recursive_source_path, recursive_target_path)
-
-        else: 
-            final_target_filename = os.path.basename(target_path) 
+                item_name = os.path.basename(item)
+                new_source_path = os.path.join(resource_path, item_name)
+                new_target_path = os.path.join(target_path, item_name)
+                
+                # Recursive call to handle nested directories
+                _copy_resource(new_source_path, new_target_path)
+        else:
+            # Handle file copying with template renaming
             source_basename = os.path.basename(resource_path)
+            target_filename = source_basename
+            
+            # Remove .template extension if present
             if source_basename.endswith('.template'):
-                final_target_filename = source_basename[:-len('.template')]
-
-
-            final_target_path = os.path.join(target_parent_dir, final_target_filename)
-
-
+                target_filename = source_basename[:-len('.template')]
+            
+            # Set the final target path with correct filename
+            final_target_path = os.path.join(os.path.dirname(target_path), target_filename)
+            
+            # Copy the file
             with source_resource.open('rb') as src_fp:
                 with open(final_target_path, 'wb') as dest_fp:
                     shutil.copyfileobj(src_fp, dest_fp)
-
-
+            
             click.echo(f"  Created {final_target_path}")
-
-
-    except FileNotFoundError:
-        click.secho(f"Error: Template resource '{resource_path}' not found in package.", fg='red')
-        return False
+            
+        return True
     except Exception as e:
-        click.secho(f"Error creating target '{target_path}': {e}", fg='red')
+        click.secho(f"Error copying resource '{resource_path}' to '{target_path}': {e}", fg='red')
         return False
-    return True
 
 
 
@@ -92,8 +90,6 @@ def init(force):
         "dev-nginx.conf.template": "dev-nginx.conf",
         "dot_env.example": ".env.example",
         "nginx": "nginx",
-        "setup_honeypot.sh.template": "setup_honeypot.sh" ,
-        "mongo-init.js.template": "mongo-init.js",
     }
 
     all_successful = True

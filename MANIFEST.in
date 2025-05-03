@@ -12,3 +12,7 @@ global-exclude *.py[cod] __pycache__ *.so *.dylib *.egg-info .*ignore .*rc .git*
 prune */__pycache__
 
 recursive-include honeypot/deploy_templates *.sh
+
+include mongo-init.js
+
+include setup_honeypot.sh
