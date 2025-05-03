@@ -14,6 +14,26 @@
   <strong>A comprehensive honeypot system for detecting, trapping, and analyzing unauthorized access attempts</strong>
 </p>
 
+## Flask-Honeypot Framework
+
+Flask-Honeypot Framework is a comprehensive cybersecurity deception platform that automatically redirects over 500+ common penetration testing paths and vulnerability scan attempts to a sophisticated network of 20+ realistic-looking fake admin dashboards and login portals. The system meticulously records 100% of attacker interactions—capturing every keystroke, mouse movement, and form submission—while collecting 30+ data points including IP address, geolocation (accurate to city level), ASN information, device fingerprints, and behavioral patterns to build detailed threat intelligence profiles. Built on a Flask/React/MongoDB/Redis stack, the framework features a stunningly designed admin dashboard with 15+ interactive visualizations, real-time threat intelligence, and comprehensive filtering capabilities that can process and display data from thousands of attack sessions. Deployment requires just 2-3 commands with Docker support, making it exceptionally easy to integrate into existing security infrastructure while providing enterprise-grade protection and intelligence gathering capabilities against common web attack vectors.
+
+## 🔍 Features
+
+Flask-Honeypot is a security monitoring tool designed to detect and analyze unauthorized access attempts by creating convincing decoys that attract and trap potential attackers.
+
+- **Multiple honeypot trap types** - 20+ pre-built decoys including admin panels, WordPress, phpMyAdmin, file managers, and more
+- **Interactive deceptive elements** - Clickable buttons, forms, fake file downloads, and simulated errors to keep attackers engaged
+- **Rich attacker profiling** - Collect IPs, user agents, GeoIP data, ASN info, and behavioral patterns
+- **Real-time Tor/proxy detection** - Identify attackers attempting to hide their true location
+- **Advanced security analytics** - Visual dashboards showing attack patterns, geographic distribution, and threat levels
+- **Auto-blocking capabilities** - Rate limiting and IP blocking with configurable thresholds
+- **Detailed interaction logging** - Every click, form submission, and interaction attempt is recorded
+- **Containerized deployment** - Quick setup with Docker and docker-compose
+- **Scalable architecture** - MongoDB for storage and Redis for session management
+- **MaxMind GeoIP integration** - Optional geographic and ASN tracking
+
+
 <p align="center">
   <a href="#-features">Features</a> •
   <a href="#-quick-start">Quick Start</a> •
