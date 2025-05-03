@@ -50,7 +50,7 @@
 [<img src="https://raw.githubusercontent.com/CarterPerez-dev/CertGames-Core/main/Stack/Architecture/Screenshot%202025-05-02%20220933.png" width="100" alt="Screenshot 10">](#screenshot-10)
 [<img src="https://raw.githubusercontent.com/CarterPerez-dev/CertGames-Core/main/Stack/Architecture/Screenshot%202025-05-02%20220946.png" width="100" alt="Screenshot 11">](#screenshot-11)
 [<img src="https://raw.githubusercontent.com/CarterPerez-dev/CertGames-Core/main/Stack/Architecture/Screenshot%202025-05-02%20221012.png" width="100" alt="Screenshot 12">](#screenshot-12)
-[<img src="https://raw.githubusercontent.com/CarterPerez-dev/CertGames-Core/main/Stack/Architecture/Screenshot%202025-05-02%20224533.png" alt="Screenshot 13">](#screenshot-13)
+[<img src="https://raw.githubusercontent.com/CarterPerez-dev/CertGames-Core/main/Stack/Architecture/Screenshot%202025-05-02%20224533.png" width="100" alt="Screenshot 13">](#screenshot-13)
 
 
 
