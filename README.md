@@ -74,9 +74,7 @@ Flask-Honeypot is a security monitoring tool designed to detect and analyze unau
 - **MaxMind GeoIP integration** - Optional geographic and ASN tracking
 
 ## 🚀 Quick Start
---
 ## The fastest way to deploy (Docker):
----
 ### Option 1: Docker Deployment (Recommended for Production)
 
 
