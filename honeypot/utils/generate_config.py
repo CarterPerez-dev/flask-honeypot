@@ -1,12 +1,7 @@
-# honeypot/utils/generate_config.py
-
-import secrets
-import string
-import os
-
 def generate_password(length=16):
-    """Generate a secure random password"""
-    alphabet = string.ascii_letters + string.digits + "!@#$%^&*()"
+    """Generate a secure random password (letters and digits only)"""
+    # Remove special characters from the alphabet
+    alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 def generate_env_file(output_path='.env'):
@@ -42,8 +37,9 @@ HONEYPOT_RATE_PERIOD=60
 
 HONEYPOT_DATA_DIRECTORY=/app/data
 
+# Flask environment ('development' or 'production')
+FLASK_ENV=production
 """
-
 
     with open(output_path, 'w') as f:
         f.write(env_content)
