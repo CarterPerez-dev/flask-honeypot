@@ -35,7 +35,7 @@
 [flask-honeypot-link]: https://pypi.org/project/flask-honeypot/0.1.1/
 
 
-## Project Screenshots
+## Screenshots of some features
 
 ### Click to view screenshots:
 
