@@ -100,12 +100,15 @@ fi
 
 # Create and activate virtual environment
 echo "Creating Python virtual environment..."
-python3 -m venv honeypot_venv
+python -m venv honeypot_venv
 source honeypot_venv/bin/activate
 
 # Install the package
 echo "Installing Honeypot Framework..."
-pip install flask-honeypot
+pip install .
+
+echo "Creating deployment files from templates..."
+honeypot-deploy init
 
 # Copy .env.example to .env if not already done
 if [ ! -f .env ] && [ -f .env.example ]; then
