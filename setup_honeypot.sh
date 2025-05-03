@@ -105,7 +105,7 @@ source honeypot_venv/bin/activate
 
 # Install the package
 echo "Installing Honeypot Framework..."
-pip install .
+pip install flask-honeypot
 
 echo "Creating deployment files from templates..."
 honeypot-deploy init

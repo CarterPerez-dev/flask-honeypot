@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  nginx: 
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx 
+    container_name: honeypot_nginx_main
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/logs:/var/log/nginx 
+    depends_on:
+      - backend
+    networks:
+      - honeypot_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"] 
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile.backend 
+    container_name: honeypot_backend
+    volumes:
+      - honeypot_data:/app/data
+      - honeypot_logs:/app/logs
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/honeypot?authSource=admin
+      - SECRET_KEY=${SECRET_KEY}
+      - HONEYPOT_ADMIN_PASSWORD=${HONEYPOT_ADMIN_PASSWORD}
+      - HONEYPOT_DATA_DIRECTORY=/app/data
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - honeypot_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine 
+    container_name: honeypot_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - honeypot_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mongodb:
+    image: mongo:6 
+    container_name: honeypot_mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - honeypot_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "||", "exit", "0"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+networks:
+  honeypot_network:
+    driver: bridge
+
+volumes:
+  honeypot_data: 
+  honeypot_logs: 
+  redis_data: 
+  mongodb_data:
